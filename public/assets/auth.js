@@ -84,7 +84,13 @@ window.TrendzactAuth = {
 
   /** Send a password-reset email to the given address. */
   async sendResetEmail(email) {
-    await sendPasswordResetEmail(auth, email);
+    const actionCodeSettings = {
+      // After Firebase completes the password reset, send the user back
+      // to our branded login page with a success flag.
+      url: window.location.origin + '/login.html?reset=success',
+      handleCodeInApp: false
+    };
+    await sendPasswordResetEmail(auth, email, actionCodeSettings);
   },
 
   /**

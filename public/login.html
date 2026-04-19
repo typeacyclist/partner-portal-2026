@@ -105,6 +105,14 @@
   if (/\/login/i.test(redirectTo) || /\/set-password/i.test(redirectTo)) {
     redirectTo = '/';
   }
+
+  // If arriving from a completed password reset, show a success banner
+  if (params.get('reset') === 'success') {
+    show('info', 'Password changed. Sign in with your new password.');
+    // Clean the URL so a refresh doesn't keep showing the banner
+    const cleanUrl = window.location.pathname + (redirectTo !== '/' ? '?redirect=' + encodeURIComponent(redirectTo) : '');
+    window.history.replaceState({}, '', cleanUrl);
+  }
   const waitForAuth = setInterval(() => {
     if (!window.TrendzactAuth) return;
     clearInterval(waitForAuth);
