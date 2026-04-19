@@ -144,7 +144,3 @@ The Cloud Function has a `TODO` for Firebase Auth ID token verification. Uncomme
 | `--tint-light` | `#F0FAF9` | Soft backgrounds |
 
 All colors applied identically in the generated PDF (see `C` palette constant in `proposal-pdf.js`).
-
-
-
-

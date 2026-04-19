@@ -45,6 +45,3 @@ coverage/
 dist/
 build/
 .cache/
-
-# Accidentally committed archives
-*.zip
