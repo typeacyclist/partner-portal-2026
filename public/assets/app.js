@@ -6,13 +6,14 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   // Solution Builder filters (if present)
+  // Cards are rendered async by solution-render.js, so we re-query on each filter
   const chips = document.querySelectorAll('[data-filter-chip]');
   const searchInput = document.querySelector('[data-solution-search]');
-  const cards = document.querySelectorAll('[data-solution-card]');
   let activeType = 'all';
   let activeQuery = '';
 
   const applyFilters = () => {
+    const cards = document.querySelectorAll('[data-solution-card]');
     cards.forEach(card => {
       const type = card.dataset.type || '';
       const text = (card.textContent || '').toLowerCase();
@@ -21,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
       card.style.display = (matchType && matchQuery) ? '' : 'none';
     });
   };
+
+  // Re-run filters after cards finish rendering
+  document.addEventListener('solution-cards-rendered', applyFilters);
 
   chips.forEach(chip => {
     chip.addEventListener('click', () => {
