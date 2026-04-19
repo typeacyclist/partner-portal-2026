@@ -228,7 +228,10 @@ window.SOLUTION_CONTENT = {
         'Detect and deter unauthorized observers',
         'Strengthen controls in regulated environments',
         'Protect executive and privileged workspaces'
-      ]
+      ],
+      technicalReport: SAMPLE_REPORT,
+      infographic: SAMPLE_INFOGRAPHIC,
+      vimeoUrl: SAMPLE_VIDEO
     },
     {
       id: 'sia',
