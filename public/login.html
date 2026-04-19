@@ -33,6 +33,9 @@
   .auth-forgot a { font-size: 13px; color: var(--med-gray); text-decoration: none; }
   .auth-forgot a:hover { color: var(--dark-green); }
   .auth-footer { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-soft); font-size: 12px; color: var(--med-gray); text-align: center; }
+  .auth-divider { display: flex; align-items: center; gap: 12px; margin: 22px 0 18px; color: var(--med-gray); font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; }
+  .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .auth-divider span { font-family: var(--ff-mono); }
 </style>
 </head>
 <body>
@@ -69,6 +72,14 @@
     </div>
     <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Sign in</button>
   </form>
+
+  <div class="auth-divider">
+    <span>or</span>
+  </div>
+
+  <button type="button" id="magicLinkBtn" class="btn btn-ghost" style="width: 100%;">
+    Email me a sign-in link
+  </button>
 
   <div class="auth-footer">
     Access is by Trendzact invitation only. Contact your Trendzact representative to request an account.
@@ -149,6 +160,34 @@
     } catch (err) {
       // Don't reveal whether the email exists — show generic success anyway
       show('info', 'If an account exists for ' + email + ', a password reset email is on the way.');
+    }
+  });
+
+  document.getElementById('magicLinkBtn').addEventListener('click', async () => {
+    clear();
+    const email = document.getElementById('email').value.trim();
+    if (!email) {
+      show('error', 'Enter your email first, then click "Email me a sign-in link".');
+      document.getElementById('email').focus();
+      return;
+    }
+    const btn = document.getElementById('magicLinkBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    try {
+      await window.TrendzactAuth.sendMagicLink(email);
+      show('info', 'Check your inbox — a sign-in link has been sent to ' + email + '. Click it from this same device to complete sign-in.');
+      btn.textContent = 'Email me a sign-in link';
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Email me a sign-in link';
+      const friendly = {
+        'auth/invalid-email': 'That email address looks invalid.',
+        'auth/missing-email': 'Enter an email address first.',
+        'auth/quota-exceeded': 'Email send limit reached. Try again in an hour or use password sign-in.',
+        'auth/unauthorized-continue-uri': 'This domain is not authorized for email links. Contact Trendzact.'
+      }[err.code] || ('Could not send sign-in link: ' + (err.message || err.code));
+      show('error', friendly);
     }
   });
 </script>

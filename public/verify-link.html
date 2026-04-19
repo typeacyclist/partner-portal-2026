@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Completing Sign-In · Trendzact Partners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/styles.css" />
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<style>
+  body { background: var(--bg-soft); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .auth-shell { background: #fff; border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 40px; max-width: 460px; width: 100%; box-shadow: var(--shadow-md); }
+  .auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+  .auth-brand svg { width: 40px; height: 40px; }
+  .auth-brand-name { font-family: var(--ff-display); font-weight: 500; font-size: 22px; color: var(--dark-gray); line-height: 1; }
+  .auth-brand-sub { font-family: var(--ff-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--dark-green); text-transform: uppercase; margin-top: 2px; display: block; }
+  .auth-h1 { font-family: var(--ff-display); font-size: 26px; font-weight: 500; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .auth-sub { color: var(--med-gray); font-size: 14px; margin-bottom: 24px; line-height: 1.55; }
+  .auth-msg { padding: 12px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 18px; display: none; }
+  .auth-msg.error { background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; display: block; }
+  .auth-msg.info { background: var(--tint-light); border: 1px solid var(--med-green); color: var(--dark-green); display: block; }
+  .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--dark-green); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 18px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<main class="auth-shell">
+  <div class="auth-brand">
+    <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2" width="36" height="36" rx="8" fill="#00827C"/>
+      <path d="M11 14h18M20 14v15" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="28" cy="24" r="3" fill="#00A398" stroke="#fff" stroke-width="1.5"/>
+    </svg>
+    <div>
+      <div class="auth-brand-name">Trendzact</div>
+      <span class="auth-brand-sub">Partners</span>
+    </div>
+  </div>
+
+  <!-- Loading state (default) -->
+  <div id="loadingState">
+    <div class="spinner"></div>
+    <h1 class="auth-h1" style="text-align: center;">Signing you in…</h1>
+    <p class="auth-sub" style="text-align: center;">Completing your sign-in link. One moment.</p>
+  </div>
+
+  <!-- Different-device state (asks for email) -->
+  <div id="emailState" style="display:none;">
+    <h1 class="auth-h1">Confirm your email</h1>
+    <p class="auth-sub">For security, re-enter the email address this sign-in link was sent to. (This happens when you open the link on a different device or browser than the one you requested it from.)</p>
+
+    <div id="emailMsg" class="auth-msg"></div>
+
+    <form id="emailForm">
+      <div class="form-field" style="margin-bottom: 18px;">
+        <label for="confirmEmail">Email</label>
+        <input id="confirmEmail" type="email" autocomplete="email" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Complete sign-in</button>
+    </form>
+  </div>
+
+  <!-- Error state -->
+  <div id="errorState" style="display:none;">
+    <h1 class="auth-h1">Sign-in link invalid</h1>
+    <p class="auth-sub" id="errorText">This sign-in link is no longer valid. Links expire after one hour and can only be used once.</p>
+    <a href="/login.html" class="btn btn-primary btn-lg" style="width: 100%;">Back to sign-in</a>
+  </div>
+</main>
+
+<script src="/assets/firebase-config.js"></script>
+<script type="module" src="/assets/auth.js"></script>
+<script type="module">
+  const loadingState = document.getElementById('loadingState');
+  const emailState   = document.getElementById('emailState');
+  const errorState   = document.getElementById('errorState');
+  const errorText    = document.getElementById('errorText');
+  const emailMsg     = document.getElementById('emailMsg');
+
+  function showEmailPrompt() {
+    loadingState.style.display = 'none';
+    emailState.style.display = 'block';
+  }
+  function showError(msg) {
+    loadingState.style.display = 'none';
+    emailState.style.display = 'none';
+    errorState.style.display = 'block';
+    if (msg) errorText.textContent = msg;
+  }
+  function showEmailError(msg) {
+    emailMsg.className = 'auth-msg error';
+    emailMsg.textContent = msg;
+  }
+
+  // Wait for auth module to initialize, then try to complete sign-in
+  const wait = setInterval(async () => {
+    if (!window.TrendzactAuth) return;
+    clearInterval(wait);
+
+    try {
+      if (!window.TrendzactAuth.isSignInLink()) {
+        showError('This URL is not a valid Trendzact sign-in link.');
+        return;
+      }
+
+      // Try to complete with stored email (same-device flow — most common)
+      try {
+        await window.TrendzactAuth.completeMagicLinkSignIn();
+        window.location.href = '/';
+        return;
+      } catch (err) {
+        if (err.message === 'email-required') {
+          showEmailPrompt();
+        } else {
+          throw err;
+        }
+      }
+    } catch (err) {
+      const code = err.code || '';
+      const friendly = {
+        'auth/expired-action-code': 'This sign-in link has expired. Links are valid for one hour — request a new one.',
+        'auth/invalid-action-code': 'This sign-in link has already been used or is invalid. Request a new one.',
+        'auth/user-disabled': 'This account has been disabled. Contact Trendzact.'
+      }[code] || ('Sign-in failed. ' + (err.message || code));
+      showError(friendly);
+    }
+  }, 50);
+
+  // Handle cross-device flow — user enters email, we complete sign-in
+  document.getElementById('emailForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    emailMsg.className = 'auth-msg';
+    emailMsg.textContent = '';
+    const email = document.getElementById('confirmEmail').value.trim();
+    if (!email) return;
+
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true;
+    btn.textContent = 'Completing…';
+
+    try {
+      await window.TrendzactAuth.completeMagicLinkSignIn(email);
+      window.location.href = '/';
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Complete sign-in';
+      const code = err.code || '';
+      const friendly = {
+        'auth/invalid-email': 'That email address looks invalid.',
+        'auth/expired-action-code': 'This sign-in link has expired. Request a new one.',
+        'auth/invalid-action-code': 'Email does not match. Make sure you enter the same email that requested the link.'
+      }[code] || ('Sign-in failed. ' + (err.message || code));
+      showEmailError(friendly);
+    }
+  });
+</script>
+</body>
+</html>

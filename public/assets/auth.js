@@ -23,7 +23,10 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {
   getFirestore,
@@ -41,7 +44,8 @@ import {
 const PUBLIC_PAGES = new Set([
   '/login.html', '/login',
   '/set-password.html', '/set-password',
-  '/logout.html', '/logout'
+  '/logout.html', '/logout',
+  '/verify-link.html', '/verify-link'
 ]);
 
 function isPublicPage(pathname) {
@@ -109,6 +113,43 @@ window.TrendzactAuth = {
   /** Send a password-reset email to the given address. */
   async sendResetEmail(email) {
     await sendPasswordResetEmail(auth, email);
+  },
+
+  /**
+   * Send a passwordless sign-in link to the given email.
+   * When the user clicks the link, they'll land on /verify-link.html
+   * which completes the sign-in. The email address is stored in
+   * localStorage to finish the handshake on the same device.
+   */
+  async sendMagicLink(email) {
+    const actionCodeSettings = {
+      url: window.location.origin + '/verify-link.html',
+      handleCodeInApp: true
+    };
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    // Save the email so we can complete sign-in on the same device
+    // without asking again. Cleared after successful sign-in.
+    window.localStorage.setItem('trendzactEmailForSignIn', email);
+  },
+
+  /** True if the current URL is a valid Firebase sign-in link. */
+  isSignInLink(url) {
+    return isSignInWithEmailLink(auth, url || window.location.href);
+  },
+
+  /**
+   * Complete the magic-link sign-in. If email was saved in localStorage
+   * (same device), uses it automatically. Otherwise the caller must
+   * pass the email in.
+   */
+  async completeMagicLinkSignIn(email) {
+    const finalEmail = email || window.localStorage.getItem('trendzactEmailForSignIn');
+    if (!finalEmail) {
+      throw new Error('email-required');
+    }
+    const cred = await signInWithEmailLink(auth, finalEmail, window.location.href);
+    window.localStorage.removeItem('trendzactEmailForSignIn');
+    return cred;
   }
 };
 
