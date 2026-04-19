@@ -90,7 +90,7 @@ function renderProductCard(card) {
   const safeId = escapeHtml(card.id);
 
   return `
-    <article class="product-card" id="${safeId}">
+    <article class="product-card" id="${safeId}" data-category="${escapeHtml(cat)}">
       <div class="product-card-head">
         <span class="${tagClass}">${escapeHtml(cat)}</span>
         <h3>${escapeHtml(card.title)}</h3>
@@ -116,7 +116,7 @@ function renderCategoryGroup(category, cards) {
   if (!cards.length) return '';
   const meta = CATEGORY_LABELS[category] || { label: category };
   return `
-    <section class="product-category">
+    <section class="product-category" data-category="${escapeHtml(category)}">
       <h2 class="product-category-title">${escapeHtml(meta.label)}</h2>
       <div class="product-grid">
         ${cards.map(renderProductCard).join('\n')}
@@ -189,11 +189,47 @@ async function handleAssetClick(e) {
 }
 
 // ----------------------------------------------------------------------
+// Filter — category chips only
+// ----------------------------------------------------------------------
+let activeCategory = 'all';
+
+function applyFilters() {
+  const cards = document.querySelectorAll('.product-card');
+  const sectionsVisible = new Set();
+
+  cards.forEach(card => {
+    const cat = (card.dataset.category || '').toUpperCase();
+    const show = activeCategory === 'all' || cat === activeCategory;
+    card.style.display = show ? '' : 'none';
+    if (show) sectionsVisible.add(cat);
+  });
+
+  // Hide category section headers that have no visible cards
+  document.querySelectorAll('.product-category').forEach(section => {
+    const cat = (section.dataset.category || '').toUpperCase();
+    section.style.display = sectionsVisible.has(cat) ? '' : 'none';
+  });
+}
+
+function wireFilters() {
+  const chips = document.querySelectorAll('[data-product-filter]');
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeCategory = chip.dataset.productFilter;
+      applyFilters();
+    });
+  });
+}
+
+// ----------------------------------------------------------------------
 // Init
 // ----------------------------------------------------------------------
 function init() {
   renderAllProducts();
   document.addEventListener('click', handleAssetClick);
+  wireFilters();
 }
 
 if (document.readyState === 'loading') {
