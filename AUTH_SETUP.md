@@ -9,8 +9,18 @@ Partners Portal authentication is now wired up. Before it works end-to-end, thre
 1. Go to **https://console.firebase.google.com/project/trendzact-partners-001/authentication/providers**
 2. If prompted, click **Get started**
 3. In the providers list, click **Email/Password**
-4. Toggle **Enable** ON (leave "Email link" off — we're using password flow)
-5. Click **Save**
+4. Toggle **Enable** ON
+5. **Also toggle ON "Email link (passwordless sign-in)"** — this enables the "Email me a sign-in link" button
+6. Click **Save**
+
+### Step 1a — Authorize the web.app domain for email links
+
+Firebase only sends sign-in links that land on domains you've allowlisted:
+
+1. Still in **Authentication**, click the **Settings** tab
+2. Scroll to **Authorized domains**
+3. Confirm `trendzact-partners-001.web.app` is listed (it usually is by default)
+4. If you're using a custom domain later (e.g. `partners.trendzact.com`), add it here too
 
 ### Step 2 — Register a Web app and copy client config
 
@@ -43,21 +53,19 @@ While Increment 2 (the `/api/admin/create-user` endpoint) is being built, you ca
 
 1. Go to **https://console.firebase.google.com/project/trendzact-partners-001/authentication/users**
 2. Click **Add user**
-3. Enter an email and any password (you'll change it on first login)
-4. Click **Add user**
+3. Enter the user's email
+4. For password: **enter any random string** — the user will never see or need it. Firebase requires a password at creation; our flow immediately sends a reset email, so this value is throwaway.
+5. Click **Add user**
 
-To mark the user as "must reset password on first login," you need a Firestore document at `/users/{uid}` with `mustResetPassword: true`. For now, either:
+**To force the user onto the password-setup flow:**
 
-- Skip the Firestore doc (user logs in with the password you set, lands on portal immediately — no forced reset)
-- Or manually create the doc in Firestore console:
-  1. Go to **Firestore → Start collection → `users`**
-  2. Document ID: paste the **UID** from the Authentication tab (not the email)
-  3. Fields:
-     - `email` (string): the user's email
-     - `mustResetPassword` (boolean): `true`
-     - `role` (string): leave as `null` for now (Increment 2 adds role enforcement)
+After creating the user, you have two options:
 
-Increment 2 will automate all of this via a Cloud Function.
+**Option A (simpler) — Click "Reset password" on the user row.** Firebase sends them the reset-link email directly. User clicks it, sets their password, signs in.
+
+**Option B (what the production flow will do)** — Create a Firestore `users/{uid}` doc with `mustResetPassword: true`. On first login, the user gets bounced to `/set-password.html`, which is a single-button page that fires the reset email. Same outcome, but the user drives it from inside the portal instead of from an admin email.
+
+For Increment 1 testing, Option A is faster. Increment 2's admin API will automate Option B.
 
 ## Testing the login flow
 

@@ -20,9 +20,6 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
-  updatePassword,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
   sendPasswordResetEmail,
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
@@ -31,9 +28,7 @@ import {
 import {
   getFirestore,
   doc,
-  getDoc,
-  updateDoc,
-  serverTimestamp
+  getDoc
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 // --------------------------------------------------
@@ -85,29 +80,6 @@ window.TrendzactAuth = {
   async signOutAndRedirect() {
     try { await signOut(auth); } catch (e) { console.warn(e); }
     window.location.href = '/login.html';
-  },
-
-  /**
-   * Change password for currently signed-in user. Requires current password
-   * for re-authentication (Firebase security requirement).
-   */
-  async changePassword(currentPassword, newPassword) {
-    const user = auth.currentUser;
-    if (!user) throw new Error('Not signed in');
-    const credential = EmailAuthProvider.credential(user.email, currentPassword);
-    await reauthenticateWithCredential(user, credential);
-    await updatePassword(user, newPassword);
-
-    // Clear the mustResetPassword flag in Firestore
-    try {
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        mustResetPassword: false,
-        passwordSetAt: serverTimestamp()
-      });
-    } catch (e) {
-      console.warn('[Trendzact Auth] Could not update user doc after password change', e);
-    }
   },
 
   /** Send a password-reset email to the given address. */
