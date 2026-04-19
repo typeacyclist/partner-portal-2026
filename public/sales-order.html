@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sales Order · Trendzact Partners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/styles.css" />
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<main class="page-shell">
+  <nav class="breadcrumb"><a href="/">Home</a><span></span><a href="#" aria-current="page">Sales Order</a></nav>
+
+  <header class="page-head">
+    <span class="eyebrow">Partner Tool · 04</span>
+    <h1>Sales Order Procurement</h1>
+    <p class="lede">Convert a closed-won opportunity into a provisioned tenant. All orders route through Trendzact Deal Desk and Partner Ops.</p>
+    
+  </header>
+
+
+  <section class="section">
+    <h2>Order Summary</h2>
+    <p class="section-sub">Convert a closed-won opportunity into a provisioned tenant. Route through licensing, provisioning, and partner ops.</p>
+
+    <form class="card" style="padding:28px;">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Partner</label>
+          <input type="text" value="Reseller Demo Partner" readonly style="background:var(--bg-soft);" />
+        </div>
+        <div class="form-field">
+          <label>Opportunity ID</label>
+          <input type="text" placeholder="OPP-00000-0000" />
+        </div>
+        <div class="form-field full">
+          <label>End Customer Legal Entity</label>
+          <input type="text" placeholder="Full legal entity name" />
+        </div>
+        <div class="form-field">
+          <label>Billing Contact Name</label>
+          <input type="text" />
+        </div>
+        <div class="form-field">
+          <label>Billing Email</label>
+          <input type="email" />
+        </div>
+        <div class="form-field full">
+          <label>Billing Address</label>
+          <input type="text" />
+        </div>
+        <div class="form-field">
+          <label>Term Length</label>
+          <select>
+            <option>12 months</option>
+            <option>24 months</option>
+            <option>36 months</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Start Date</label>
+          <input type="date" />
+        </div>
+        <div class="form-field">
+          <label>Licensed Users</label>
+          <input type="number" />
+        </div>
+        <div class="form-field">
+          <label>Deployment Region</label>
+          <select><option>North America</option><option>EMEA</option><option>APAC</option><option>LATAM</option></select>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <section class="section">
+    <h2>Line Items</h2>
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>SKU</th><th>Description</th><th>Qty</th><th>Term</th><th>Unit / mo</th><th>Line Total</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag tag-solid">TZ-CORE</span></td><td>GRC1 Core (required)</td><td>1,000</td><td>12 mo</td><td>$12.00</td><td>$144,000</td></tr>
+          <tr><td><span class="tag">TZ-DLP</span></td><td>Edge DLP module</td><td>1,000</td><td>12 mo</td><td>$11.00</td><td>$132,000</td></tr>
+          <tr><td><span class="tag">TZ-ITM</span></td><td>Insider Threat Management</td><td>1,000</td><td>12 mo</td><td>$10.00</td><td>$120,000</td></tr>
+          <tr><td><span class="tag">TZ-SIA</span></td><td>Session Identity Assurance</td><td>1,000</td><td>12 mo</td><td>$9.00</td><td>$108,000</td></tr>
+          <tr><td><span class="tag">TZ-MS-IRM</span></td><td>Managed IRM Essentials</td><td>1,000</td><td>12 mo</td><td>$4.00</td><td>$48,000</td></tr>
+        </tbody>
+        <tfoot>
+          <tr style="font-weight:600; background:var(--tint-light);"><td colspan="5" style="text-align:right;">Annual Contract Value</td><td style="color:var(--dark-green); font-size:16px;">$552,000</td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Procurement &amp; Provisioning Workflow</h2>
+    <div class="card-grid four">
+      <div class="card">
+        <span class="tag-gray tag">STEP 01</span>
+        <h3>Partner Submits</h3>
+        <p>Partner signs and submits the order through this portal.</p>
+      </div>
+      <div class="card">
+        <span class="tag-gray tag">STEP 02</span>
+        <h3>Deal Desk Review</h3>
+        <p>Pricing, term, and compliance review within 1 business day.</p>
+      </div>
+      <div class="card">
+        <span class="tag-gray tag">STEP 03</span>
+        <h3>Licensing &amp; Provisioning</h3>
+        <p>Tenant stand-up, license allocation, and admin handoff.</p>
+      </div>
+      <div class="card">
+        <span class="tag-gray tag">STEP 04</span>
+        <h3>Kickoff &amp; Enablement</h3>
+        <p>Customer Success schedules deployment kickoff with partner.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <button class="btn btn-primary btn-lg">Submit Sales Order</button>
+    <button class="btn btn-ghost">Save as Draft</button>
+  </div>
+
+</main>
+
+<div id="site-footer"></div>
+
+<script src="/assets/header.js"></script>
+<script src="/assets/footer.js"></script>
+<script src="/assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Solution Builder · Trendzact Partners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/styles.css" />
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<main class="page-shell">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a><span></span><a href="#" aria-current="page">Solution Builder</a>
+  </nav>
+
+  <header class="page-head">
+    <span class="eyebrow">Partner Tool · 01</span>
+    <h1>Solution Builder</h1>
+    <p class="lede">Info-search across Solutions, Use Cases, Products, and Ideal Buyers. Filter and select cards to assemble a tailored recommendation you can export to a proposal.</p>
+    <div class="page-actions">
+      <a href="/proposal-builder.html" class="btn btn-primary">Continue to Proposal →</a>
+      <a href="#" class="btn btn-ghost">Save selection</a>
+    </div>
+  </header>
+
+  <!-- Search & filter bar -->
+  <section class="search-box">
+    <input class="search-input" type="search" data-solution-search placeholder="Search solutions, use cases, products, or buyer titles..." />
+    <div class="filter-chips">
+      <button class="chip active" data-filter-chip="all">All</button>
+      <button class="chip" data-filter-chip="solution">Solutions</button>
+      <button class="chip" data-filter-chip="usecase">Use Cases</button>
+      <button class="chip" data-filter-chip="product">Products</button>
+      <button class="chip" data-filter-chip="buyer">Ideal Buyers</button>
+    </div>
+  </section>
+
+  <!-- Cards grid -->
+  <section>
+    <div class="card-grid">
+
+      <!-- SOLUTIONS -->
+      <div class="card" data-solution-card data-type="solution">
+        <span class="tag tag-solid">SOLUTION</span>
+        <h3>Insider Risk &amp; Data Protection</h3>
+        <p>Detect and prevent insider-driven exposure in real time — combining behavior, sensitivity context, and edge enforcement.</p>
+        <div><span class="tag">Edge DLP</span><span class="tag">ITM</span><span class="tag">SIA</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="solution">
+        <span class="tag tag-solid">SOLUTION</span>
+        <h3>Workforce Intelligence &amp; HR Analytics</h3>
+        <p>Privacy-aware insight into productivity, focus, engagement, and conduct risk through objective behavioral context.</p>
+        <div><span class="tag">GRC1 Core</span><span class="tag">BI</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="solution">
+        <span class="tag tag-solid">SOLUTION</span>
+        <h3>Identity, Access &amp; Workspace Security</h3>
+        <p>Identity assurance, workspace controls, and endpoint context to reduce risk after login and across the physical environment.</p>
+        <div><span class="tag">SIA</span><span class="tag">SWA</span><span class="tag">SVM</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="solution">
+        <span class="tag tag-solid">SOLUTION</span>
+        <h3>Audit Readiness &amp; Regulatory Adherence</h3>
+        <p>From audit scramble to continuous readiness with governed evidence, policy workflows, and traceability.</p>
+        <div><span class="tag">GRC1 Core</span><span class="tag">MSR</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="solution">
+        <span class="tag tag-solid">SOLUTION</span>
+        <h3>Enterprise Risk &amp; Ecosystem Oversight</h3>
+        <p>Endpoint, workspace, and behavioral signals for supplier, third-party, shadow IT, and operational risk.</p>
+        <div><span class="tag">ITM</span><span class="tag">Edge DLP</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="solution">
+        <span class="tag tag-solid">SOLUTION</span>
+        <h3>Executive Governance &amp; Specialized Controls</h3>
+        <p>Board-level visibility, privileged user monitoring, and high-assurance controls for specialized environments.</p>
+        <div><span class="tag">MSR</span><span class="tag">ITM</span></div>
+      </div>
+
+      <!-- USE CASES -->
+      <div class="card" data-solution-card data-type="usecase">
+        <span class="tag">USE CASE</span>
+        <h3>Clear Desk Compliance</h3>
+        <p>Continuous workspace validation for sensitive paper, devices, and unauthorized observers in remote and hybrid environments.</p>
+        <div><span class="tag tag-gray">Secure Workspaces Anywhere</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="usecase">
+        <span class="tag">USE CASE</span>
+        <h3>Advanced Data Exfiltration Prevention</h3>
+        <p>Visual, clipboard, USB, and cross-display exposure prevention with real-time masking and interruption at the endpoint.</p>
+        <div><span class="tag tag-gray">Edge DLP</span><span class="tag tag-gray">ITM</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="usecase">
+        <span class="tag">USE CASE</span>
+        <h3>Continuous Identity Assurance</h3>
+        <p>Risk-gated biometric step-up for sensitive activity — reduces credential sharing and session misuse.</p>
+        <div><span class="tag tag-gray">Session Identity Assurance</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="usecase">
+        <span class="tag">USE CASE</span>
+        <h3>Secure Virtual Meetings</h3>
+        <p>Meeting-aware masking, watermarking, recording triggers, and screenshot control for collaboration environments.</p>
+        <div><span class="tag tag-gray">Secure Virtual Meetings</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="usecase">
+        <span class="tag">USE CASE</span>
+        <h3>Privileged User Monitoring</h3>
+        <p>Governed, attributable oversight for admin, engineering, and executive accounts with explainable detection logic.</p>
+        <div><span class="tag tag-gray">ITM</span><span class="tag tag-gray">MSR</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="usecase">
+        <span class="tag">USE CASE</span>
+        <h3>Contact Center Compliance</h3>
+        <p>Screen and session recording, identity confidence, and PII masking for BPO and regulated contact operations.</p>
+        <div><span class="tag tag-gray">MSR</span><span class="tag tag-gray">SIA</span><span class="tag tag-gray">Edge DLP</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="usecase">
+        <span class="tag">USE CASE</span>
+        <h3>DLP Augmentation</h3>
+        <p>Add real-time edge enforcement and behavioral context to existing Microsoft Purview or legacy DLP investments.</p>
+        <div><span class="tag tag-gray">Edge DLP</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="usecase">
+        <span class="tag">USE CASE</span>
+        <h3>Audit Trail Automation</h3>
+        <p>Policy-bound records with evidence handling, case workflows, and control execution visibility.</p>
+        <div><span class="tag tag-gray">GRC1 Core</span></div>
+      </div>
+
+      <!-- PRODUCTS -->
+      <div class="card" data-solution-card data-type="product">
+        <span class="tag">PRODUCT</span>
+        <h3>GRC1 Core</h3>
+        <p>Required foundation: policies, telemetry, detection, scoring, workflows, playbooks, evidence, and reporting.</p>
+        <a href="/products.html#core" class="link-arrow">Product details →</a>
+      </div>
+
+      <div class="card" data-solution-card data-type="product">
+        <span class="tag">PRODUCT</span>
+        <h3>Secure Workspaces Anywhere</h3>
+        <p>Workspace object detection, observer detection, unattended sessions, and clear desk enforcement.</p>
+        <a href="/products.html#swa" class="link-arrow">Product details →</a>
+      </div>
+
+      <div class="card" data-solution-card data-type="product">
+        <span class="tag">PRODUCT</span>
+        <h3>Session Identity Assurance</h3>
+        <p>Facial biometric authentication as a risk-based MFA factor, continuous confidence, liveness, and identity drift.</p>
+        <a href="/products.html#sia" class="link-arrow">Product details →</a>
+      </div>
+
+      <div class="card" data-solution-card data-type="product">
+        <span class="tag">PRODUCT</span>
+        <h3>Multi-Screen Recording</h3>
+        <p>Synchronized evidence across single- and multi-display workstations with policy-bound capture.</p>
+        <a href="/products.html#msr" class="link-arrow">Product details →</a>
+      </div>
+
+      <div class="card" data-solution-card data-type="product">
+        <span class="tag">PRODUCT</span>
+        <h3>Edge DLP</h3>
+        <p>Visual, behavioral, and label-aware exposure prevention at the endpoint with masking and interruption.</p>
+        <a href="/products.html#edge-dlp" class="link-arrow">Product details →</a>
+      </div>
+
+      <div class="card" data-solution-card data-type="product">
+        <span class="tag">PRODUCT</span>
+        <h3>Insider Threat Management</h3>
+        <p>Deterministic detection, explainable signatures, risk scoring, case workflows, and governed response playbooks.</p>
+        <a href="/products.html#itm" class="link-arrow">Product details →</a>
+      </div>
+
+      <div class="card" data-solution-card data-type="product">
+        <span class="tag">PRODUCT</span>
+        <h3>Secure Virtual Meetings</h3>
+        <p>Meeting-aware masking, dynamic watermarking, and identity-aware controls for sensitive collaboration.</p>
+        <a href="/products.html#svm" class="link-arrow">Product details →</a>
+      </div>
+
+      <!-- BUYERS -->
+      <div class="card" data-solution-card data-type="buyer">
+        <span class="tag">IDEAL BUYER</span>
+        <h3>CISO / Security Leadership</h3>
+        <p>Consolidate fragmented insider risk, DLP, and workspace tooling into one operating model with edge enforcement.</p>
+        <div><span class="tag tag-gray">Insider Risk</span><span class="tag tag-gray">Data Protection</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="buyer">
+        <span class="tag">IDEAL BUYER</span>
+        <h3>Chief Compliance Officer</h3>
+        <p>Continuous audit readiness, policy-bound evidence, and governance workflows across distributed workforces.</p>
+        <div><span class="tag tag-gray">Audit Readiness</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="buyer">
+        <span class="tag">IDEAL BUYER</span>
+        <h3>Head of IAM / Zero Trust</h3>
+        <p>Answer "who is actually present" during sensitive activity with risk-gated biometric step-up.</p>
+        <div><span class="tag tag-gray">Identity Assurance</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="buyer">
+        <span class="tag">IDEAL BUYER</span>
+        <h3>SOC / Security Operations</h3>
+        <p>Reduce false positives, improve triage quality, and add edge enforcement to existing detection pipelines.</p>
+        <div><span class="tag tag-gray">ITM</span><span class="tag tag-gray">Case Management</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="buyer">
+        <span class="tag">IDEAL BUYER</span>
+        <h3>VP Risk / ERM Lead</h3>
+        <p>Third-party, operational, and ecosystem risk visibility backed by endpoint and behavioral signal collection.</p>
+        <div><span class="tag tag-gray">Enterprise Risk</span></div>
+      </div>
+
+      <div class="card" data-solution-card data-type="buyer">
+        <span class="tag">IDEAL BUYER</span>
+        <h3>VP People / HR Analytics</h3>
+        <p>Objective workforce intelligence, conduct risk signals, and productivity trending — privacy-aware by design.</p>
+        <div><span class="tag tag-gray">Workforce Intelligence</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Next step panel -->
+  <section class="section" style="margin-top:56px;">
+    <div class="card" style="background:var(--tint-light); border-color:var(--med-green);">
+      <span class="next-step">Next Step</span>
+      <h3 style="margin-top:8px;">Turn your selection into a priced proposal.</h3>
+      <p>Once you've assembled the solution, open the Proposal Builder to capture opportunity details and generate packaged pricing.</p>
+      <a href="/proposal-builder.html" class="btn btn-primary">Open Proposal Builder →</a>
+    </div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="/assets/header.js"></script>
+<script src="/assets/footer.js"></script>
+<script src="/assets/app.js"></script>
+</body>
+</html>

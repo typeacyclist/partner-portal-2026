@@ -1,0 +1,47 @@
+# ==========================================
+# Trendzact Partners Portal — .gitignore
+# ==========================================
+
+# Dependencies
+node_modules/
+functions/node_modules/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+*-debug.log
+
+# Secrets & environment
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+service-account*.json
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Testing / coverage
+coverage/
+.nyc_output/
+
+# Build output (none expected, but just in case)
+dist/
+build/
+.cache/

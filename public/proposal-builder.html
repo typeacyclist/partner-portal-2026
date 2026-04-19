@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Proposal Builder · Trendzact Partners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/styles.css" />
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  .proposal-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .price-card {
+    background: var(--dark-gray);
+    color: #fff;
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    position: sticky;
+    top: 110px;
+  }
+  .price-card h3 {
+    font-family: var(--ff-body);
+    color: #fff;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: rgba(255,255,255,0.72);
+  }
+  .price-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.1); align-items: baseline; }
+  .price-row:last-of-type { border: none; }
+  .price-label { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .price-value { font-family: var(--ff-display); font-size: 22px; font-weight: 500; color: #fff; }
+  .price-row.highlight .price-value { font-size: 32px; color: var(--tint-dark); }
+  .module-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; }
+  .module-check { display: flex; align-items: start; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+  .module-check:hover { border-color: var(--med-green); background: var(--tint-light); }
+  .module-check input { margin-top: 2px; accent-color: var(--dark-green); }
+  .module-check input:checked ~ .mc-body .mc-name { color: var(--dark-green); }
+  .module-check:has(input:checked) { border-color: var(--dark-green); background: var(--tint-light); }
+  .mc-name { font-weight: 600; font-size: 14px; color: var(--dark-gray); display: block; }
+  .mc-desc { font-size: 12px; color: var(--med-gray); display: block; margin-top: 2px; }
+  .service-radio { display: flex; gap: 8px; flex-wrap: wrap; }
+  .service-radio label { flex: 1 1 calc(50% - 4px); padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .service-radio label:has(input:checked) { border-color: var(--dark-green); background: var(--tint-light); color: var(--dark-green); font-weight: 600; }
+  .service-radio input { accent-color: var(--dark-green); }
+  @media (max-width: 1024px) { .proposal-layout { grid-template-columns: 1fr; } .price-card { position: static; } }
+</style>
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<main class="page-shell">
+  <nav class="breadcrumb"><a href="/">Home</a><span></span><a href="#" aria-current="page">Proposal Builder</a></nav>
+
+  <header class="page-head">
+    <span class="eyebrow">Partner Tool · 03</span>
+    <h1>Proposal Builder with Pricing</h1>
+    <p class="lede">Capture the opportunity, pick the packaging, and generate a proposal draft with indicative pricing. All fields sync to your partner pipeline.</p>
+  </header>
+
+  <form id="proposalForm" class="proposal-layout">
+    <div>
+      <!-- Opportunity Quick Intake -->
+      <section class="section">
+        <h2>Opportunity Quick Intake</h2>
+        <p class="section-sub">The minimum information needed to generate a proposal and sync with the partner pipeline.</p>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="company">Company Name</label>
+            <input id="company" name="company" type="text" placeholder="e.g. Acme Financial Services" />
+          </div>
+          <div class="form-field">
+            <label for="contact">Contact Name</label>
+            <input id="contact" name="contact" type="text" placeholder="First &amp; last name" />
+          </div>
+          <div class="form-field full">
+            <label for="usecase">Primary Use Case</label>
+            <select id="usecase" name="usecase">
+              <option value="">Select a primary use case…</option>
+              <option>Insider Threat Detection &amp; Response</option>
+              <option>Advanced Data Exfiltration Prevention</option>
+              <option>Clear Desk &amp; Workspace Compliance</option>
+              <option>Continuous Identity Assurance</option>
+              <option>Secure Virtual Meetings</option>
+              <option>Contact Center / BPO Compliance</option>
+              <option>Privileged User Monitoring</option>
+              <option>DLP Augmentation (Purview / Legacy DLP)</option>
+              <option>Audit Readiness &amp; Regulatory Adherence</option>
+              <option>Workforce Intelligence &amp; HR Analytics</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="stage">Deal Stage</label>
+            <select id="stage" name="stage">
+              <option>Discovery</option>
+              <option>Qualification</option>
+              <option>Technical Evaluation</option>
+              <option>Business Case</option>
+              <option>Proposal</option>
+              <option>Negotiation</option>
+              <option>Closed Won</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="close">Estimated Close Date</label>
+            <input id="close" name="close" type="date" />
+          </div>
+          <div class="form-field">
+            <label for="arr">Est. US$ Annual Recurring</label>
+            <input id="arr" name="arr" type="text" placeholder="e.g. 480,000" />
+          </div>
+          <div class="form-field">
+            <label for="estUsers">Estimated Users / Endpoints</label>
+            <input id="estUsers" name="estUsers" type="number" min="0" placeholder="e.g. 2500" value="1000" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Platform foundation -->
+      <section class="section">
+        <h2>Platform Foundation</h2>
+        <p class="section-sub">Every deployment starts with GRC1 Core. Add modules below to match the opportunity.</p>
+
+        <div class="module-grid">
+          <label class="module-check">
+            <input id="modCore" type="checkbox" checked />
+            <span class="mc-body"><span class="mc-name">GRC1 Core (Required)</span><span class="mc-desc">Policy, telemetry, detection, workflows, evidence.</span></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Add-on modules -->
+      <section class="section">
+        <h2>Add-On Modules</h2>
+        <p class="section-sub">Select the control planes the buyer needs.</p>
+
+        <div class="module-grid">
+          <label class="module-check">
+            <input id="modSWA" type="checkbox" />
+            <span class="mc-body"><span class="mc-name">Secure Workspaces Anywhere</span><span class="mc-desc">Clear desk, observer &amp; unattended detection.</span></span>
+          </label>
+          <label class="module-check">
+            <input id="modSIA" type="checkbox" />
+            <span class="mc-body"><span class="mc-name">Session Identity Assurance</span><span class="mc-desc">Risk-gated facial biometric step-up.</span></span>
+          </label>
+          <label class="module-check">
+            <input id="modMSR" type="checkbox" />
+            <span class="mc-body"><span class="mc-name">Multi-Screen Recording</span><span class="mc-desc">Synchronized evidence across displays.</span></span>
+          </label>
+          <label class="module-check">
+            <input id="modDLP" type="checkbox" />
+            <span class="mc-body"><span class="mc-name">Edge DLP</span><span class="mc-desc">Visual, behavioral, label-aware prevention.</span></span>
+          </label>
+          <label class="module-check">
+            <input id="modITM" type="checkbox" />
+            <span class="mc-body"><span class="mc-name">Insider Threat Management</span><span class="mc-desc">Detection, scoring, case workflows, playbooks.</span></span>
+          </label>
+          <label class="module-check">
+            <input id="modSVM" type="checkbox" />
+            <span class="mc-body"><span class="mc-name">Secure Virtual Meetings</span><span class="mc-desc">Meeting-aware masking, watermark, controls.</span></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Service -->
+      <section class="section">
+        <h2>Managed Service Model</h2>
+        <p class="section-sub">Choose how the customer wants to operate the platform.</p>
+
+        <div class="service-radio">
+          <label><input type="radio" name="service" value="self" checked /> Self-Operated</label>
+          <label><input type="radio" name="service" value="essentials" /> Managed IRM Essentials</label>
+          <label><input type="radio" name="service" value="twentyfour" /> Managed IRM 24×7</label>
+          <label><input type="radio" name="service" value="investigations" /> Managed Investigations</label>
+        </div>
+      </section>
+
+      <!-- Notes -->
+      <section class="section">
+        <h2>Notes &amp; Proposal Narrative</h2>
+        <div class="form-grid full">
+          <div class="form-field full">
+            <label for="notes">Context, compliance drivers, competitive landscape</label>
+            <textarea id="notes" name="notes" placeholder="Key buying triggers, incumbent tools, integration requirements..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="button" id="btnDownloadPDF" class="btn btn-primary btn-lg">Download PDF</button>
+        <button type="button" id="btnEmailDraft" class="btn btn-secondary">Email Draft…</button>
+        <button type="button" id="btnEmailDirect" class="btn btn-ghost">Send via Email</button>
+        <a href="/sales-order.html" class="btn btn-ghost" style="margin-left:auto;">Proceed to Sales Order →</a>
+      </div>
+
+      <!-- Status message -->
+      <div id="proposalStatus" style="display:none; margin-top:16px; padding:12px 16px; border-radius:8px; font-size:14px;"></div>
+
+      <!-- Email send modal -->
+      <div id="emailModal" style="display:none; position:fixed; inset:0; background:rgba(53,61,74,0.5); z-index:999; align-items:center; justify-content:center; padding:20px;">
+        <div style="background:#fff; border-radius:12px; max-width:480px; width:100%; padding:28px; box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+          <h3 style="margin:0 0 6px; font-size:20px;">Send proposal by email</h3>
+          <p style="color:var(--med-gray); font-size:14px; margin-bottom:20px;">The PDF will be generated and emailed directly to the recipient, with the deal desk CC'd.</p>
+          <div class="form-field" style="margin-bottom:14px;">
+            <label>Recipient Email</label>
+            <input type="email" id="recipientEmail" placeholder="contact@prospect.com" />
+          </div>
+          <div class="form-field" style="margin-bottom:20px;">
+            <label>Also CC</label>
+            <input type="text" id="ccEmails" placeholder="deal-desk@trendzact.com, partner@reseller.com" value="deal-desk@trendzact.com" />
+          </div>
+          <div style="display:flex; gap:8px; justify-content:flex-end;">
+            <button type="button" class="btn btn-ghost" id="btnCancelEmail">Cancel</button>
+            <button type="button" class="btn btn-primary" id="btnConfirmEmail">Send Proposal</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky price card -->
+    <aside>
+      <div class="price-card">
+        <h3>Indicative Pricing</h3>
+        <div class="price-row">
+          <span class="price-label">Per User / Month</span>
+          <span class="price-value" id="pricePerUser">$12 / user / mo</span>
+        </div>
+        <div class="price-row">
+          <span class="price-label">Monthly Total</span>
+          <span class="price-value" id="priceMonthly">$12,000</span>
+        </div>
+        <div class="price-row highlight">
+          <span class="price-label">Annual Recurring</span>
+          <span class="price-value" id="priceAnnual">$144,000</span>
+        </div>
+        <p style="color:rgba(255,255,255,0.6); font-size:12px; line-height:1.5; margin-top:16px;">
+          Indicative pricing only. Final pricing subject to Trendzact deal desk approval, volume tiers, and managed service scope.
+        </p>
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1);">
+          <span class="next-step" style="color:var(--med-green);">Next Step</span>
+          <p style="color:#fff; margin-top:6px; font-size:14px;">Send to Deal Desk for registration and final quote.</p>
+          <a href="/contact.html" style="color:var(--tint-dark); font-weight:600; font-size:13px;">Contact Deal Desk →</a>
+        </div>
+      </div>
+    </aside>
+  </form>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="/assets/header.js"></script>
+<script src="/assets/footer.js"></script>
+<script src="/assets/app.js"></script>
+<script src="/assets/portal-config.js"></script>
+<script src="/assets/proposal-pdf.js"></script>
+<script>
+  // Status helper
+  function showStatus(msg, kind) {
+    const el = document.getElementById('proposalStatus');
+    if (!el) return;
+    const colors = {
+      success: { bg: '#F0FAF9', border: '#00A398', color: '#00827C' },
+      error:   { bg: '#FEF2F2', border: '#FCA5A5', color: '#991B1B' },
+      info:    { bg: '#F0FAF9', border: '#E5E7EB', color: '#353D4A' }
+    }[kind || 'info'];
+    el.style.display = 'block';
+    el.style.background = colors.bg;
+    el.style.border = '1px solid ' + colors.border;
+    el.style.color = colors.color;
+    el.textContent = msg;
+    setTimeout(() => { el.style.display = 'none'; }, 6000);
+  }
+
+  function validateMinimum() {
+    const company = document.getElementById('company')?.value.trim();
+    if (!company) {
+      showStatus('Please enter a Company Name before generating a proposal.', 'error');
+      document.getElementById('company')?.focus();
+      return false;
+    }
+    return true;
+  }
+
+  // Download PDF
+  document.getElementById('btnDownloadPDF')?.addEventListener('click', () => {
+    if (!validateMinimum()) return;
+    try {
+      const id = window.TrendzactProposal.download();
+      showStatus('Proposal PDF generated (' + id + '). Check your Downloads folder.', 'success');
+    } catch (e) {
+      console.error(e);
+      showStatus('Sorry — PDF generation failed. ' + e.message, 'error');
+    }
+  });
+
+  // Email Draft (downloads PDF + opens default mail client with pre-filled subject/body)
+  document.getElementById('btnEmailDraft')?.addEventListener('click', async () => {
+    if (!validateMinimum()) return;
+    try {
+      const id = await window.TrendzactProposal.emailViaMailto();
+      showStatus('PDF saved to Downloads. Your email client should open — attach the PDF before sending.', 'info');
+    } catch (e) {
+      console.error(e);
+      showStatus('Sorry — draft creation failed. ' + e.message, 'error');
+    }
+  });
+
+  // Email Direct (opens modal → POSTs to backend endpoint)
+  const modal = document.getElementById('emailModal');
+  document.getElementById('btnEmailDirect')?.addEventListener('click', () => {
+    if (!validateMinimum()) return;
+    modal.style.display = 'flex';
+  });
+  document.getElementById('btnCancelEmail')?.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+  document.getElementById('btnConfirmEmail')?.addEventListener('click', async () => {
+    const recipient = document.getElementById('recipientEmail').value.trim();
+    if (!recipient) {
+      alert('Please enter a recipient email.');
+      return;
+    }
+    modal.style.display = 'none';
+    showStatus('Sending proposal to ' + recipient + '…', 'info');
+
+    // TODO: replace with your deployed Firebase Function / Cloud Run endpoint.
+    // The endpoint receives { to, company, contact, proposalId, pdfBase64, pdfFilename, ... }
+    // and sends it via Resend / SendGrid / Gmail API, CC'ing the deal desk.
+    const ENDPOINT = '/api/send-proposal';
+
+    try {
+      await window.TrendzactProposal.emailViaBackend(ENDPOINT, recipient);
+      showStatus('Proposal sent to ' + recipient + '. Deal desk has been CC\'d.', 'success');
+    } catch (e) {
+      console.error(e);
+      // Fall back gracefully if backend isn't wired up yet
+      showStatus('Backend send unavailable — falling back to download + mail draft.', 'info');
+      try {
+        await window.TrendzactProposal.emailViaMailto();
+      } catch (e2) {
+        showStatus('Sorry — send failed. ' + e.message, 'error');
+      }
+    }
+  });
+</script>
+</body>
+</html>
