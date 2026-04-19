@@ -36,14 +36,16 @@ import {
 // --------------------------------------------------
 // Config
 // --------------------------------------------------
+// Firebase Hosting's cleanUrls setting strips .html extensions,
+// so we normalize paths and check against both forms.
 const PUBLIC_PAGES = new Set([
-  '/login.html',
-  '/set-password.html',
-  '/logout.html'
+  '/login.html', '/login',
+  '/set-password.html', '/set-password',
+  '/logout.html', '/logout'
 ]);
 
 function isPublicPage(pathname) {
-  const p = (pathname || '/').toLowerCase();
+  const p = (pathname || '/').toLowerCase().replace(/\/+$/, '') || '/';
   return PUBLIC_PAGES.has(p);
 }
 
@@ -166,8 +168,18 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) {
     // Not signed in
     if (!onPublicPage) {
-      const here = encodeURIComponent(path + window.location.search);
-      window.location.href = `/login.html?redirect=${here}`;
+      // Sanitize current path — if it's already a redirect chain, just send
+      // them to plain login without a new redirect param (breaks any loop).
+      const current = path + window.location.search;
+      const looksLikeRedirectChain =
+        /[?&]redirect=/.test(current) ||
+        /\/login/i.test(path);
+      if (looksLikeRedirectChain) {
+        window.location.href = '/login.html';
+      } else {
+        const here = encodeURIComponent(current);
+        window.location.href = `/login.html?redirect=${here}`;
+      }
       return;
     }
     updateUtilityBar(null);

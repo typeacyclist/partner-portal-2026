@@ -89,7 +89,11 @@
 
   // If already signed in, skip the login page
   const params = new URLSearchParams(window.location.search);
-  const redirectTo = params.get('redirect') || '/';
+  let redirectTo = params.get('redirect') || '/';
+  // Don't let a bad redirect param send us back to login (loop guard)
+  if (/\/login/i.test(redirectTo) || /\/set-password/i.test(redirectTo)) {
+    redirectTo = '/';
+  }
   const waitForAuth = setInterval(() => {
     if (!window.TrendzactAuth) return;
     clearInterval(waitForAuth);
