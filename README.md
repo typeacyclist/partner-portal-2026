@@ -146,3 +146,5 @@ The Cloud Function has a `TODO` for Firebase Auth ID token verification. Uncomme
 All colors applied identically in the generated PDF (see `C` palette constant in `proposal-pdf.js`).
 
 
+
+
