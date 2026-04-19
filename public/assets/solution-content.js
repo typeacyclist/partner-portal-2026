@@ -1,37 +1,56 @@
 // ========================================================================
-// TRENDZACT PARTNERS — SOLUTION BUILDER CONTENT
+// TRENDZACT PARTNERS — SOLUTION BUILDER + PRODUCTS CONTENT
 // ========================================================================
 //
-// Edit this file to add/update/remove cards on the Solution Builder page.
-// No other file needs changing — the render script reads from here.
+// Single source of truth for cards on:
+//   - /solution-builder  (uses: title, description, tags, asset fields)
+//   - /products          (uses: title, summary, capabilities, outcomes,
+//                         category, asset fields)
 //
-// ---------- Asset fields (all optional per card) ----------
+// Edit this file to add/update/remove cards. No other file needs changing.
 //
-//   moreInfoUrl      — link text "More Info →" at bottom of card.
-//                      Can be a page URL or "#" if none. Omit to hide.
+// ---------- Common card fields ----------
 //
-//   technicalReport  — Firebase Storage path OR a direct https:// URL.
-//                      Rendered as a document icon. Omit to hide icon.
-//                      Example (Storage): "reports/insider-risk-brief.pdf"
-//                      Example (URL):     "https://example.com/report.pdf"
+//   id              — unique slug (letters, digits, dashes)
+//   title           — heading shown on the card
+//   tags            — small chip labels (Solution Builder)
+//   moreInfoUrl     — "More Info →" link target. Use "#" or omit to hide.
 //
-//   infographic      — Same format as technicalReport. Image icon.
-//                      Omit to hide icon.
+// ---------- Asset fields (all optional, both pages) ----------
 //
-//   vimeoUrl         — Full Vimeo URL. Play icon. Omit to hide icon.
-//                      Example: "https://vimeo.com/123456789"
+//   technicalReport  — Firebase Storage path OR https:// URL → Report icon
+//   infographic      — Firebase Storage path OR https:// URL → Infographic icon
+//   vimeoUrl         — Vimeo URL                              → Video icon
+//
+//   Omit a field to hide that icon. Don't use empty strings.
+//
+// ---------- Solution Builder fields ----------
+//
+//   description     — 1-3 sentences shown on the Solution Builder card.
+//
+// ---------- Products page fields (only on items in `products`) ----------
+//
+//   category        — "CORE" | "MODULE" | "ENHANCE"
+//                     Used as the pill tag at top of the Products card.
+//                     Cards are grouped on the page in this order.
+//
+//   summary         — Single short sentence under the title on the Products
+//                     page. Different from `description`: shorter, snappier.
+//
+//   capabilities    — Array of strings rendered as the "Key Capabilities"
+//                     bullet list. 4-8 items is the sweet spot.
+//
+//   outcomes        — Array of strings rendered as the "Business Outcomes"
+//                     bullet list. 3-5 items.
 //
 // ---------- Tips for editors ----------
 //
-//   - As real assets become available, add them to the right card by
-//     pasting the Firebase Storage path (or URL) into technicalReport /
-//     infographic / vimeoUrl.
-//   - Prefer to OMIT a field rather than leave an empty string. An empty
-//     string will render a broken icon.
-//   - The SAMPLE_* constants below are kept so you can drop a placeholder
-//     back onto any card temporarily by writing e.g. `technicalReport: SAMPLE_REPORT`.
+//   - To add a new ENHANCE-tier product, copy a MODULE block, change the
+//     id/title/category/etc., paste into the products array.
+//   - The SAMPLE_* constants below let you drop placeholder assets onto
+//     a card temporarily: e.g. `technicalReport: SAMPLE_REPORT`
 //   - Missing commas between items are the #1 cause of breakage — when in
-//     doubt, copy an existing block and edit it rather than writing from scratch.
+//     doubt, copy an existing block and edit it.
 // ========================================================================
 
 // Sample asset paths — available as placeholders if you need one temporarily.
@@ -158,55 +177,173 @@ window.SOLUTION_CONTENT = {
   // ========================================================================
   // PRODUCTS — the modules partners sell
   // ========================================================================
+  // Note: products carry extra fields used only by /products page:
+  //   category, summary, capabilities, outcomes
+  // The Solution Builder ignores those; it only reads title/description/tags.
   products: [
     {
       id: 'grc1-core',
       title: 'GRC1 Core',
+      category: 'CORE',
       description: 'Required foundation: policies, telemetry, detection, scoring, workflows, playbooks, evidence, and reporting.',
+      summary: 'The required operational and governance foundation for every GRC1 deployment.',
       tags: [],
-      moreInfoUrl: '/products.html#core'
+      moreInfoUrl: '/products.html#core',
+      capabilities: [
+        'Policy and use-case configuration',
+        'Telemetry ingestion and normalization',
+        'Detection and scoring frameworks',
+        'Case and triage workflows',
+        'Playbook governance and execution logging',
+        'Evidence handling and reporting',
+        'RBAC, approvals, and auditability',
+        'Integration framework for connected systems'
+      ],
+      outcomes: [
+        'Consolidate fragmented controls into one operating model',
+        'Improve audit readiness and investigation quality',
+        'Standardize detection-to-action across the program',
+        'Establish the scalable foundation for adding modules'
+      ]
     },
     {
       id: 'swa',
       title: 'Secure Workspaces Anywhere',
+      category: 'MODULE',
       description: 'Workspace object detection, observer detection, unattended sessions, and clear desk enforcement.',
+      summary: 'Continuous workspace compliance for distributed and regulated environments.',
       tags: [],
-      moreInfoUrl: '/products.html#swa'
+      moreInfoUrl: '/products.html#swa',
+      capabilities: [
+        'Workspace object detection',
+        'Observer detection',
+        'Unattended workstation detection',
+        'Clear desk and policy-driven workspace checks',
+        'Workspace risk scoring',
+        'Privacy-aware image handling',
+        'On-screen user prompts and policy notifications'
+      ],
+      outcomes: [
+        'Enforce clear desk and workspace policy at scale',
+        'Detect and deter unauthorized observers',
+        'Strengthen controls in regulated environments',
+        'Protect executive and privileged workspaces'
+      ]
     },
     {
       id: 'sia',
       title: 'Session Identity Assurance',
+      category: 'MODULE',
       description: 'Facial biometric authentication as a risk-based MFA factor, continuous confidence, liveness, and identity drift.',
+      summary: 'Risk-based facial biometric authentication for sensitive activity.',
       tags: [],
-      moreInfoUrl: '/products.html#sia'
+      moreInfoUrl: '/products.html#sia',
+      capabilities: [
+        'Risk-triggered biometric step-up authentication',
+        'Continuous confidence scoring',
+        'Liveness checks',
+        'Session identity drift detection',
+        'Privacy-safe biometric handling',
+        'Audit trails for sensitive access events'
+      ],
+      outcomes: [
+        'Reduce uncertainty about who is actually present after login',
+        'Deter credential sharing and session misuse',
+        'Strengthen Zero Trust and step-up strategies',
+        'Support higher-assurance workflows in regulated environments'
+      ]
     },
     {
       id: 'msr',
       title: 'Multi-Screen Recording',
+      category: 'MODULE',
       description: 'Synchronized evidence across single- and multi-display workstations with policy-bound capture.',
+      summary: 'Defensible, synchronized evidence across single- and multi-display workstations.',
       tags: [],
-      moreInfoUrl: '/products.html#msr'
+      moreInfoUrl: '/products.html#msr',
+      capabilities: [
+        'Single- and multi-display enumeration',
+        'Continuous, burst, and event-based capture modes',
+        'Synchronized cross-display timelines',
+        'Offline buffering and compression',
+        'Intelligent redaction and evidence shaping',
+        'Investigator playback and review'
+      ],
+      outcomes: [
+        'Reduce blind spots in high-value workflows',
+        'Improve evidence quality during investigations',
+        'Support compliance recording requirements',
+        'Strengthen controls for screens and meetings'
+      ]
     },
     {
       id: 'edge-dlp',
       title: 'Edge DLP',
+      category: 'MODULE',
       description: 'Visual, behavioral, and label-aware exposure prevention at the endpoint with masking and interruption.',
+      summary: 'Visual, behavioral, and label-aware exposure prevention at the endpoint.',
       tags: [],
-      moreInfoUrl: '/products.html#edge-dlp'
+      moreInfoUrl: '/products.html#edge-dlp',
+      capabilities: [
+        'Sensitivity-aware enforcement',
+        'Visual exposure intelligence',
+        'Behavior-linked exposure analytics',
+        'Cross-display exposure correlation',
+        'Policy-driven masking, restriction, interruption',
+        'Evidence timelines for review and audit'
+      ],
+      outcomes: [
+        'Reduce false positives with stronger context',
+        'Prevent insider-driven exposure in real time',
+        'Add edge enforcement to existing classification investments',
+        'Extend DLP coverage beyond files in motion'
+      ]
     },
     {
       id: 'itm',
       title: 'Insider Threat Management',
+      category: 'MODULE',
       description: 'Deterministic detection, explainable signatures, risk scoring, case workflows, and governed response playbooks.',
+      summary: 'Deterministic detection, explainable signatures, and governed response.',
       tags: [],
-      moreInfoUrl: '/products.html#itm'
+      moreInfoUrl: '/products.html#itm',
+      capabilities: [
+        'Behavior-driven detections',
+        'Explainable signatures and thresholds',
+        'Risk scoring and prioritization',
+        'Case creation and triage workflows',
+        'Governed response playbooks',
+        'Evidence handling and executive reporting'
+      ],
+      outcomes: [
+        'Reduce mean time to detect and triage',
+        'Improve explainability over black-box analytics',
+        'Strengthen SOC, legal, compliance, and HR coordination',
+        'Build a more defensible insider risk program'
+      ]
     },
     {
       id: 'svm',
       title: 'Secure Virtual Meetings',
+      category: 'MODULE',
       description: 'Meeting-aware masking, dynamic watermarking, and identity-aware controls for sensitive collaboration.',
+      summary: 'Meeting-aware masking, watermarking, and identity-aware collaboration controls.',
       tags: [],
-      moreInfoUrl: '/products.html#svm'
+      moreInfoUrl: '/products.html#svm',
+      capabilities: [
+        'Meeting detection and context awareness',
+        'Screenshare-aware masking',
+        'Dynamic watermarking',
+        'Risk-triggered recording',
+        'Screenshot and exposure controls',
+        'Identity-aware controls for sensitive sharing'
+      ],
+      outcomes: [
+        'Reduce screenshare and recording risk',
+        'Protect high-sensitivity meetings',
+        'Strengthen compliance posture during remote collaboration',
+        'Extend data protection into real collaboration workflows'
+      ]
     }
   ],
 

@@ -996,3 +996,100 @@ p { margin: 0 0 1em; color: var(--dark-gray); }
 @keyframes asset-spin {
   to { transform: rotate(360deg); }
 }
+
+/* ========================================================================
+   Products page — category groups + product cards
+   ======================================================================== */
+.product-category {
+  margin-bottom: 56px;
+}
+.product-category-title {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--med-gray);
+  margin: 0 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.product-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.product-card {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  scroll-margin-top: 90px; /* anchor links land below the sticky header */
+  box-shadow: var(--shadow-sm);
+}
+.product-card-head { margin-bottom: 18px; }
+.product-card-head .tag { margin-bottom: 10px; }
+.product-card-head h3 {
+  font-family: var(--ff-display);
+  font-weight: 500;
+  font-size: 22px;
+  margin: 0 0 4px;
+  color: var(--dark-gray);
+  letter-spacing: -0.01em;
+}
+.product-summary {
+  color: var(--med-gray);
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.product-card-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 36px;
+  padding: 18px 0;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+  margin: 18px 0 14px;
+}
+.product-col h4 {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--med-gray);
+  margin: 0 0 10px;
+  font-weight: 500;
+}
+.product-col .check-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.product-col .check-list li {
+  position: relative;
+  padding-left: 18px;
+  margin: 6px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--dark-gray);
+}
+.product-col .check-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--med-green);
+}
+
+/* On smaller screens, stack capabilities + outcomes */
+@media (max-width: 720px) {
+  .product-card-body {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .product-card { padding: 22px 20px; }
+}
