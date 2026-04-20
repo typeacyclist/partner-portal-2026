@@ -45,3 +45,13 @@ coverage/
 dist/
 build/
 .cache/
+
+# Delivery bundles from Claude — never commit
+/files/
+/partner-portal-*.zip
+/files.zip
+
+# Delivery bundles from Claude — never commit
+/files/
+/partner-portal-*.zip
+/files.zip

@@ -1,63 +1,99 @@
-// Trendzact Partners - Proposal Wizard
+// Trendzact Partners — Proposal Wizard (v5-style, v6 catalog)
 //
-// Track D implementation: 4-step wizard at /proposal that drives the math
-// engine and PDF renderer. Drafts persist to Firestore at users/{uid}/activeProposal/current.
+// Rebuilt against mockup v5 interaction model:
+//   - 4 steps: Proposal Fields | Solution Selectors | Review & Calculate | Save & Submit
+//   - Horizontal step chips, not numbered circles
+//   - Collapsible sections (Required/Modules/Platform/One-Time) with count pills
+//   - Modules rendered as accordions with inline features and nested option rows
+//   - "None needed" acknowledgment checkboxes per optional section
+//   - Field-level inline errors, section-level blockers
+//   - Step 4 = Submit panel with proposal title, CC-to, UUID chip
 //
-// Public surface:
-//   - Page calls window.TrendzactWizard.init() after auth-ready event
-//   - Wizard owns the form state, step nav, SKU card rendering, and the
-//     autosave loop. It calls into TrendzactMath for calculation and
-//     TrendzactProposalRender for PDF generation.
+// Reads the real v6 catalog from /catalog.json. Math is delegated to
+// window.TrendzactMath.calculateProposal. PDF is delegated to
+// window.TrendzactProposalRender.render.
+//
+// Persistence: Firestore autosave to users/{uid}/activeProposal/current
+// Resume-or-fresh modal shows if a prior draft exists.
 
 (function () {
   'use strict';
 
-  // -----------------------------------------------------------
+  // --------------------------------------------------------------
+  // Constants
+  // --------------------------------------------------------------
+  var STEPS = [
+    { id: 'fields',    num: '01', name: 'Proposal Fields' },
+    { id: 'selectors', num: '02', name: 'Solution Selectors' },
+    { id: 'review',    num: '03', name: 'Review & Calculate' },
+    { id: 'submit',    num: '04', name: 'Save & Submit' }
+  ];
+
+  var REQUIRED_STEP1_FIELDS = [
+    'prospectCompany', 'primaryContactName', 'primaryContactRole',
+    'contactEmail', 'companySegment', 'sector', 'expectedLicenseCount',
+    'estDecisionDate', 'termYears', 'solutionChallenge'
+  ];
+
+  // --------------------------------------------------------------
   // State
-  // -----------------------------------------------------------
+  // --------------------------------------------------------------
+  function emptyDraft() {
+    return {
+      // Step 1 — Proposal Fields
+      prospectCompany: '',
+      primaryContactName: '',
+      primaryContactRole: '',
+      contactEmail: '',
+      companySegment: '',
+      sector: 'commercial',
+      expectedLicenseCount: '',
+      estDecisionDate: '',
+      termYears: '',
+      solutionChallenge: '',
+
+      // Step 2 — Solution Selectors
+      sectionOpen: { core: true, modules: true, platform: true, oneTime: true },
+      sectionNone: { modules: false, platform: false, oneTime: false },
+      moduleExpanded: [],        // array of module codes that are open
+      selectedModules: [],       // module codes
+      selectedModuleOptions: [], // option codes
+      selectedPlatform: [],      // platform option codes
+      selectedOneTime: [],       // one-time codes (including INIT-ONBRD which is required)
+
+      // Step 4 — Submit fields
+      proposalTitle: '',
+      ccTo: '',
+
+      // Meta
+      fieldErrors: {},
+      sectionErrors: {},
+      createdAt: null,
+      updatedAt: null
+    };
+  }
+
   var state = {
     catalog: null,
     user: null,
     db: null,
     draft: emptyDraft(),
-    currentStep: 1,
+    step: 0,
     saveTimer: null,
     isSaving: false,
-    lastSaveAt: null,
-    docRef: null,        // Firestore doc reference
+    docRef: null,
+    fsModule: null,
     initialized: false,
-    fsModule: null       // Lazy-loaded firestore module
+    submitResult: null   // { proposalId, filename } after successful render
   };
 
-  function emptyDraft() {
-    return {
-      // Step 1
-      companyName: '',
-      contactName: '',
-      primaryUseCase: '',
-      dealStage: 'Discovery',
-      estimatedCloseDate: '',
-      companySegment: 'core_midmkt',
-      userCount: 1000,
-      contractYears: 1,
-      // Step 2
-      selectedSkuCodes: [],     // codes only; REQUIRED auto-included by math engine
-      // Step 4
-      notes: '',
-      // Meta
-      updatedAt: null,
-      createdAt: null
-    };
-  }
-
-  // -----------------------------------------------------------
+  // --------------------------------------------------------------
   // Init
-  // -----------------------------------------------------------
+  // --------------------------------------------------------------
   async function init() {
     if (state.initialized) return;
     state.initialized = true;
 
-    // Wait for auth, fetch catalog in parallel
     var authReadyPromise = new Promise(function (resolve) {
       if (window.TrendzactAuth && window.TrendzactAuth.currentUser) {
         resolve(window.TrendzactAuth.currentUser);
@@ -78,18 +114,20 @@
       var pair = await Promise.all([authReadyPromise, catalogPromise]);
       state.user = pair[0];
       state.catalog = pair[1];
-      state.db = window.TrendzactAuth.db;
+      state.db = window.TrendzactAuth && window.TrendzactAuth.db;
     } catch (e) {
-      renderFatalError('Could not load proposal builder: ' + e.message);
+      renderFatalError('Could not start the proposal builder: ' + e.message);
       return;
     }
 
-    // Load Firestore module (dynamic import - keeps initial page light if not used)
-    try {
-      state.fsModule = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
-      state.docRef = state.fsModule.doc(state.db, 'users', state.user.uid, 'activeProposal', 'current');
-    } catch (e) {
-      console.warn('[Wizard] Firestore module load failed; running without persistence', e);
+    // Load Firestore module dynamically
+    if (state.user && state.db) {
+      try {
+        state.fsModule = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
+        state.docRef = state.fsModule.doc(state.db, 'users', state.user.uid, 'activeProposal', 'current');
+      } catch (e) {
+        console.warn('[TP Wizard] Firestore module load failed; running without persistence', e);
+      }
     }
 
     // Try to resume an existing draft
@@ -99,77 +137,69 @@
         var snap = await state.fsModule.getDoc(state.docRef);
         if (snap.exists()) existingDraft = snap.data();
       } catch (e) {
-        console.warn('[Wizard] Could not load existing draft', e);
+        console.warn('[TP Wizard] Could not load existing draft', e);
       }
     }
 
-    if (existingDraft && existingDraft.companyName) {
-      // Show resume modal
+    if (existingDraft && existingDraft.prospectCompany) {
       showResumeModal(existingDraft);
     } else {
       startFresh();
     }
   }
 
-  function showResumeModal(existingDraft) {
+  // --------------------------------------------------------------
+  // Resume-or-fresh modal
+  // --------------------------------------------------------------
+  function showResumeModal(existing) {
     var modal = document.createElement('div');
-    modal.className = 'wiz-modal-backdrop';
+    modal.className = 'tp-modal-backdrop';
     modal.innerHTML =
-      '<div class="wiz-modal">' +
+      '<div class="tp-modal">' +
         '<h3>Continue where you left off?</h3>' +
-        '<p>You have an in-progress proposal for <strong>' + escapeHtml(existingDraft.companyName) + '</strong>' +
-          (existingDraft.updatedAt ? ' (last saved ' + formatTimeAgo(existingDraft.updatedAt) + ')' : '') + '.</p>' +
-        '<div class="wiz-modal-actions">' +
-          '<button type="button" class="btn btn-ghost" data-act="fresh">Start fresh</button>' +
-          '<button type="button" class="btn btn-primary" data-act="resume">Continue</button>' +
+        '<p>You have an in-progress proposal for <strong>' + esc(existing.prospectCompany) + '</strong>' +
+          (existing.updatedAt ? ' (last saved ' + timeAgo(existing.updatedAt) + ')' : '') + '.</p>' +
+        '<div class="tp-modal-actions">' +
+          '<button type="button" data-act="fresh">Start fresh</button>' +
+          '<button type="button" class="primary" data-act="resume">Continue</button>' +
         '</div>' +
       '</div>';
     document.body.appendChild(modal);
     modal.addEventListener('click', function (e) {
       var t = e.target;
       if (t.dataset.act === 'resume') {
-        // Merge existing draft into state, fill missing keys with defaults
         var merged = emptyDraft();
-        Object.keys(existingDraft).forEach(function (k) {
-          if (k in merged) merged[k] = existingDraft[k];
+        Object.keys(existing).forEach(function (k) {
+          if (k in merged) merged[k] = existing[k];
         });
         state.draft = merged;
         modal.remove();
         renderShell();
-        gotoStep(1);
+        gotoStep(0);
       } else if (t.dataset.act === 'fresh') {
         modal.remove();
-        confirmFresh();
+        if (!confirm('Start a new proposal? Your current draft will be cleared.')) {
+          showResumeModal(existing);
+          return;
+        }
+        clearDraftDoc();
+        startFresh();
       }
     });
-  }
-
-  function confirmFresh() {
-    if (!confirm('Start a new proposal? Your current draft will be cleared.')) {
-      // Bring resume modal back
-      // Re-fetch the existing draft snap then show modal again
-      state.fsModule.getDoc(state.docRef).then(function (snap) {
-        if (snap.exists()) showResumeModal(snap.data());
-        else startFresh();
-      });
-      return;
-    }
-    state.draft = emptyDraft();
-    persistDraft();
-    renderShell();
-    gotoStep(1);
   }
 
   function startFresh() {
     state.draft = emptyDraft();
     state.draft.createdAt = new Date().toISOString();
+    // INIT-ONBRD is always required/selected
+    state.draft.selectedOneTime = ['INIT-ONBRD'];
     renderShell();
-    gotoStep(1);
+    gotoStep(0);
   }
 
-  // -----------------------------------------------------------
+  // --------------------------------------------------------------
   // Persistence
-  // -----------------------------------------------------------
+  // --------------------------------------------------------------
   function scheduleAutosave() {
     if (state.saveTimer) clearTimeout(state.saveTimer);
     state.saveTimer = setTimeout(persistDraft, 1500);
@@ -181,18 +211,19 @@
 
     updateSaveIndicator('saving');
     if (!state.docRef) {
-      // No Firestore - just mark as saved-local
-      state.lastSaveAt = state.draft.updatedAt;
       updateSaveIndicator('saved');
       return;
     }
     state.isSaving = true;
     try {
-      await state.fsModule.setDoc(state.docRef, state.draft, { merge: true });
-      state.lastSaveAt = state.draft.updatedAt;
+      // Strip transient fields before save
+      var savable = Object.assign({}, state.draft);
+      delete savable.fieldErrors;
+      delete savable.sectionErrors;
+      await state.fsModule.setDoc(state.docRef, savable, { merge: true });
       updateSaveIndicator('saved');
     } catch (e) {
-      console.error('[Wizard] autosave failed', e);
+      console.error('[TP Wizard] autosave failed', e);
       updateSaveIndicator('error');
     } finally {
       state.isSaving = false;
@@ -201,324 +232,290 @@
 
   async function clearDraftDoc() {
     if (!state.docRef) return;
-    try {
-      await state.fsModule.deleteDoc(state.docRef);
-    } catch (e) {
-      console.warn('[Wizard] clearing draft failed', e);
-    }
+    try { await state.fsModule.deleteDoc(state.docRef); }
+    catch (e) { console.warn('[TP Wizard] clearing draft failed', e); }
   }
 
-  function updateSaveIndicator(stateName) {
-    var el = document.getElementById('wiz-save-indicator');
+  function updateSaveIndicator(which) {
+    var el = document.getElementById('tp-save-indicator');
     if (!el) return;
     var labels = {
-      saving: '<span class="wiz-dot wiz-dot-amber"></span> Saving…',
-      saved:  '<span class="wiz-dot wiz-dot-green"></span> Saved',
-      error:  '<span class="wiz-dot wiz-dot-red"></span> Save failed'
+      saving: '<span class="tp-dot tp-dot-amber"></span> Saving…',
+      saved:  '<span class="tp-dot tp-dot-green"></span> Saved',
+      error:  '<span class="tp-dot tp-dot-red"></span> Save failed'
     };
-    el.innerHTML = labels[stateName] || '';
+    el.innerHTML = labels[which] || '';
   }
 
-  // -----------------------------------------------------------
-  // Render shell + stepper
-  // -----------------------------------------------------------
+  // --------------------------------------------------------------
+  // Shell
+  // --------------------------------------------------------------
   function renderShell() {
     var mount = document.getElementById('wizard-mount');
     if (!mount) return;
     mount.innerHTML =
-      '<div class="wiz-stepper" id="wiz-stepper">' + renderStepper() + '</div>' +
-      '<div class="wiz-step-body" id="wiz-step-body"></div>' +
-      '<div class="wiz-nav-bar">' +
-        '<div id="wiz-save-indicator" class="wiz-save-indicator"></div>' +
-        '<div class="wiz-nav-buttons">' +
-          '<button type="button" class="btn btn-ghost" id="wiz-back" style="display:none;">← Back</button>' +
-          '<button type="button" class="btn btn-primary" id="wiz-next">Next →</button>' +
+      '<div class="tp-wizard">' +
+        '<div class="tp-stepbar" id="tp-stepbar"></div>' +
+        '<div class="tp-panel" id="tp-panel"></div>' +
+        '<div class="tp-nav">' +
+          '<button type="button" id="tp-back">← Back</button>' +
+          '<div class="tp-nav-meta">' +
+            '<span class="tp-save-indicator" id="tp-save-indicator"></span>' +
+          '</div>' +
+          '<button type="button" id="tp-next" class="primary">Next →</button>' +
         '</div>' +
-      '</div>' +
-      '<div id="wiz-status" class="wiz-status" style="display:none;"></div>';
+      '</div>';
 
-    document.getElementById('wiz-back').addEventListener('click', function () { gotoStep(state.currentStep - 1); });
-    document.getElementById('wiz-next').addEventListener('click', function () { onNext(); });
+    document.getElementById('tp-back').addEventListener('click', function () {
+      if (state.step > 0) gotoStep(state.step - 1);
+    });
+    document.getElementById('tp-next').addEventListener('click', onNext);
   }
 
-  function renderStepper() {
-    var steps = [
-      { num: 1, label: 'Opportunity' },
-      { num: 2, label: 'Modules' },
-      { num: 3, label: 'Review' },
-      { num: 4, label: 'Render' }
-    ];
-    return steps.map(function (s) {
-      var cls = 'wiz-step' + (s.num === state.currentStep ? ' active' : '') + (s.num < state.currentStep ? ' done' : '');
-      return '<div class="' + cls + '" data-step="' + s.num + '">' +
-               '<span class="wiz-step-num">' + s.num + '</span>' +
-               '<span class="wiz-step-label">' + s.label + '</span>' +
+  function renderStepbar() {
+    var sb = document.getElementById('tp-stepbar');
+    if (!sb) return;
+    sb.innerHTML = STEPS.map(function (s, i) {
+      var cls = i === state.step ? 'active' : (i < state.step ? 'done' : '');
+      return '<div class="tp-step-chip ' + cls + '" data-idx="' + i + '">' +
+               '<span class="tp-step-num">STEP ' + s.num + '</span>' +
+               '<span class="tp-step-name">' + s.name + '</span>' +
              '</div>';
-    }).join('<div class="wiz-step-sep"></div>');
+    }).join('');
+    sb.querySelectorAll('.tp-step-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var idx = parseInt(el.dataset.idx, 10);
+        // Allow jumping back to any earlier step. Forward only through Next button.
+        if (idx <= state.step) { gotoStep(idx); }
+      });
+    });
   }
 
   function gotoStep(n) {
-    if (n < 1 || n > 4) return;
-    state.currentStep = n;
-    document.getElementById('wiz-stepper').innerHTML = renderStepper();
-    document.getElementById('wiz-back').style.display = n > 1 ? '' : 'none';
-    var nextBtn = document.getElementById('wiz-next');
-    if (n === 4) {
-      nextBtn.style.display = 'none';
-    } else if (n === 3) {
-      nextBtn.style.display = '';
-      nextBtn.textContent = 'Render Proposal →';
-    } else {
-      nextBtn.style.display = '';
-      nextBtn.textContent = 'Next →';
-    }
-    var body = document.getElementById('wiz-step-body');
-    if (n === 1) renderStep1(body);
-    else if (n === 2) renderStep2(body);
-    else if (n === 3) renderStep3(body);
-    else if (n === 4) renderStep4(body);
-    document.getElementById('wiz-status').style.display = 'none';
+    if (n < 0 || n >= STEPS.length) return;
+    state.step = n;
+    var panel = document.getElementById('tp-panel');
+    renderStepbar();
+    var stepId = STEPS[state.step].id;
+    if (stepId === 'fields')    panel.innerHTML = renderFields();
+    else if (stepId === 'selectors') panel.innerHTML = renderSelectors();
+    else if (stepId === 'review')    panel.innerHTML = renderReview();
+    else if (stepId === 'submit')    panel.innerHTML = renderSubmit();
+    bindStepHandlers();
+    updateNavButtons();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function updateNavButtons() {
+    var back = document.getElementById('tp-back');
+    var next = document.getElementById('tp-next');
+    back.disabled = state.step === 0;
+    if (state.step === STEPS.length - 1) {
+      next.style.display = 'none';
+    } else {
+      next.style.display = '';
+      if (state.step === STEPS.length - 2) {
+        next.textContent = 'Save & Submit →';
+      } else if (state.step === 1) {
+        next.textContent = 'Review →';
+      } else {
+        next.textContent = 'Next →';
+      }
+    }
+  }
+
   function onNext() {
-    if (state.currentStep === 1) {
-      var err = validateStep1();
-      if (err) { showStatus(err, 'error'); return; }
-      gotoStep(2);
-    } else if (state.currentStep === 2) {
-      gotoStep(3);
-    } else if (state.currentStep === 3) {
-      // Render Proposal
-      onRender();
+    var stepId = STEPS[state.step].id;
+    if (stepId === 'fields') {
+      if (!validateStep1()) { gotoStep(state.step); return; }
+    } else if (stepId === 'selectors') {
+      if (!validateStep2()) { gotoStep(state.step); return; }
     }
+    if (state.step < STEPS.length - 1) gotoStep(state.step + 1);
   }
 
-  // -----------------------------------------------------------
-  // Step 1 - Opportunity
-  // -----------------------------------------------------------
-  function renderStep1(body) {
+  // ==============================================================
+  // STEP 1 — Proposal Fields
+  // ==============================================================
+  function renderFields() {
     var d = state.draft;
-    body.innerHTML =
-      '<h2 class="wiz-h2">Opportunity</h2>' +
-      '<p class="wiz-sub">Capture the prospect details. Company segment and licensed user count drive pricing.</p>' +
-      '<div class="form-grid">' +
-        field('Company Name *', 'company-name', 'text', d.companyName, 'e.g. Acme Financial Services', true) +
-        field('Contact Name', 'contact-name', 'text', d.contactName, 'First and last name') +
-        field('Primary Use Case', 'primary-use-case', 'text', d.primaryUseCase, 'e.g. Insider Threat Detection', false, 'full') +
-        selectField('Deal Stage', 'deal-stage', d.dealStage, [
-          'Discovery', 'Qualification', 'Technical Evaluation', 'Business Case',
-          'Proposal', 'Negotiation', 'Closed Won'
-        ]) +
-        field('Estimated Close Date', 'close-date', 'date', d.estimatedCloseDate, '') +
-        segmentField(d.companySegment) +
-        field('Licensed Users', 'user-count', 'number', d.userCount, 'e.g. 1000') +
-        contractYearsField(d.contractYears) +
-      '</div>';
-
-    body.querySelectorAll('input, select').forEach(function (el) {
-      el.addEventListener('input', onStep1Input);
-      el.addEventListener('change', onStep1Input);
-    });
-  }
-
-  function field(label, id, type, value, ph, isFull, full) {
-    var cls = 'form-field' + (full === 'full' ? ' full' : '');
-    var safe = value == null ? '' : String(value).replace(/"/g, '&quot;');
-    return '<div class="' + cls + '">' +
-           '<label for="' + id + '">' + label + '</label>' +
-           '<input id="' + id + '" type="' + type + '" value="' + safe + '" placeholder="' + (ph || '') + '" />' +
-           '</div>';
-  }
-
-  function selectField(label, id, value, options) {
-    var opts = options.map(function (o) {
-      var sel = (o === value) ? ' selected' : '';
-      return '<option value="' + escapeHtml(o) + '"' + sel + '>' + escapeHtml(o) + '</option>';
+    var segOptions = state.catalog.companySizeSegments.map(function (s) {
+      var sel = d.companySegment === s.key ? 'selected' : '';
+      return '<option value="' + esc(s.key) + '" ' + sel + '>' + esc(s.label) + ' (' + esc(s.headcountRange) + ')</option>';
     }).join('');
-    return '<div class="form-field">' +
-           '<label for="' + id + '">' + label + '</label>' +
-           '<select id="' + id + '">' + opts + '</select>' +
-           '</div>';
-  }
-
-  function segmentField(value) {
-    var opts = state.catalog.companySizeSegments.map(function (s) {
-      var sel = (s.key === value) ? ' selected' : '';
-      return '<option value="' + s.key + '"' + sel + '>' + escapeHtml(s.label) + ' (' + s.headcountRange + ')</option>';
-    }).join('');
-    return '<div class="form-field">' +
-           '<label for="segment">Company Segment</label>' +
-           '<select id="segment">' + opts + '</select>' +
-           '</div>';
-  }
-
-  function contractYearsField(value) {
-    return '<div class="form-field">' +
-           '<label for="contract-years">Contract Length</label>' +
-           '<select id="contract-years">' +
-             '<option value="1"' + (value === 1 ? ' selected' : '') + '>1 year</option>' +
-             '<option value="2"' + (value === 2 ? ' selected' : '') + '>2 years</option>' +
-             '<option value="3"' + (value === 3 ? ' selected' : '') + '>3 years</option>' +
-           '</select>' +
-           '</div>';
-  }
-
-  function onStep1Input() {
-    var g = function (id) { return document.getElementById(id); };
-    var d = state.draft;
-    d.companyName = g('company-name').value.trim();
-    d.contactName = g('contact-name').value.trim();
-    d.primaryUseCase = g('primary-use-case').value.trim();
-    d.dealStage = g('deal-stage').value;
-    d.estimatedCloseDate = g('close-date').value;
-    d.companySegment = g('segment').value;
-    d.userCount = parseInt(g('user-count').value, 10) || 0;
-    d.contractYears = parseInt(g('contract-years').value, 10) || 1;
-    scheduleAutosave();
-  }
-
-  function validateStep1() {
-    if (!state.draft.companyName) return 'Please enter a Company Name.';
-    if (!state.draft.userCount || state.draft.userCount < 1) return 'Please enter a positive Licensed Users count.';
-    return null;
-  }
-
-  // -----------------------------------------------------------
-  // Step 2 - Modules
-  // -----------------------------------------------------------
-  function renderStep2(body) {
-    var html = '<h2 class="wiz-h2">Modules &amp; Add-Ons</h2>';
-    html += '<p class="wiz-sub">Select modules and any optional add-ons. CORE, CARE, and Initialization are always included.</p>';
-
-    // Always-included summary
-    html += '<div class="wiz-included">';
-    html += '<h4>Always Included</h4>';
-    html += '<div class="wiz-included-list">';
-    state.catalog.skus.forEach(function (s) {
-      var badges = (s.selection && s.selection.displayBadges) || [];
-      if (badges.indexOf('REQUIRED') !== -1) {
-        html += '<div class="wiz-included-item">' +
-                  '<span class="wiz-badge wiz-badge-required">REQUIRED</span> ' +
-                  '<strong>' + escapeHtml(s.code) + '</strong> ' + escapeHtml(s.name) +
-                '</div>';
-      }
-    });
-    html += '</div></div>';
-
-    // Modules section
-    html += '<h3 class="wiz-h3">Modules</h3>';
-    html += '<div class="wiz-sku-grid">';
-    var modules = state.catalog.skus
-      .filter(function (s) { return s.category === '10-Module' && s.isActive; })
-      .sort(function (a, b) { return a.displayOrder - b.displayOrder; });
-    modules.forEach(function (m) { html += renderSkuCard(m); });
-    html += '</div>';
-
-    // Platform options
-    html += '<h3 class="wiz-h3">Platform Options</h3>';
-    html += '<div class="wiz-sku-grid wiz-sku-grid-compact">';
-    state.catalog.skus
-      .filter(function (s) { return s.category === '25-Platform Option Recurring' && s.isActive; })
-      .sort(function (a, b) { return a.displayOrder - b.displayOrder; })
-      .forEach(function (s) { html += renderSkuCard(s); });
-    html += '</div>';
-
-    // One-time integrations
-    html += '<h3 class="wiz-h3">One-Time Setup &amp; Integrations</h3>';
-    html += '<div class="wiz-sku-grid wiz-sku-grid-compact">';
-    state.catalog.skus
-      .filter(function (s) { return s.category === '30-Setup/Integration Option' && s.isActive; })
-      .sort(function (a, b) { return a.displayOrder - b.displayOrder; })
-      .forEach(function (s) {
-        var badges = (s.selection && s.selection.displayBadges) || [];
-        if (badges.indexOf('REQUIRED') !== -1) return;  // Already shown in always-included
-        html += renderSkuCard(s);
-      });
-    html += '</div>';
-
-    body.innerHTML = html;
-
-    body.querySelectorAll('input[type=checkbox][data-sku]').forEach(function (cb) {
-      cb.addEventListener('change', onSkuToggle);
-    });
-  }
-
-  function renderSkuCard(sku) {
-    var sel = sku.selection || {};
-    var badges = sel.displayBadges || [];
-    var isBeta = badges.indexOf('BETA') !== -1;
-    var isNewGa = badges.indexOf('NEW GA') !== -1;
-    var checked = state.draft.selectedSkuCodes.indexOf(sku.code) !== -1;
-
-    // Conditional skus: only render if parent is selected
-    if (sel.mode === 'conditional' && Array.isArray(sel.parentCodes)) {
-      var anyParent = sel.parentCodes.some(function (p) {
-        return state.draft.selectedSkuCodes.indexOf(p) !== -1;
-      });
-      if (!anyParent) return '';
-    }
-
-    var priceLabel = priceSummaryFor(sku);
-
-    var badgeHtml = '';
-    if (isBeta) badgeHtml = '<span class="wiz-badge wiz-badge-beta">BETA</span>';
-    else if (isNewGa) badgeHtml = '<span class="wiz-badge wiz-badge-newga">NEW GA</span>';
-
-    var inputAttrs = 'data-sku="' + sku.code + '"';
-    if (isBeta) inputAttrs += ' disabled';
-    if (checked && !isBeta) inputAttrs += ' checked';
-
-    var tooltip = isBeta ? ' title="In BETA. Not yet available for new deployments."' : '';
-
-    var features = '';
-    var feats = sku.features && sku.features.included;
-    if (feats && feats.length) {
-      features = '<ul class="wiz-feature-list">' +
-                   feats.map(function (f) { return '<li>' + escapeHtml(f) + '</li>'; }).join('') +
-                 '</ul>';
-    }
-
-    // Optional add-ons (children) - render below as nested cards if parent is selected
-    var nested = '';
-    var addons = (sku.features && sku.features.optionalAddOns) || [];
-    if (addons.length && checked && !isBeta) {
-      nested = '<div class="wiz-nested">';
-      nested += '<div class="wiz-nested-label">Optional add-ons:</div>';
-      var anyRendered = false;
-      addons.forEach(function (code) {
-        var child = findSku(code);
-        if (!child || !child.isActive) return;
-        var childCard = renderSkuCard(child);
-        if (childCard) { nested += childCard; anyRendered = true; }
-      });
-      if (!anyRendered) {
-        nested += '<div class="wiz-nested-empty">None needed</div>';
-      }
-      nested += '</div>';
-    }
 
     return (
-      '<label class="wiz-sku-card' + (isBeta ? ' wiz-sku-beta' : '') + (checked && !isBeta ? ' wiz-sku-checked' : '') + '"' + tooltip + '>' +
-        '<div class="wiz-sku-head">' +
-          '<input type="checkbox" ' + inputAttrs + ' />' +
-          '<div class="wiz-sku-title-block">' +
-            '<div class="wiz-sku-title-row">' +
-              '<strong class="wiz-sku-name">' + escapeHtml(sku.name) + '</strong>' +
-              badgeHtml +
-            '</div>' +
-            '<div class="wiz-sku-code">' + escapeHtml(sku.code) + ' &middot; ' + priceLabel + '</div>' +
-          '</div>' +
+      '<h3>Step 1 — Proposal Fields</h3>' +
+      '<p class="tp-lede">Capture the prospect, company size, and pricing term. All fields are required.</p>' +
+      '<div class="tp-grid-2">' +
+        fieldHtml('Prospect Company', 'f-company', 'text', d.prospectCompany,
+                  'Acme Manufacturing', 'Legal or doing-business-as name as it will appear on the proposal PDF.', 'prospectCompany') +
+        fieldHtml('Primary Contact Name', 'f-contact', 'text', d.primaryContactName,
+                  'Jane Doe', 'Whoever receives the emailed proposal.', 'primaryContactName') +
+        fieldHtml('Primary Contact Role', 'f-role', 'text', d.primaryContactRole,
+                  'CIO / VP Security / Head of HR Ops', 'Free text. Helps position the pitch on the cover page.', 'primaryContactRole') +
+        fieldHtml('Contact Email', 'f-email', 'email', d.contactEmail,
+                  'jane@acme.com', 'Used when you submit — this is where the PDF gets emailed.', 'contactEmail') +
+        selectHtml('Company Size Segment', 'f-seg',
+                   '<option value="">— Select a segment —</option>' + segOptions,
+                   'Drives CARE tier, onboarding tier, and SLA alignment.', 'companySegment') +
+        selectHtml('Sector', 'f-sector',
+                   '<option value="commercial"' + (d.sector === 'commercial' ? ' selected' : '') + '>Commercial</option>' +
+                   '<option value="govt-public-works"' + (d.sector === 'govt-public-works' ? ' selected' : '') + '>Govt / Public Works</option>',
+                   'Defaults to Commercial. Govt/public-works affects contract terms downstream.', 'sector') +
+        fieldHtml('Expected License Count (annual named user)', 'f-licenses', 'number', d.expectedLicenseCount,
+                  '500', 'Per-named-user licensing is the v1 model.', 'expectedLicenseCount', 'min="1"') +
+        fieldHtml('Est. Decision Date (YYYY-MM)', 'f-decision', 'month', d.estDecisionDate,
+                  '', 'Month-level precision is fine for pipeline.', 'estDecisionDate') +
+        selectHtml('Term (years)', 'f-term',
+                   '<option value="">— Select a term —</option>' +
+                   '<option value="1"' + (String(d.termYears) === '1' ? ' selected' : '') + '>1 year</option>' +
+                   '<option value="2"' + (String(d.termYears) === '2' ? ' selected' : '') + '>2 years (continuity discount)</option>' +
+                   '<option value="3"' + (String(d.termYears) === '3' ? ' selected' : '') + '>3 years (deeper continuity discount)</option>',
+                   'Multi-year applies continuity discounts to recurring line items only.', 'termYears') +
+        '<div class="tp-field" style="grid-column:1/-1;">' +
+          '<label>Explain Prospective Client Challenge / Pain Points<span class="req">*</span></label>' +
+          '<textarea id="f-challenge" rows="3" class="' + fieldCls('solutionChallenge') + '" ' +
+              'placeholder="e.g., BPO client under audit pressure for clear-desk compliance across 800 remote agents...">' +
+                esc(d.solutionChallenge) + '</textarea>' +
+          '<p class="tp-hint">Appears on the proposal cover page. 2–4 sentences works best.</p>' +
+          fieldErrHtml('solutionChallenge') +
         '</div>' +
-        '<p class="wiz-sku-desc">' + escapeHtml(sku.description || '') + '</p>' +
-        features +
-      '</label>' + nested
+      '</div>'
     );
   }
 
-  function priceSummaryFor(sku) {
+  function fieldHtml(label, id, type, val, ph, hint, key, extra) {
+    extra = extra || '';
+    return '<div class="tp-field">' +
+           '<label>' + label + '<span class="req">*</span></label>' +
+           '<input type="' + type + '" id="' + id + '" value="' + esc(val) + '" placeholder="' + esc(ph) + '" class="' + fieldCls(key) + '" ' + extra + '/>' +
+           '<p class="tp-hint">' + esc(hint) + '</p>' +
+           fieldErrHtml(key) +
+           '</div>';
+  }
+
+  function selectHtml(label, id, optionsHtml, hint, key) {
+    return '<div class="tp-field">' +
+           '<label>' + label + '<span class="req">*</span></label>' +
+           '<select id="' + id + '" class="' + fieldCls(key) + '">' + optionsHtml + '</select>' +
+           '<p class="tp-hint">' + esc(hint) + '</p>' +
+           fieldErrHtml(key) +
+           '</div>';
+  }
+
+  function fieldCls(key) {
+    return state.draft.fieldErrors && state.draft.fieldErrors[key] ? 'invalid' : '';
+  }
+  function fieldErrHtml(key) {
+    if (state.draft.fieldErrors && state.draft.fieldErrors[key]) {
+      return '<div class="tp-field-error show">' + esc(state.draft.fieldErrors[key]) + '</div>';
+    }
+    return '';
+  }
+
+  function bindStep1() {
+    function g(id) { return document.getElementById(id); }
+    var map = {
+      'f-company': 'prospectCompany', 'f-contact': 'primaryContactName',
+      'f-role': 'primaryContactRole', 'f-email': 'contactEmail',
+      'f-seg': 'companySegment', 'f-sector': 'sector',
+      'f-licenses': 'expectedLicenseCount', 'f-decision': 'estDecisionDate',
+      'f-term': 'termYears', 'f-challenge': 'solutionChallenge'
+    };
+    Object.keys(map).forEach(function (id) {
+      var el = g(id);
+      if (!el) return;
+      var key = map[id];
+      var handler = function () {
+        var v = el.value;
+        if (key === 'expectedLicenseCount') v = parseInt(v, 10) || '';
+        if (key === 'termYears') v = v;
+        state.draft[key] = v;
+        if (state.draft.fieldErrors && state.draft.fieldErrors[key]) {
+          delete state.draft.fieldErrors[key];
+          el.classList.remove('invalid');
+          var errEl = el.parentElement.querySelector('.tp-field-error');
+          if (errEl) errEl.classList.remove('show');
+        }
+        scheduleAutosave();
+      };
+      el.addEventListener('input', handler);
+      el.addEventListener('change', handler);
+    });
+  }
+
+  function validateStep1() {
+    var errs = {};
+    REQUIRED_STEP1_FIELDS.forEach(function (k) {
+      var v = state.draft[k];
+      if (v === '' || v === null || v === undefined) errs[k] = 'Required';
+    });
+    // Extra: email format
+    if (!errs.contactEmail && state.draft.contactEmail) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.draft.contactEmail)) {
+        errs.contactEmail = 'Invalid email address';
+      }
+    }
+    // Extra: positive license count
+    if (!errs.expectedLicenseCount) {
+      var lc = parseInt(state.draft.expectedLicenseCount, 10);
+      if (!lc || lc < 1) errs.expectedLicenseCount = 'Must be at least 1';
+    }
+    state.draft.fieldErrors = errs;
+    return Object.keys(errs).length === 0;
+  }
+
+  // ==============================================================
+  // STEP 2 — Solution Selectors
+  // ==============================================================
+  function catalogByCategory() {
+    // Returns grouped SKU arrays for Step 2 rendering.
+    var cat = state.catalog.skus.filter(function (s) { return s.isActive !== false; });
+    return {
+      required: cat.filter(function (s) {
+        var b = (s.selection && s.selection.displayBadges) || [];
+        return b.indexOf('REQUIRED') !== -1 && s.category !== '30-Setup/Integration Option';
+      }).sort(byDisplayOrder),
+      modules: cat.filter(function (s) {
+        return s.category === '10-Module';
+      }).sort(byDisplayOrder),
+      platform: cat.filter(function (s) {
+        return s.category === '25-Platform Option Recurring';
+      }).sort(byDisplayOrder),
+      oneTime: cat.filter(function (s) {
+        return s.category === '30-Setup/Integration Option';
+      }).sort(byDisplayOrder)
+    };
+  }
+
+  function byDisplayOrder(a, b) {
+    return (a.displayOrder || 999) - (b.displayOrder || 999);
+  }
+
+  // Return options whose parentCodes includes given module code
+  function childOptionsFor(moduleCode) {
+    return state.catalog.skus.filter(function (s) {
+      var sel = s.selection || {};
+      if (sel.mode !== 'conditional') return false;
+      if (!Array.isArray(sel.parentCodes)) return false;
+      return sel.parentCodes.indexOf(moduleCode) !== -1 && s.isActive !== false;
+    }).sort(byDisplayOrder);
+  }
+
+  function isBeta(sku) {
+    var b = (sku.selection && sku.selection.displayBadges) || [];
+    return b.indexOf('BETA') !== -1;
+  }
+
+  function isNewGa(sku) {
+    var b = (sku.selection && sku.selection.displayBadges) || [];
+    return b.indexOf('NEW GA') !== -1;
+  }
+
+  function priceLabel(sku) {
     var p = sku.pricing;
-    if (!p) return 'Pricing TBD';
+    if (!p) return '';
     if (p.model === 'flat') return TrendzactMath.formatMoney(p.amountUsd) + '/yr';
     if (p.model === 'flatPerUser') return TrendzactMath.formatMoney(p.amountUsdPerUser) + '/user/yr';
     if (p.model === 'tieredByLicenseCount') return 'from ' + TrendzactMath.formatMoney(p.baseAmountUsdPerUser) + '/user/yr';
@@ -526,227 +523,689 @@
     return '';
   }
 
-  function findSku(code) {
-    for (var i = 0; i < state.catalog.skus.length; i++) {
-      if (state.catalog.skus[i].code === code) return state.catalog.skus[i];
+  function sectionStatus(id) {
+    var d = state.draft;
+    if (id === 'core') {
+      var ct = catalogByCategory().required.length;
+      return { label: ct + ' included', klass: 'ok' };
     }
-    return null;
+    var count = 0;
+    if (id === 'modules') count = d.selectedModules.length;
+    else if (id === 'platform') count = d.selectedPlatform.length;
+    else if (id === 'oneTime') {
+      count = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; }).length;
+    }
+    var noneAck = d.sectionNone[id];
+    if (count > 0) return { label: count + ' selected', klass: 'ok' };
+    if (noneAck) return { label: 'None needed (acknowledged)', klass: 'ok' };
+    return { label: 'Needs selection or None', klass: 'warn' };
   }
 
-  function onSkuToggle(e) {
-    var code = e.target.dataset.sku;
-    var idx = state.draft.selectedSkuCodes.indexOf(code);
-    if (e.target.checked && idx === -1) {
-      state.draft.selectedSkuCodes.push(code);
-    } else if (!e.target.checked && idx !== -1) {
-      state.draft.selectedSkuCodes.splice(idx, 1);
-      // Cascade: also deselect any conditional children whose only parent we just removed
-      var children = state.catalog.skus.filter(function (s) {
-        var sel = s.selection || {};
-        return sel.mode === 'conditional' &&
-               Array.isArray(sel.parentCodes) &&
-               sel.parentCodes.indexOf(code) !== -1;
-      });
-      children.forEach(function (c) {
-        var sel = c.selection || {};
-        var stillHasParent = sel.parentCodes.some(function (p) {
-          return state.draft.selectedSkuCodes.indexOf(p) !== -1;
-        });
-        if (!stillHasParent) {
-          var ci = state.draft.selectedSkuCodes.indexOf(c.code);
-          if (ci !== -1) state.draft.selectedSkuCodes.splice(ci, 1);
+  function renderSelectors() {
+    var groups = catalogByCategory();
+    var d = state.draft;
+
+    // Required core services
+    var coreHtml = groups.required.map(function (s) {
+      return '<div class="tp-required-card">' +
+               '<span class="tp-required-badge">REQUIRED</span>' +
+               '<div>' +
+                 '<p class="tp-required-title"><span class="tp-sku-code">' + esc(s.code) + '</span> ' + esc(s.name) + '</p>' +
+                 '<p class="tp-required-desc">' + esc(s.description || '') + '</p>' +
+               '</div>' +
+             '</div>';
+    }).join('');
+
+    // Modules section
+    var modCount = d.selectedModules.length;
+    var modulesNone =
+      '<div class="tp-none-row">' +
+        '<input type="checkbox" id="none-modules" ' +
+          (d.sectionNone.modules ? 'checked' : '') +
+          (modCount > 0 ? ' disabled' : '') + '/>' +
+        '<label for="none-modules">None needed for this opportunity (acknowledge to proceed)</label>' +
+      '</div>';
+
+    var modulesHtml = groups.modules.map(function (m) {
+      var selected = d.selectedModules.indexOf(m.code) !== -1;
+      var open = d.moduleExpanded.indexOf(m.code) !== -1;
+      var beta = isBeta(m);
+      var newga = isNewGa(m);
+      var disabled = d.sectionNone.modules && !selected;
+
+      var badgeHtml = '';
+      if (beta) badgeHtml = '<span class="tp-badge tp-badge-beta">BETA</span>';
+      else if (newga) badgeHtml = '<span class="tp-badge tp-badge-newga">NEW GA</span>';
+
+      var children = childOptionsFor(m.code);
+      var childSelectedCount = children.filter(function (c) {
+        return d.selectedModuleOptions.indexOf(c.code) !== -1;
+      }).length;
+
+      var rightSide = '';
+      if (beta) {
+        rightSide = '';
+      } else if (childSelectedCount > 0) {
+        rightSide = '<span class="tp-sku-opt-count">+' + childSelectedCount + ' option' + (childSelectedCount > 1 ? 's' : '') + '</span>';
+      } else {
+        rightSide = '<span class="tp-sku-price">' + esc(priceLabel(m)) + '</span>';
+      }
+
+      var accordionBody = '';
+      if (open) {
+        var incl = (m.features && m.features.included) || [];
+        var featsHtml = '';
+        if (incl.length) {
+          featsHtml =
+            '<div class="tp-feature-head">Included features</div>' +
+            '<div class="tp-feature-list">' +
+              incl.map(function (f) { return '<span class="inc">' + esc(f) + '</span>'; }).join('') +
+            '</div>';
         }
-      });
+
+        var optsHtml = '';
+        // Only render children if parent is GA (not BETA) per schema rule C2.
+        if (!beta) {
+          var visibleChildren = children.filter(function (c) { return !isBeta(c); });
+          if (visibleChildren.length) {
+            optsHtml =
+              '<div class="tp-feature-head">Optional add-ons</div>' +
+              visibleChildren.map(function (o) {
+                var oSel = d.selectedModuleOptions.indexOf(o.code) !== -1;
+                var oDisabled = !selected;
+                return '<div class="tp-opt-row">' +
+                         '<input type="checkbox" data-mopt="' + esc(o.code) + '" ' +
+                           (oSel ? 'checked' : '') + (oDisabled ? ' disabled' : '') + '/>' +
+                         '<label>' +
+                           '<span class="tp-sku-code">' + esc(o.code) + '</span> ' + esc(o.name) +
+                           ' <span class="tp-opt-price">' + esc(priceLabel(o)) + '</span>' +
+                         '</label>' +
+                       '</div>';
+              }).join('');
+            if (!selected) {
+              optsHtml += '<p class="tp-hint" style="margin-top:6px;">Select the parent module to enable these options.</p>';
+            }
+          }
+        }
+
+        accordionBody = '<div class="tp-accordion-body">' + featsHtml + optsHtml + '</div>';
+      }
+
+      var classes = 'tp-accordion-item';
+      if (selected && !beta) classes += ' selected';
+      if (open) classes += ' open';
+      if (beta) classes += ' beta';
+
+      var headStyle = disabled ? 'opacity:0.5;' : '';
+
+      return '<div class="' + classes + '" data-module="' + esc(m.code) + '">' +
+               '<div class="tp-accordion-head" style="' + headStyle + '" data-accordion-head="' + esc(m.code) + '">' +
+                 '<span class="tp-caret">▶</span>' +
+                 '<input type="checkbox" data-module-check="' + esc(m.code) + '" ' +
+                   (selected && !beta ? 'checked' : '') +
+                   (beta || disabled ? ' disabled' : '') + '/>' +
+                 '<div class="tp-sku-body">' +
+                   '<div class="tp-sku-line">' +
+                     '<span class="tp-sku-code">' + esc(m.code) + '</span>' +
+                     '<span class="tp-sku-name">' + esc(m.name) + '</span>' +
+                     badgeHtml +
+                     rightSide +
+                   '</div>' +
+                   '<p class="tp-sku-desc">' + esc(m.description || '') + '</p>' +
+                 '</div>' +
+               '</div>' +
+               accordionBody +
+             '</div>';
+    }).join('');
+
+    // Platform Options section
+    var platformCount = d.selectedPlatform.length;
+    var platformNone =
+      '<div class="tp-none-row">' +
+        '<input type="checkbox" id="none-platform" ' +
+          (d.sectionNone.platform ? 'checked' : '') +
+          (platformCount > 0 ? ' disabled' : '') + '/>' +
+        '<label for="none-platform">None needed for this opportunity (acknowledge to proceed)</label>' +
+      '</div>';
+
+    var platformHtml = groups.platform.map(function (p) {
+      var sel = d.selectedPlatform.indexOf(p.code) !== -1;
+      var disabled = d.sectionNone.platform && !sel;
+      return '<div class="tp-sku-row' + (sel ? ' selected' : '') + (disabled ? ' disabled' : '') + '" data-platform="' + esc(p.code) + '">' +
+               '<input type="checkbox" ' + (sel ? 'checked' : '') + (disabled ? ' disabled' : '') + '/>' +
+               '<div class="tp-sku-body">' +
+                 '<div class="tp-sku-line">' +
+                   '<span class="tp-sku-code">' + esc(p.code) + '</span>' +
+                   '<span class="tp-sku-name">' + esc(p.name) + '</span>' +
+                   '<span class="tp-sku-price">' + esc(priceLabel(p)) + '</span>' +
+                 '</div>' +
+                 '<p class="tp-sku-desc">' + esc(p.description || '') + '</p>' +
+               '</div>' +
+             '</div>';
+    }).join('');
+
+    // One-Time section — INIT-ONBRD is required/always selected
+    var optionalOneTimeCount = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; }).length;
+    var oneTimeNone =
+      '<div class="tp-none-row">' +
+        '<input type="checkbox" id="none-onetime" ' +
+          (d.sectionNone.oneTime ? 'checked' : '') +
+          (optionalOneTimeCount > 0 ? ' disabled' : '') + '/>' +
+        '<label for="none-onetime">No additional integrations or assessments needed (acknowledge to proceed)</label>' +
+      '</div>';
+
+    var oneTimeHtml = groups.oneTime.map(function (o) {
+      var sel = d.selectedOneTime.indexOf(o.code) !== -1;
+      var req = (o.selection && o.selection.displayBadges || []).indexOf('REQUIRED') !== -1;
+      var disabled = !req && d.sectionNone.oneTime && !sel;
+      var requiredBadge = req ? '<span class="tp-badge tp-badge-required" style="margin-left:auto;">REQUIRED</span>' : '';
+      return '<div class="tp-sku-row' + (sel ? ' selected' : '') + (disabled ? ' disabled' : '') + '" data-onetime="' + esc(o.code) + '">' +
+               '<input type="checkbox" ' + (sel ? 'checked' : '') + (req || disabled ? ' disabled' : '') + '/>' +
+               '<div class="tp-sku-body">' +
+                 '<div class="tp-sku-line">' +
+                   '<span class="tp-sku-code">' + esc(o.code) + '</span>' +
+                   '<span class="tp-sku-name">' + esc(o.name) + '</span>' +
+                   '<span class="tp-sku-price">' + esc(priceLabel(o)) + '</span>' +
+                   requiredBadge +
+                 '</div>' +
+                 '<p class="tp-sku-desc">' + esc(o.description || '') + '</p>' +
+               '</div>' +
+             '</div>';
+    }).join('');
+
+    // Helper to render a section
+    function sectionHtml(id, title, bodyInnerHtml) {
+      var st = sectionStatus(id);
+      var invalid = state.draft.sectionErrors && state.draft.sectionErrors[id];
+      var classes = 'tp-section';
+      if (d.sectionOpen[id]) classes += ' open';
+      if (invalid) classes += ' invalid';
+      return '<div class="' + classes + '" data-section="' + id + '">' +
+               '<div class="tp-section-toggle" data-section-toggle="' + id + '">' +
+                 '<span class="tp-section-caret">▶</span>' +
+                 '<span class="tp-section-title">' + esc(title) + '</span>' +
+                 '<span class="tp-section-count ' + (st.klass || '') + '">' + esc(st.label) + '</span>' +
+               '</div>' +
+               (d.sectionOpen[id] ? '<div class="tp-section-body">' + bodyInnerHtml + '</div>' : '') +
+             '</div>';
     }
-    scheduleAutosave();
-    // Re-render whole step so nested cards appear/disappear
-    var body = document.getElementById('wiz-step-body');
-    renderStep2(body);
+
+    var blocker = '';
+    if (state.draft.sectionErrors && Object.keys(state.draft.sectionErrors).length) {
+      blocker = '<div class="tp-section-blocker">Every optional section needs at least one selection or a "None needed" acknowledgment before continuing.</div>';
+    }
+
+    return (
+      '<h3>Step 2 — Solution Selectors</h3>' +
+      '<p class="tp-lede">Pick what the prospect needs in each section. If a section doesn\'t apply, check "None needed" to acknowledge.</p>' +
+
+      sectionHtml('core', 'Core Services', coreHtml) +
+      sectionHtml('modules', 'Modules', modulesNone + modulesHtml) +
+      sectionHtml('platform', 'Platform Options', platformNone + platformHtml) +
+      sectionHtml('oneTime', 'One-Time Setup & Integrations', oneTimeNone + oneTimeHtml) +
+      blocker
+    );
   }
 
-  // -----------------------------------------------------------
-  // Step 3 - Review
-  // -----------------------------------------------------------
-  function renderStep3(body) {
-    var result = TrendzactMath.calculateProposal(state.draft, state.catalog);
-    state._lastCalc = result;
+  function bindStep2() {
+    var d = state.draft;
 
-    var fmt = TrendzactMath.formatMoney;
-    var html = '<h2 class="wiz-h2">Review &amp; Calculate</h2>';
-    html += '<p class="wiz-sub">Review pricing and notes. Click Render Proposal to generate the PDF.</p>';
-
-    if (result.errors && result.errors.length) {
-      html += '<div class="wiz-error-box"><strong>Cannot calculate:</strong><ul>';
-      result.errors.forEach(function (e) { html += '<li>' + escapeHtml(e) + '</li>'; });
-      html += '</ul></div>';
-    }
-
-    // Summary header
-    html += '<div class="wiz-review-grid">';
-    html += '<div class="wiz-review-meta">';
-    html += '<table class="wiz-meta-table">' +
-              row('Company',       state.draft.companyName) +
-              row('Contact',       state.draft.contactName || '—') +
-              row('Use case',      state.draft.primaryUseCase || '—') +
-              row('Stage',         state.draft.dealStage) +
-              row('Close',         state.draft.estimatedCloseDate || '—') +
-              row('Segment',       result.input.companySegmentLabel || '—') +
-              row('Users',         (result.input.userCount || 0).toLocaleString('en-US')) +
-              row('Volume bracket',(result.input.bracket || '—') + ' (×' + (result.input.bracketMultiplier || 1).toFixed(2) + ')') +
-              row('Contract',      state.draft.contractYears + ' year(s)') +
-            '</table>';
-    html += '</div>';
-
-    // Totals card
-    html += '<div class="wiz-totals-card">';
-    html += '<div class="wiz-totals-label">YEAR 1 TOTAL</div>';
-    html += '<div class="wiz-totals-big">' + fmt(result.totals.year1AnnualUsd) + '</div>';
-    html += '<div class="wiz-totals-grid">';
-    html += '<div><span>Recurring (list)</span><strong>' + fmt(result.totals.recurringListUsd) + '</strong></div>';
-    if (result.bundleDiscount.discountAmountUsd > 0) {
-      html += '<div class="wiz-totals-discount"><span>Bundle discount (' + result.bundleDiscount.discountPct + '%)</span><strong>−' + fmt(result.bundleDiscount.discountAmountUsd) + '</strong></div>';
-    }
-    html += '<div><span>Recurring Y1 (after discount)</span><strong>' + fmt(result.totals.recurringYear1Usd) + '</strong></div>';
-    html += '<div><span>One-time</span><strong>' + fmt(result.totals.oneTimeUsd) + '</strong></div>';
-    if (state.draft.contractYears >= 2) {
-      html += '<div class="wiz-totals-sep"></div>';
-      html += '<div><span>Year 2 recurring (' + (100 - result.multiYearContinuity.year2Pct) + '%)</span><strong>' + fmt(result.totals.recurringYear2Usd) + '</strong></div>';
-    }
-    if (state.draft.contractYears >= 3) {
-      html += '<div><span>Year 3 recurring (' + (100 - result.multiYearContinuity.year3Pct) + '%)</span><strong>' + fmt(result.totals.recurringYear3Usd) + '</strong></div>';
-    }
-    if (state.draft.contractYears > 1) {
-      html += '<div class="wiz-totals-tcv"><span>TCV (' + state.draft.contractYears + ' yr)</span><strong>' + fmt(result.totals.tcvUsd) + '</strong></div>';
-    }
-    html += '</div></div>';
-    html += '</div>';
-
-    // Line items table
-    html += '<h3 class="wiz-h3">Line Items</h3>';
-    html += '<table class="wiz-line-table">';
-    html += '<thead><tr><th>SKU</th><th>Description</th><th>Unit</th><th class="r">Annual</th></tr></thead><tbody>';
-    result.lines.forEach(function (l) {
-      var tag = l.timing === 'oneTime' ? ' <span class="wiz-pill">one-time</span>' : '';
-      html += '<tr>' +
-                '<td><code>' + escapeHtml(l.code) + '</code></td>' +
-                '<td>' + escapeHtml(l.name) + tag + '</td>' +
-                '<td>' + escapeHtml(l.unitDescription) + '</td>' +
-                '<td class="r">' + fmt(l.lineAmountUsd) + '</td>' +
-              '</tr>';
+    // Section toggles
+    document.querySelectorAll('[data-section-toggle]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var id = el.dataset.sectionToggle;
+        d.sectionOpen[id] = !d.sectionOpen[id];
+        scheduleAutosave();
+        reRenderStep2();
+      });
     });
-    html += '</tbody></table>';
 
-    // Notes
-    html += '<h3 class="wiz-h3">Proposal Notes (optional)</h3>';
-    html += '<textarea id="wiz-notes" class="wiz-notes-input" placeholder="Context, compliance drivers, competitive landscape, special terms…">' + escapeHtml(state.draft.notes || '') + '</textarea>';
+    // Accordion toggles (click on head, but not on the checkbox itself)
+    document.querySelectorAll('[data-accordion-head]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        // Don't toggle if clicking the checkbox
+        if (e.target.tagName === 'INPUT') return;
+        var code = el.dataset.accordionHead;
+        var i = d.moduleExpanded.indexOf(code);
+        if (i === -1) d.moduleExpanded.push(code);
+        else d.moduleExpanded.splice(i, 1);
+        reRenderStep2();
+      });
+    });
 
-    body.innerHTML = html;
-    document.getElementById('wiz-notes').addEventListener('input', function (e) {
-      state.draft.notes = e.target.value;
+    // Module checkboxes
+    document.querySelectorAll('[data-module-check]').forEach(function (el) {
+      el.addEventListener('click', function (e) { e.stopPropagation(); });
+      el.addEventListener('change', function () {
+        var code = el.dataset.moduleCheck;
+        var i = d.selectedModules.indexOf(code);
+        if (el.checked && i === -1) {
+          d.selectedModules.push(code);
+          // If 'None needed' was checked, uncheck it
+          d.sectionNone.modules = false;
+        } else if (!el.checked && i !== -1) {
+          d.selectedModules.splice(i, 1);
+          // Cascade: remove any child options that no longer have a parent
+          var children = childOptionsFor(code);
+          children.forEach(function (c) {
+            // Check if this child has any other selected parent
+            var otherParents = (c.selection.parentCodes || []).filter(function (p) { return p !== code && d.selectedModules.indexOf(p) !== -1; });
+            if (otherParents.length === 0) {
+              var ci = d.selectedModuleOptions.indexOf(c.code);
+              if (ci !== -1) d.selectedModuleOptions.splice(ci, 1);
+            }
+          });
+        }
+        // Clear any section error
+        if (d.sectionErrors && d.sectionErrors.modules) delete d.sectionErrors.modules;
+        scheduleAutosave();
+        reRenderStep2();
+      });
+    });
+
+    // Module option checkboxes
+    document.querySelectorAll('[data-mopt]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        var code = el.dataset.mopt;
+        var i = d.selectedModuleOptions.indexOf(code);
+        if (el.checked && i === -1) d.selectedModuleOptions.push(code);
+        else if (!el.checked && i !== -1) d.selectedModuleOptions.splice(i, 1);
+        scheduleAutosave();
+        reRenderStep2();
+      });
+    });
+
+    // Platform option rows — entire row clickable
+    document.querySelectorAll('[data-platform]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (el.classList.contains('disabled')) return;
+        var code = el.dataset.platform;
+        var i = d.selectedPlatform.indexOf(code);
+        if (i === -1) {
+          d.selectedPlatform.push(code);
+          d.sectionNone.platform = false;
+        } else {
+          d.selectedPlatform.splice(i, 1);
+        }
+        if (d.sectionErrors && d.sectionErrors.platform) delete d.sectionErrors.platform;
+        scheduleAutosave();
+        reRenderStep2();
+      });
+    });
+
+    // One-Time rows
+    document.querySelectorAll('[data-onetime]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (el.classList.contains('disabled')) return;
+        var code = el.dataset.onetime;
+        // Find the SKU to check if it's required
+        var sku = state.catalog.skus.find(function (s) { return s.code === code; });
+        if (!sku) return;
+        var reqBadge = (sku.selection && sku.selection.displayBadges || []).indexOf('REQUIRED') !== -1;
+        if (reqBadge) return;  // Cannot toggle required ones
+        var i = d.selectedOneTime.indexOf(code);
+        if (i === -1) {
+          d.selectedOneTime.push(code);
+          d.sectionNone.oneTime = false;
+        } else {
+          d.selectedOneTime.splice(i, 1);
+        }
+        if (d.sectionErrors && d.sectionErrors.oneTime) delete d.sectionErrors.oneTime;
+        scheduleAutosave();
+        reRenderStep2();
+      });
+    });
+
+    // None-needed checkboxes
+    var noneModules = document.getElementById('none-modules');
+    if (noneModules) noneModules.addEventListener('change', function () {
+      d.sectionNone.modules = noneModules.checked;
+      if (d.sectionErrors && d.sectionErrors.modules) delete d.sectionErrors.modules;
+      scheduleAutosave();
+      reRenderStep2();
+    });
+
+    var nonePlat = document.getElementById('none-platform');
+    if (nonePlat) nonePlat.addEventListener('change', function () {
+      d.sectionNone.platform = nonePlat.checked;
+      if (d.sectionErrors && d.sectionErrors.platform) delete d.sectionErrors.platform;
+      scheduleAutosave();
+      reRenderStep2();
+    });
+
+    var noneOne = document.getElementById('none-onetime');
+    if (noneOne) noneOne.addEventListener('change', function () {
+      d.sectionNone.oneTime = noneOne.checked;
+      if (d.sectionErrors && d.sectionErrors.oneTime) delete d.sectionErrors.oneTime;
+      scheduleAutosave();
+      reRenderStep2();
+    });
+  }
+
+  function reRenderStep2() {
+    var panel = document.getElementById('tp-panel');
+    panel.innerHTML = renderSelectors();
+    bindStep2();
+  }
+
+  function validateStep2() {
+    var errs = {};
+    var d = state.draft;
+    if (d.selectedModules.length === 0 && !d.sectionNone.modules) errs.modules = true;
+    if (d.selectedPlatform.length === 0 && !d.sectionNone.platform) errs.platform = true;
+    var optOneTime = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; });
+    if (optOneTime.length === 0 && !d.sectionNone.oneTime) errs.oneTime = true;
+    d.sectionErrors = errs;
+    return Object.keys(errs).length === 0;
+  }
+
+  // ==============================================================
+  // STEP 3 — Review & Calculate
+  // ==============================================================
+  function buildDraftForMathEngine() {
+    var d = state.draft;
+    // Aggregate all selections into the draft format the math engine expects
+    var selected = []
+      .concat(d.selectedModules)
+      .concat(d.selectedModuleOptions)
+      .concat(d.selectedPlatform)
+      .concat(d.selectedOneTime);
+    return {
+      companyName: d.prospectCompany,
+      contactName: d.primaryContactName,
+      primaryUseCase: d.solutionChallenge,
+      dealStage: 'Proposal',
+      estimatedCloseDate: d.estDecisionDate,
+      companySegment: d.companySegment,
+      userCount: parseInt(d.expectedLicenseCount, 10) || 0,
+      contractYears: parseInt(d.termYears, 10) || 1,
+      selectedSkuCodes: selected,
+      notes: ''
+    };
+  }
+
+  function renderReview() {
+    var d = state.draft;
+    var engineDraft = buildDraftForMathEngine();
+    var calc = TrendzactMath.calculateProposal(engineDraft, state.catalog);
+    state._lastCalc = calc;
+    var fmt = TrendzactMath.formatMoney;
+
+    var seg = state.catalog.companySizeSegments.find(function (s) { return s.key === d.companySegment; });
+    var segLabel = seg ? seg.label + ' (' + seg.headcountRange + ')' : '—';
+
+    // Prospect snapshot
+    var prospectLine = [
+      d.prospectCompany || '—',
+      d.primaryContactName + (d.primaryContactRole ? ', ' + d.primaryContactRole : ''),
+      segLabel,
+      (d.expectedLicenseCount || '—') + ' licenses',
+      (d.termYears || '—') + 'yr term'
+    ].filter(Boolean).join(' · ');
+
+    var mods = d.selectedModules;
+    var modOpts = d.selectedModuleOptions;
+    var plat = d.selectedPlatform;
+    var one = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; });
+
+    var skuName = function (code) {
+      var s = state.catalog.skus.find(function (x) { return x.code === code; });
+      return s ? s.name : code;
+    };
+
+    var errorsHtml = '';
+    if (calc.errors && calc.errors.length) {
+      errorsHtml = '<div class="tp-section-blocker">Cannot calculate: ' + calc.errors.map(esc).join('; ') + '</div>';
+    }
+
+    var summaryRows = [];
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Recurring subtotal (list)</span><span>' + fmt(calc.totals.recurringListUsd) + '</span></div>');
+    if (calc.bundleDiscount.discountAmountUsd > 0) {
+      summaryRows.push('<div class="tp-summary-row discount"><span class="tp-pricing-label">Bundle discount (' + calc.bundleDiscount.eligibleModuleCount + ' modules, ' + calc.bundleDiscount.discountPct + '%)</span><span>−' + fmt(calc.bundleDiscount.discountAmountUsd) + '</span></div>');
+    }
+    summaryRows.push('<div class="tp-summary-row subgroup">Annual recurring by year</div>');
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Year 1</span><span>' + fmt(calc.totals.recurringYear1Usd) + '</span></div>');
+    if (calc.totals.contractYears >= 2) {
+      summaryRows.push('<div class="tp-summary-row discount"><span class="tp-pricing-label">Year 2 (' + (100 - calc.multiYearContinuity.year2Pct) + '% of Y1)</span><span>' + fmt(calc.totals.recurringYear2Usd) + '</span></div>');
+    }
+    if (calc.totals.contractYears >= 3) {
+      summaryRows.push('<div class="tp-summary-row discount"><span class="tp-pricing-label">Year 3 (' + (100 - calc.multiYearContinuity.year3Pct) + '% of Y1)</span><span>' + fmt(calc.totals.recurringYear3Usd) + '</span></div>');
+    }
+    summaryRows.push('<div class="tp-summary-row subgroup">One-time setup</div>');
+    summaryRows.push('<div class="tp-summary-row onetime"><span class="tp-pricing-label">Total one-time setup</span><span>' + fmt(calc.totals.oneTimeUsd) + '</span></div>');
+    summaryRows.push('<div class="tp-summary-row total"><span>Total contract value (' + calc.totals.contractYears + 'yr)</span><span>' + fmt(calc.totals.tcvUsd) + '</span></div>');
+
+    var itemList = function (codes, emptyText) {
+      if (!codes.length) return '<li style="color:var(--med-gray);">' + esc(emptyText) + '</li>';
+      return codes.map(function (c) {
+        return '<li><code>' + esc(c) + '</code> — ' + esc(skuName(c)) + '</li>';
+      }).join('');
+    };
+
+    return (
+      '<h3>Step 3 — Review &amp; Calculate</h3>' +
+      '<p class="tp-lede">Live totals. Click any "Edit →" link to jump back and adjust.</p>' +
+
+      errorsHtml +
+
+      '<div class="tp-review-section">' +
+        '<div class="tp-review-head">' +
+          '<span class="tp-review-title">Prospect</span>' +
+          '<button class="tp-review-edit" data-goto="0">Edit →</button>' +
+        '</div>' +
+        '<div style="font-size:12px;color:var(--med-gray);margin-top:4px;">' + esc(prospectLine) + '</div>' +
+      '</div>' +
+
+      '<div class="tp-review-section">' +
+        '<div class="tp-review-head">' +
+          '<span class="tp-review-title">Core Services</span>' +
+          '<span class="tp-review-count">Always included</span>' +
+        '</div>' +
+        '<ul class="tp-review-items">' +
+          catalogByCategory().required.map(function (s) {
+            return '<li><code>' + esc(s.code) + '</code> — ' + esc(s.name) + '</li>';
+          }).join('') +
+        '</ul>' +
+      '</div>' +
+
+      '<div class="tp-review-section">' +
+        '<div class="tp-review-head">' +
+          '<span class="tp-review-title">Modules</span>' +
+          '<span class="tp-review-count">' + mods.length + ' selected' + (d.sectionNone.modules ? ' (none needed)' : '') + '</span>' +
+          '<button class="tp-review-edit" data-goto="1">Edit →</button>' +
+        '</div>' +
+        '<ul class="tp-review-items">' + itemList(mods, 'None needed') + '</ul>' +
+      '</div>' +
+
+      '<div class="tp-review-section">' +
+        '<div class="tp-review-head">' +
+          '<span class="tp-review-title">Module Options</span>' +
+          '<span class="tp-review-count">' + modOpts.length + ' selected</span>' +
+        '</div>' +
+        '<ul class="tp-review-items">' + itemList(modOpts, 'None') + '</ul>' +
+      '</div>' +
+
+      '<div class="tp-review-section">' +
+        '<div class="tp-review-head">' +
+          '<span class="tp-review-title">Platform Options</span>' +
+          '<span class="tp-review-count">' + plat.length + ' selected' + (d.sectionNone.platform ? ' (none needed)' : '') + '</span>' +
+        '</div>' +
+        '<ul class="tp-review-items">' + itemList(plat, 'None needed') + '</ul>' +
+      '</div>' +
+
+      '<div class="tp-review-section">' +
+        '<div class="tp-review-head">' +
+          '<span class="tp-review-title">One-Time Setup</span>' +
+          '<span class="tp-review-count">' + one.length + ' selected' + (d.sectionNone.oneTime ? ' (no add-ons needed)' : '') + '</span>' +
+        '</div>' +
+        '<ul class="tp-review-items">' +
+          '<li><code>INIT-ONBRD</code> — Initialization and Client Champions Onboarding</li>' +
+          itemList(one, '').replace(/<li style="[^"]+">.*?<\/li>/, '') +
+        '</ul>' +
+      '</div>' +
+
+      '<div class="tp-summary">' +
+        summaryRows.join('') +
+      '</div>'
+    );
+  }
+
+  function bindStep3() {
+    document.querySelectorAll('[data-goto]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var idx = parseInt(el.dataset.goto, 10);
+        gotoStep(idx);
+      });
+    });
+  }
+
+  // ==============================================================
+  // STEP 4 — Save & Submit
+  // ==============================================================
+  function renderSubmit() {
+    var calc = state._lastCalc || TrendzactMath.calculateProposal(buildDraftForMathEngine(), state.catalog);
+    state._lastCalc = calc;
+    var d = state.draft;
+    var fmt = TrendzactMath.formatMoney;
+    var userEmail = (state.user && state.user.email) || 'partner.user@example.com';
+
+    var defaultTitle = d.proposalTitle || (d.prospectCompany ? 'Proposal for ' + d.prospectCompany : '');
+
+    var banner = '';
+    if (state.submitResult) {
+      banner = '<div class="tp-banner tp-banner-success">' +
+                 'Submitted. Proposal <code>' + esc(state.submitResult.proposalId) + '</code> downloaded as ' +
+                 '<strong>' + esc(state.submitResult.filename) + '</strong>. Draft has been cleared.' +
+               '</div>';
+    }
+
+    return (
+      '<h3>Step 4 — Save &amp; Submit</h3>' +
+      '<p class="tp-lede">Submit assigns a proposal ID, generates a partner-ready PDF, and clears the draft.</p>' +
+
+      '<div class="tp-submit-panel">' +
+        '<div class="tp-submit-header">' +
+          '<div>' +
+            '<div class="tp-submit-hero-label">Total contract value (' + calc.totals.contractYears + 'yr)</div>' +
+            '<div class="tp-submit-hero-value">' + fmt(calc.totals.tcvUsd) + '</div>' +
+          '</div>' +
+          '<div style="text-align:right;">' +
+            '<div class="tp-submit-hero-label">Proposal ID (assigned on submit)</div>' +
+            '<div class="tp-uuid' + (state.submitResult ? '' : ' pending') + '">' +
+              esc(state.submitResult ? state.submitResult.proposalId : '— pending —') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="tp-submit-field">' +
+          '<label>Proposal Title<span class="req">*</span></label>' +
+          '<input type="text" id="sf-title" value="' + esc(defaultTitle) + '" placeholder="e.g., Proposal for Acme Manufacturing"/>' +
+          '<p class="tp-hint" style="margin-top:4px;">Appears on the PDF cover.</p>' +
+        '</div>' +
+
+        '<div class="tp-submit-field">' +
+          '<label>Generated By</label>' +
+          '<div class="tp-text-display">' + esc(userEmail) + '</div>' +
+          '<p class="tp-hint" style="margin-top:4px;">Partner email is stamped on the PDF footer.</p>' +
+        '</div>' +
+
+        '<div class="tp-submit-field">' +
+          '<label>CC To (optional, for your own record)</label>' +
+          '<input type="text" id="sf-cc" value="' + esc(d.ccTo) + '" placeholder="colleague@yourco.com, team@yourco.com"/>' +
+          '<p class="tp-hint" style="margin-top:4px;">Reserved for future email integration. Not used in v1 download.</p>' +
+        '</div>' +
+
+        '<div class="tp-submit-row">' +
+          '<button type="button" class="danger" id="tp-clear">Clear — Start Over</button>' +
+          '<button type="button" class="primary" id="tp-submit"' + (state.submitResult ? ' disabled' : '') + '>Submit &amp; Download PDF</button>' +
+        '</div>' +
+
+        banner +
+      '</div>'
+    );
+  }
+
+  function bindStep4() {
+    var titleInp = document.getElementById('sf-title');
+    if (titleInp) titleInp.addEventListener('input', function () {
+      state.draft.proposalTitle = titleInp.value;
       scheduleAutosave();
     });
+    var ccInp = document.getElementById('sf-cc');
+    if (ccInp) ccInp.addEventListener('input', function () {
+      state.draft.ccTo = ccInp.value;
+      scheduleAutosave();
+    });
+    var clearBtn = document.getElementById('tp-clear');
+    if (clearBtn) clearBtn.addEventListener('click', function () {
+      if (!confirm('Clear this proposal and start a new one? This cannot be undone.')) return;
+      clearDraftDoc().then(function () {
+        state.submitResult = null;
+        startFresh();
+      });
+    });
+    var submitBtn = document.getElementById('tp-submit');
+    if (submitBtn) submitBtn.addEventListener('click', onSubmit);
   }
 
-  function row(k, v) {
-    return '<tr><th>' + escapeHtml(k) + '</th><td>' + escapeHtml(String(v)) + '</td></tr>';
-  }
-
-  // -----------------------------------------------------------
-  // Step 4 - Render (after onRender confirmation)
-  // -----------------------------------------------------------
-  function onRender() {
-    if (!state._lastCalc || state._lastCalc.hasErrors) {
-      showStatus('Cannot render — please fix errors above.', 'error');
+  async function onSubmit() {
+    if (!state.draft.proposalTitle || !state.draft.proposalTitle.trim()) {
+      alert('Please enter a proposal title.');
       return;
     }
-    if (!confirm('Render the proposal as a PDF? Your draft will be cleared after the PDF is downloaded.')) return;
+    if (!confirm('Generate the proposal PDF and download it? The draft will be cleared on success.')) return;
 
-    gotoStep(4);
+    var panel = document.getElementById('tp-panel');
+    panel.innerHTML =
+      '<div style="text-align:center; padding: 60px 20px;">' +
+        '<div class="tp-spinner"></div>' +
+        '<h3>Generating proposal…</h3>' +
+        '<p class="tp-lede">Building PDF for ' + esc(state.draft.prospectCompany) + '.</p>' +
+      '</div>';
 
-    // Generate PDF
-    setTimeout(async function () {
-      try {
-        var pdfResult = window.TrendzactProposalRender.render({
-          draft: state.draft,
-          calculation: state._lastCalc,
-          catalog: state.catalog,
-          partnerEmail: state.user ? state.user.email : ''
-        });
-
-        await clearDraftDoc();
-        // Render success
-        var body = document.getElementById('wiz-step-body');
-        body.innerHTML = renderStep4Success(pdfResult);
-        document.getElementById('wiz-stepper').innerHTML = renderStepper();
-        document.getElementById('wiz-back').style.display = 'none';
-        document.getElementById('wiz-restart').addEventListener('click', function () {
-          state.draft = emptyDraft();
-          state.draft.createdAt = new Date().toISOString();
-          gotoStep(1);
-        });
-      } catch (e) {
-        console.error('[Wizard] render failed', e);
-        document.getElementById('wiz-step-body').innerHTML = renderStep4Failure(e);
-      }
-    }, 50);
-
-    document.getElementById('wiz-step-body').innerHTML = renderStep4Loading();
+    try {
+      var calc = state._lastCalc || TrendzactMath.calculateProposal(buildDraftForMathEngine(), state.catalog);
+      var result = window.TrendzactProposalRender.render({
+        draft: buildDraftForMathEngine(),
+        calculation: calc,
+        catalog: state.catalog,
+        partnerEmail: (state.user && state.user.email) || ''
+      });
+      state.submitResult = result;
+      await clearDraftDoc();
+      gotoStep(3);   // Re-render Step 4 to show success banner
+    } catch (e) {
+      console.error('[TP Wizard] submit failed', e);
+      panel.innerHTML =
+        '<div style="text-align:center; padding: 60px 20px;">' +
+          '<h3>Could not generate proposal</h3>' +
+          '<p class="tp-lede">' + esc(e.message || String(e)) + '</p>' +
+          '<button type="button" class="primary" onclick="location.reload()">Reload</button>' +
+        '</div>';
+    }
   }
 
-  function renderStep4Loading() {
-    return '<div class="wiz-render-state">' +
-             '<div class="wiz-spinner"></div>' +
-             '<h2 class="wiz-h2">Generating proposal…</h2>' +
-             '<p class="wiz-sub">Building PDF for ' + escapeHtml(state.draft.companyName) + '.</p>' +
-           '</div>';
+  // --------------------------------------------------------------
+  // Step handler dispatch
+  // --------------------------------------------------------------
+  function bindStepHandlers() {
+    var stepId = STEPS[state.step].id;
+    if (stepId === 'fields') bindStep1();
+    else if (stepId === 'selectors') bindStep2();
+    else if (stepId === 'review') bindStep3();
+    else if (stepId === 'submit') bindStep4();
   }
 
-  function renderStep4Success(pdfResult) {
-    return '<div class="wiz-render-state wiz-render-success">' +
-             '<div class="wiz-checkmark">✓</div>' +
-             '<h2 class="wiz-h2">Proposal generated</h2>' +
-             '<p class="wiz-sub">Proposal ID: <code>' + escapeHtml(pdfResult.proposalId) + '</code></p>' +
-             '<p class="wiz-sub">PDF saved as <strong>' + escapeHtml(pdfResult.filename) + '</strong> to your Downloads folder.</p>' +
-             '<div class="wiz-render-actions">' +
-               '<button type="button" class="btn btn-primary" id="wiz-restart">Start a new proposal</button>' +
-               '<a href="/" class="btn btn-ghost">Return to Home</a>' +
-             '</div>' +
-           '</div>';
-  }
-
-  function renderStep4Failure(err) {
-    return '<div class="wiz-render-state wiz-render-error">' +
-             '<h2 class="wiz-h2">Could not generate proposal</h2>' +
-             '<p class="wiz-sub">' + escapeHtml(err.message || String(err)) + '</p>' +
-             '<button type="button" class="btn btn-ghost" onclick="location.reload()">Reload</button>' +
-           '</div>';
-  }
-
-  // -----------------------------------------------------------
-  // Helpers
-  // -----------------------------------------------------------
-  function showStatus(msg, kind) {
-    var el = document.getElementById('wiz-status');
-    if (!el) return;
-    el.style.display = 'block';
-    el.className = 'wiz-status wiz-status-' + (kind || 'info');
-    el.textContent = msg;
-    setTimeout(function () { el.style.display = 'none'; }, 6000);
-  }
-
-  function renderFatalError(msg) {
-    var mount = document.getElementById('wizard-mount');
-    if (!mount) return;
-    mount.innerHTML = '<div class="wiz-error-box"><strong>Could not start Proposal Builder.</strong><p>' + escapeHtml(msg) + '</p></div>';
-  }
-
-  function escapeHtml(s) {
+  // --------------------------------------------------------------
+  // Utilities
+  // --------------------------------------------------------------
+  function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function formatTimeAgo(iso) {
+  function timeAgo(iso) {
     try {
       var diff = Date.now() - new Date(iso).getTime();
       var mins = Math.round(diff / 60000);
@@ -759,7 +1218,19 @@
     } catch (e) { return ''; }
   }
 
-  // -----------------------------------------------------------
+  function renderFatalError(msg) {
+    var mount = document.getElementById('wizard-mount');
+    if (!mount) return;
+    mount.innerHTML =
+      '<div class="tp-section-blocker" style="font-size:14px; padding: 20px;">' +
+        '<strong>Could not start the Proposal Builder.</strong>' +
+        '<p style="margin-top:8px;">' + esc(msg) + '</p>' +
+      '</div>';
+  }
+
+  // --------------------------------------------------------------
+  // Public surface
+  // --------------------------------------------------------------
   window.TrendzactWizard = {
     init: init
   };

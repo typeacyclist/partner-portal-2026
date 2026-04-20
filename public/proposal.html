@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Proposal Builder · Trendzact Partners</title>
-<meta name="description" content="Build a partner proposal for Trendzact GRC1 with full pricing, modules, and PDF rendering." />
+<meta name="description" content="Build a partner proposal for Trendzact GRC1 with full pricing, modules, and PDF generation." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -24,7 +24,7 @@
   <header class="page-head">
     <span class="eyebrow">Partner Tool · 02</span>
     <h1>Proposal Builder</h1>
-    <p class="lede">Capture the opportunity, pick modules and add-ons, and render a partner-ready PDF. Drafts autosave so you can pick up later.</p>
+    <p class="lede">Four steps: proposal fields, solution selectors, review &amp; calculate, then save &amp; submit. Drafts autosave to your account so you can pick up later on any device.</p>
   </header>
 
   <section>
@@ -47,16 +47,17 @@
 <script src="/assets/proposal-render.js"></script>
 <script src="/assets/proposal-wizard.js"></script>
 <script>
-  // Boot the wizard once auth is ready (auth.js dispatches this event)
-  window.addEventListener('trendzact-auth-ready', function () {
-    window.TrendzactWizard.init();
-  });
-  // Fallback: if auth-ready never fires (e.g. dev with no auth), try after delay
-  setTimeout(function () {
-    if (window.TrendzactWizard && !window.TrendzactWizard._booted) {
-      try { window.TrendzactWizard.init(); } catch (e) { console.error(e); }
-    }
-  }, 3000);
+  // Boot the wizard once auth is ready (auth.js dispatches this event).
+  var _booted = false;
+  function bootWizard() {
+    if (_booted) return;
+    _booted = true;
+    try { window.TrendzactWizard.init(); }
+    catch (e) { console.error('[proposal] wizard init failed', e); }
+  }
+  window.addEventListener('trendzact-auth-ready', bootWizard);
+  // Fallback: if auth-ready never fires (e.g. dev without Firebase configured), try after a short delay.
+  setTimeout(bootWizard, 3000);
 </script>
 </body>
 </html>
