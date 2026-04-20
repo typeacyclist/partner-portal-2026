@@ -1073,15 +1073,25 @@
 
     var banner = '';
     if (state.submitResult) {
+      var er = state.submitResult.emailResult || {};
+      var emailLine = '';
+      if (er.ok) {
+        var ccPart = (d.ccTo && d.ccTo.trim()) ? ' and CC\'d to ' + esc(d.ccTo.trim()) : '';
+        emailLine = '<br/>Email copy sent to <code>' + esc(state.user && state.user.email || 'you') + '</code>' + ccPart + '.';
+      } else {
+        emailLine = '<br/><span style="color:#B45309;">Email could not be sent (' + esc(er.code || 'unknown') + '): ' + esc(er.error || 'unknown error') + '. Your PDF downloaded successfully; the proposal ID is saved.</span>';
+      }
       banner = '<div class="tp-banner tp-banner-success">' +
                  'Submitted. Proposal <code>' + esc(state.submitResult.proposalId) + '</code> downloaded as ' +
-                 '<strong>' + esc(state.submitResult.filename) + '</strong>. Draft has been cleared.' +
+                 '<strong>' + esc(state.submitResult.filename) + '</strong>.' +
+                 emailLine +
+                 '<br/>Draft has been cleared.' +
                '</div>';
     }
 
     return (
       '<h3>Step 4 — Save &amp; Submit</h3>' +
-      '<p class="tp-lede">Submit assigns a proposal ID, generates a partner-ready PDF, and clears the draft.</p>' +
+      '<p class="tp-lede">Submit assigns a proposal ID, downloads the PDF to your browser, and emails you a copy with the PDF attached. Deal Desk is BCC\'d for pipeline tracking.</p>' +
 
       '<div class="tp-submit-panel">' +
         '<div class="tp-submit-header">' +
@@ -1110,14 +1120,14 @@
         '</div>' +
 
         '<div class="tp-submit-field">' +
-          '<label>CC To (optional, for your own record)</label>' +
+          '<label>CC To (optional)</label>' +
           '<input type="text" id="sf-cc" value="' + esc(d.ccTo) + '" placeholder="colleague@yourco.com, team@yourco.com"/>' +
-          '<p class="tp-hint" style="margin-top:4px;">Reserved for future email integration. Not used in v1 download.</p>' +
+          '<p class="tp-hint" style="margin-top:4px;">Comma- or semicolon-separated. These addresses will be CC\'d on the email copy of this proposal.</p>' +
         '</div>' +
 
         '<div class="tp-submit-row">' +
           '<button type="button" class="danger" id="tp-clear">Clear — Start Over</button>' +
-          '<button type="button" class="primary" id="tp-submit"' + (state.submitResult ? ' disabled' : '') + '>Submit &amp; Download PDF</button>' +
+          '<button type="button" class="primary" id="tp-submit"' + (state.submitResult ? ' disabled' : '') + '>Submit, Download &amp; Email</button>' +
         '</div>' +
 
         banner +
@@ -1153,14 +1163,17 @@
       alert('Please enter a proposal title.');
       return;
     }
-    if (!confirm('Generate the proposal PDF and download it? The draft will be cleared on success.')) return;
+    var ccDescription = state.draft.ccTo && state.draft.ccTo.trim()
+      ? '. A copy will be emailed to you (CC: ' + state.draft.ccTo.trim() + ')'
+      : '. A copy will be emailed to you';
+    if (!confirm('Generate and download the proposal PDF' + ccDescription + '? The draft will be cleared on success.')) return;
 
     var panel = document.getElementById('tp-panel');
     panel.innerHTML =
       '<div style="text-align:center; padding: 60px 20px;">' +
         '<div class="tp-spinner"></div>' +
         '<h3>Generating proposal…</h3>' +
-        '<p class="tp-lede">Building PDF for ' + esc(state.draft.prospectCompany) + '.</p>' +
+        '<p class="tp-lede">Building PDF for ' + esc(state.draft.prospectCompany) + ' and sending email.</p>' +
       '</div>';
 
     try {
@@ -1169,9 +1182,17 @@
         draft: buildDraftForMathEngine(),
         calculation: calc,
         catalog: state.catalog,
-        partnerEmail: (state.user && state.user.email) || ''
+        partnerEmail: (state.user && state.user.email) || '',
+        ccTo: state.draft.ccTo || ''
       });
-      state.submitResult = result;
+      // PDF download has already been triggered by render().
+      // Wait for the email result so we can report both outcomes.
+      var emailResult = await result.emailPromise;
+      state.submitResult = {
+        proposalId: result.proposalId,
+        filename: result.filename,
+        emailResult: emailResult
+      };
       await clearDraftDoc();
       gotoStep(3);   // Re-render Step 4 to show success banner
     } catch (e) {

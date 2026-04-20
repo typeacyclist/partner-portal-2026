@@ -333,28 +333,61 @@
     return { doc: doc, proposalId: proposalId };
   }
 
-  // Fire the email send in parallel with the PDF download.
+  // Fire the email send with the base64-encoded PDF attached.
   // Returns a Promise that resolves with { ok: true, resendId } or
   // { ok: false, code, error }. Never throws — caller can render either outcome.
-  async function sendEmail(input, proposalId) {
+  //
+  // This function posts to the existing sendProposal Cloud Function contract:
+  //   { to, company, contact, contactEmail, proposalId, useCase,
+  //     annualRecurring, tcv, termYears, pdfBase64, pdfFilename, cc }
+  // Authentication is via X-Portal-Secret header (shared-secret pattern).
+  async function sendEmail(input, proposalId, pdfBase64, pdfFilename) {
     try {
-      var user = (window.TrendzactAuth && window.TrendzactAuth.currentUser) || null;
-      if (!user) {
-        return { ok: false, code: 'NO_USER', error: 'Not signed in — email not sent.' };
+      var cfg = window.TrendzactConfig || {};
+      if (!cfg.portalSecret || cfg.portalSecret === 'REPLACE_ME_WITH_GENERATED_SECRET') {
+        return { ok: false, code: 'NO_SECRET',
+                 error: 'Portal shared secret not configured in portal-config.js.' };
       }
-      var idToken = await user.getIdToken();
+      var endpoint = cfg.sendProposalUrl || '/api/send-proposal';
+
+      var draft = input.draft || {};
+      var calc = input.calculation || {};
+      var totals = calc.totals || {};
+
+      var partnerEmail = (input.partnerEmail || '').trim();
+      if (!partnerEmail) {
+        return { ok: false, code: 'NO_PARTNER_EMAIL',
+                 error: 'Partner email not available — email not sent.' };
+      }
+
+      // Parse the optional CC list. Accept comma or semicolon separators.
+      var ccList = [];
+      if (input.ccTo && input.ccTo.trim()) {
+        ccList = input.ccTo.split(/[,;]/)
+          .map(function (s) { return s.trim(); })
+          .filter(function (s) { return s.length > 0; });
+      }
+
       var payload = {
+        to: partnerEmail,
+        company: draft.companyName || '',
+        contact: draft.contactName || '',
+        contactEmail: draft.contactEmail || '',
         proposalId: proposalId,
-        draft: input.draft,
-        calculation: input.calculation,
-        partnerEmail: input.partnerEmail || user.email,
-        ccTo: (input.ccTo || '').trim()
+        useCase: draft.primaryUseCase || '',
+        annualRecurring: totals.recurringYear1Usd || totals.year1AnnualUsd || null,
+        tcv: totals.tcvUsd || null,
+        termYears: totals.contractYears || draft.contractYears || 1,
+        pdfBase64: pdfBase64,
+        pdfFilename: pdfFilename,
+        cc: ccList
       };
-      var resp = await fetch('/api/send-proposal', {
+
+      var resp = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + idToken
+          'X-Portal-Secret': cfg.portalSecret
         },
         body: JSON.stringify(payload)
       });
@@ -363,8 +396,8 @@
       if (!resp.ok) {
         return {
           ok: false,
-          code: (body && body.code) || 'HTTP_' + resp.status,
-          error: (body && body.error) || 'Email service returned ' + resp.status
+          code: 'HTTP_' + resp.status,
+          error: (body && (body.error || body.message)) || 'Email service returned ' + resp.status
         };
       }
       return { ok: true, resendId: body && body.resendId };
@@ -374,11 +407,12 @@
     }
   }
 
-  // render() — kicks off the PDF download synchronously (browser save dialog),
-  // then fires the email in the background. Returns the email promise so the
-  // caller can await it and report both outcomes in the Step 4 success banner.
+  // render() — builds the PDF once, then:
+  //   (1) triggers a local browser download (partner's immediate copy)
+  //   (2) fires the email with the PDF attached as base64
+  // Both happen from the same rendered PDF so the files are byte-identical.
   //
-  // Shape:
+  // Returns:
   //   {
   //     proposalId: 'TZ-XXXXXXXX',
   //     filename: 'trendzact-proposal-...-TZ-XXXXXXXX.pdf',
@@ -389,10 +423,18 @@
     var safeCo = (input.draft.companyName || 'prospect').replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 30);
     var filename = 'trendzact-proposal-' + safeCo + '-' + built.proposalId + '.pdf';
 
-    // Kick off both paths in parallel. PDF save is synchronous (it triggers the
-    // browser download); email is async fetch that resolves to a result object.
+    // Get the PDF as a base64 string for the email attachment.
+    // jsPDF's datauristring output returns "data:application/pdf;base64,<...>"
+    // — strip the prefix so we send just the base64 payload.
+    var dataUri = built.doc.output('datauristring');
+    var commaIdx = dataUri.indexOf(',');
+    var pdfBase64 = commaIdx >= 0 ? dataUri.substring(commaIdx + 1) : dataUri;
+
+    // Trigger local download (partner gets immediate copy).
     built.doc.save(filename);
-    var emailPromise = sendEmail(input, built.proposalId);
+
+    // Fire the email in parallel — resolves with result object, never throws.
+    var emailPromise = sendEmail(input, built.proposalId, pdfBase64, filename);
 
     return {
       proposalId: built.proposalId,
