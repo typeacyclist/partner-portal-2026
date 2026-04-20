@@ -249,6 +249,18 @@
       y += 4;
     }
 
+    // Validity line — applies whether single-year or multi-year
+    var issuedAt = new Date();
+    var expiresAt = new Date(issuedAt.getTime());
+    expiresAt.setUTCDate(expiresAt.getUTCDate() + 90);
+    var issuedStr = issuedAt.toISOString().slice(0, 10);
+    var expiresStr = expiresAt.toISOString().slice(0, 10);
+    text(doc,
+         'Pricing valid for 90 days from issue.  Issued ' + issuedStr + '  ·  Expires ' + expiresStr + '.',
+         MARGIN, y + 3,
+         { size: 8, style: 'italic', color: C.medGray });
+    y += 8;
+
     // Notes
     if (draft.notes && draft.notes.trim()) {
       y += 4;
@@ -321,12 +333,72 @@
     return { doc: doc, proposalId: proposalId };
   }
 
+  // Fire the email send in parallel with the PDF download.
+  // Returns a Promise that resolves with { ok: true, resendId } or
+  // { ok: false, code, error }. Never throws — caller can render either outcome.
+  async function sendEmail(input, proposalId) {
+    try {
+      var user = (window.TrendzactAuth && window.TrendzactAuth.currentUser) || null;
+      if (!user) {
+        return { ok: false, code: 'NO_USER', error: 'Not signed in — email not sent.' };
+      }
+      var idToken = await user.getIdToken();
+      var payload = {
+        proposalId: proposalId,
+        draft: input.draft,
+        calculation: input.calculation,
+        partnerEmail: input.partnerEmail || user.email,
+        ccTo: (input.ccTo || '').trim()
+      };
+      var resp = await fetch('/api/send-proposal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + idToken
+        },
+        body: JSON.stringify(payload)
+      });
+      var body = null;
+      try { body = await resp.json(); } catch (e) { /* non-JSON response */ }
+      if (!resp.ok) {
+        return {
+          ok: false,
+          code: (body && body.code) || 'HTTP_' + resp.status,
+          error: (body && body.error) || 'Email service returned ' + resp.status
+        };
+      }
+      return { ok: true, resendId: body && body.resendId };
+    } catch (e) {
+      console.error('[ProposalRender] sendEmail threw:', e);
+      return { ok: false, code: 'NETWORK_ERROR', error: e.message || String(e) };
+    }
+  }
+
+  // render() — kicks off the PDF download synchronously (browser save dialog),
+  // then fires the email in the background. Returns the email promise so the
+  // caller can await it and report both outcomes in the Step 4 success banner.
+  //
+  // Shape:
+  //   {
+  //     proposalId: 'TZ-XXXXXXXX',
+  //     filename: 'trendzact-proposal-...-TZ-XXXXXXXX.pdf',
+  //     emailPromise: Promise<{ ok, code?, error?, resendId? }>
+  //   }
   function render(input) {
     var built = buildPdf(input);
     var safeCo = (input.draft.companyName || 'prospect').replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 30);
     var filename = 'trendzact-proposal-' + safeCo + '-' + built.proposalId + '.pdf';
+
+    // Kick off both paths in parallel. PDF save is synchronous (it triggers the
+    // browser download); email is async fetch that resolves to a result object.
     built.doc.save(filename);
-    return { proposalId: built.proposalId, filename: filename };
+    var emailPromise = sendEmail(input, built.proposalId);
+
+    return {
+      proposalId: built.proposalId,
+      filename: filename,
+      emailPromise: emailPromise
+    };
   }
 
   window.TrendzactProposalRender = { render: render };
