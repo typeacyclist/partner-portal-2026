@@ -55,3 +55,8 @@ build/
 /files/
 /partner-portal-*.zip
 /files.zip
+
+# Preview artifacts from Claude delivery bundles (never ship to prod)
+/public/email-body-preview.html
+/public/proposal-pdf-preview.*
+/CHANGELOG.md
