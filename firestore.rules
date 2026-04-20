@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Partner drafts and user profile — each user owns their own subtree.
+    // The proposal wizard writes to users/{uid}/activeProposal/current.
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Proposals sent — written only by the sendProposal Cloud Function,
+    // which uses admin SDK and bypasses these rules. Block all client access
+    // so partners can't browse each other's submitted proposals.
+    match /proposals_sent/{id} {
+      allow read, write: if false;
+    }
+
+    // Any future collections not explicitly matched above default-deny.
+    // Add new collections with their own match blocks as features are built.
+  }
+}
