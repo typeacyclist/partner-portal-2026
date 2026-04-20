@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Proposal Builder · Trendzact Partners</title>
+<meta name="description" content="Build a partner proposal for Trendzact GRC1 with full pricing, modules, and PDF rendering." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/styles.css" />
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<main class="page-shell">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a><span></span><a href="#" aria-current="page">Proposal</a>
+  </nav>
+
+  <header class="page-head">
+    <span class="eyebrow">Partner Tool · 02</span>
+    <h1>Proposal Builder</h1>
+    <p class="lede">Capture the opportunity, pick modules and add-ons, and render a partner-ready PDF. Drafts autosave so you can pick up later.</p>
+  </header>
+
+  <section>
+    <div id="wizard-mount">
+      <p style="color: var(--med-gray); font-size: 14px; padding: 20px 0;">Loading proposal builder…</p>
+    </div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="/assets/firebase-config.js"></script>
+<script type="module" src="/assets/auth.js"></script>
+<script src="/assets/header.js"></script>
+<script src="/assets/footer.js"></script>
+<script src="/assets/app.js"></script>
+
+<!-- Wizard pipeline -->
+<script src="/assets/proposal-math.js"></script>
+<script src="/assets/proposal-render.js"></script>
+<script src="/assets/proposal-wizard.js"></script>
+<script>
+  // Boot the wizard once auth is ready (auth.js dispatches this event)
+  window.addEventListener('trendzact-auth-ready', function () {
+    window.TrendzactWizard.init();
+  });
+  // Fallback: if auth-ready never fires (e.g. dev with no auth), try after delay
+  setTimeout(function () {
+    if (window.TrendzactWizard && !window.TrendzactWizard._booted) {
+      try { window.TrendzactWizard.init(); } catch (e) { console.error(e); }
+    }
+  }, 3000);
+</script>
+</body>
+</html>

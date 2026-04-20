@@ -1,0 +1,1099 @@
+{
+  "_readme": [
+    "Trendzact Partners Portal - Global Product Catalog",
+    "",
+    "v6 - Fully priced v1 commercial catalog + complete feature copy",
+    "  - 8 GA modules priced (SWA/SIA/eDLP $180, ITM/SVM/MSR $120, SR-QAM/ECS $80)",
+    "  - CORE $25K flat, CARE $20K base (x careMultiplier), INIT-ONBRD $25K base (x presaleMultiplier)",
+    "  - License-count bracket multipliers: 1.20x (1-100) / 1.00x (101-500) / 0.85x (501-2500) / 0.70x (2501+)",
+    "  - Bundle discount FORMULA-BASED: 15% per module from 2+, caps at 45%",
+    "  - Multi-year continuity: 15% Year 2, 30% Year 3",
+    "  - 6 BETA modules (EUBA/GRC-CEA/WEI/DWA/AAO/MCE) have NO pricing block",
+    "  - PRIVSCR is per-user $20/user/yr service on SWA + SIA",
+    "  - OBSRVR-DET is per-user $15/user/yr on SWA",
+    "  - Meeting connectors $8K each (TEAMS/ZOOM/WEBEX/GMEET), CONN-PURVIEW $15K (multi-parent)",
+    "  - 5 Platform Options: PLAT-AWSACC $75K / PLAT-AWSBCP $40K / PLAT-PBK $20K / PLAT-SOC $30K / PLAT-BI $15K",
+    "  - 5 One-Time: INIT-DPIA $20K / INT-OKTA $8K / INT-PING $8K / INT-GRAPH $12K / INT-SPLUNK $10K",
+    "",
+    "Naming conventions:",
+    "   INT-*    one-time setup/integration (category 30)",
+    "   CONN-*   recurring connector (category 20)",
+    "   PLAT-*   platform option (category 25)",
+    "   INIT-*   one-time initialization/assessment (category 30)",
+    "",
+    "Allowed displayBadges values (v1):",
+    "   REQUIRED  - auto-included, un-toggleable (blue in wizard)",
+    "   BETA      - visible but NOT selectable (amber in wizard)",
+    "   NEW GA    - recently promoted to GA, visible and selectable (green in wizard)",
+    "",
+    "BETA visibility rule:",
+    "   - SKU renders with amber BETA badge",
+    "   - Checkbox is disabled (cursor not-allowed)",
+    "   - Bundle-discount thresholds do NOT count BETA SKUs",
+    "   - If a parent Module is BETA, its nested optional add-ons are HIDDEN",
+    "   - BETA SKUs have NO pricing block until promoted to GA",
+    "",
+    "This file is served at /catalog.json with Cache-Control: no-cache.",
+    "Schema spec: product-catalog-schema-v1.md"
+  ],
+  "catalogVersion": "global-v6-draft",
+  "updatedAt": "2026-04-20T00:00:00Z",
+  "companySizeSegments": [
+    {
+      "key": "early_growth",
+      "label": "Early Growth",
+      "headcountRange": "1-50",
+      "presaleMultiplier": 0.15,
+      "careMultiplier": 0.1
+    },
+    {
+      "key": "scaled_smb",
+      "label": "Scaled SMB",
+      "headcountRange": "51-200",
+      "presaleMultiplier": 0.35,
+      "careMultiplier": 0.25
+    },
+    {
+      "key": "emerging_midmkt",
+      "label": "Emerging Mid-Mkt",
+      "headcountRange": "201-500",
+      "presaleMultiplier": 0.75,
+      "careMultiplier": 0.8
+    },
+    {
+      "key": "core_midmkt",
+      "label": "Core Mid-Market",
+      "headcountRange": "501-1,000",
+      "presaleMultiplier": 1.0,
+      "careMultiplier": 1.0
+    },
+    {
+      "key": "upper_midmkt",
+      "label": "Upper Mid-Market",
+      "headcountRange": "1,001-2,500",
+      "presaleMultiplier": 1.5,
+      "careMultiplier": 1.3
+    },
+    {
+      "key": "commercial_ent",
+      "label": "Commercial Ent.",
+      "headcountRange": "2,501-7,500",
+      "presaleMultiplier": 2.5,
+      "careMultiplier": 1.8
+    },
+    {
+      "key": "strategic_ent",
+      "label": "Strategic Ent.",
+      "headcountRange": "7,501-20,000",
+      "presaleMultiplier": 4.0,
+      "careMultiplier": 2.5
+    },
+    {
+      "key": "global_conglom",
+      "label": "Global Conglom.",
+      "headcountRange": "20,000+",
+      "presaleMultiplier": 6.0,
+      "careMultiplier": 4.0
+    }
+  ],
+  "licenseCountBrackets": [
+    {
+      "maxUsers": 100,
+      "multiplier": 1.2,
+      "label": "1-100 users"
+    },
+    {
+      "maxUsers": 500,
+      "multiplier": 1.0,
+      "label": "101-500 users"
+    },
+    {
+      "maxUsers": 2500,
+      "multiplier": 0.85,
+      "label": "501-2,500 users"
+    },
+    {
+      "maxUsers": null,
+      "multiplier": 0.7,
+      "label": "2,501+ users"
+    }
+  ],
+  "bundleDiscount": {
+    "perModulePct": 15,
+    "maxPct": 45,
+    "startAtCount": 2,
+    "_doc": "Discount applies only to Modules that have bundleEligible:true and are not BETA. n=count of selected eligible modules. discount% = min(maxPct, max(0, (n - startAtCount + 1) * perModulePct)). So n=1 -> 0%, n=2 -> 15%, n=3 -> 30%, n=4+ -> 45%."
+  },
+  "multiYearContinuity": {
+    "year1Pct": 0,
+    "year2Pct": 15,
+    "year3Pct": 30,
+    "_doc": "Applied to recurring totals. Year 1 = full price. Year 2 = (1 - 0.15) of Year 1 recurring. Year 3 = (1 - 0.30) of Year 1 recurring."
+  },
+  "skus": [
+    {
+      "code": "CORE",
+      "name": "GRC1 Core Platform",
+      "category": "11-Required Service",
+      "description": "Unified edge-first governance, risk, and control platform. Required for every Trendzact deployment. Includes edge agent, embedded decision engine, monitoring profiles, and SOC operations framework.",
+      "isActive": true,
+      "displayOrder": 1,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat per tenant annual",
+        "amountUsd": 25000
+      },
+      "selection": {
+        "mode": "auto",
+        "parentCodes": null,
+        "displayBadges": [
+          "REQUIRED"
+        ]
+      },
+      "timing": "recurring",
+      "bundleEligible": false,
+      "features": {
+        "included": [
+          "Edge agent and decision engine",
+          "Monitoring profiles and policy authoring",
+          "SOC operations framework",
+          "Audit and evidence ledger"
+        ],
+        "optionalAddOns": []
+      }
+    },
+    {
+      "code": "CARE",
+      "name": "Care Support with aligned SLA",
+      "category": "11-Required Service",
+      "description": "Ongoing support and SLA tiered by client size. Includes incident response, upgrade management, and advisory hours.",
+      "isActive": true,
+      "displayOrder": 2,
+      "pricing": {
+        "model": "tieredByCompanySize",
+        "billableUnit": "per segment tier annual",
+        "baseAmountUsd": 20000,
+        "multiplierRef": "careMultiplier"
+      },
+      "selection": {
+        "mode": "auto",
+        "parentCodes": null,
+        "displayBadges": [
+          "REQUIRED"
+        ]
+      },
+      "timing": "recurring",
+      "bundleEligible": false,
+      "features": {
+        "included": [
+          "24x7 incident response",
+          "Upgrade and patch management",
+          "Quarterly advisory review",
+          "SLA aligned to company size"
+        ],
+        "optionalAddOns": []
+      }
+    },
+    {
+      "code": "SWA",
+      "name": "Secure Workspaces Anywhere",
+      "category": "10-Module",
+      "description": "Maintains workspace compliance and reduces physical and visual exposure risk in hybrid and regulated environments. Clear-desk monitoring, unauthorized observer detection, and unattended workstation controls.",
+      "isActive": true,
+      "displayOrder": 10,
+      "pricing": {
+        "model": "tieredByLicenseCount",
+        "billableUnit": "per named user annual",
+        "baseAmountUsdPerUser": 180
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Clear-desk rule engine",
+          "Unattended workstation alerts",
+          "Workspace compliance dashboard",
+          "Privacy-aware capture"
+        ],
+        "optionalAddOns": [
+          "ARCH",
+          "PRIVSCR",
+          "OBSRVR-DET"
+        ]
+      }
+    },
+    {
+      "code": "SIA",
+      "name": "Session Identity Assurance",
+      "category": "10-Module",
+      "description": "Maintains continuous confidence in who is actually present during sensitive work. Session identity assurance, risk-triggered step-up verification, and imposter detection.",
+      "isActive": true,
+      "displayOrder": 11,
+      "pricing": {
+        "model": "tieredByLicenseCount",
+        "billableUnit": "per named user annual",
+        "baseAmountUsdPerUser": 180
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Continuous facial verification",
+          "Liveness detection",
+          "Risk-triggered step-up prompts",
+          "Imposter and credential-share detection"
+        ],
+        "optionalAddOns": [
+          "PRIVSCR"
+        ]
+      }
+    },
+    {
+      "code": "eDLP",
+      "name": "Exposure Data Loss Prevention",
+      "category": "10-Module",
+      "description": "Detects and prevents visual and behavioral data exposure that legacy DLP tools cannot see, especially across screens, workspaces, and human actions. Edge-evaluated with deterministic mask, watermark, and restrict responses.",
+      "isActive": true,
+      "displayOrder": 12,
+      "pricing": {
+        "model": "tieredByLicenseCount",
+        "billableUnit": "per named user annual",
+        "baseAmountUsdPerUser": 180
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Visual exposure intelligence",
+          "Mask, watermark, and restrict actions",
+          "Cross-display exfiltration detection",
+          "Purview and MIP label awareness (requires CONN-PURVIEW)"
+        ],
+        "optionalAddOns": [
+          "ARCH",
+          "CONN-PURVIEW"
+        ]
+      }
+    },
+    {
+      "code": "ITM",
+      "name": "Insider Threat Management",
+      "category": "10-Module",
+      "description": "Prevents insider incidents and data exfiltration through end-to-end detection, containment, case workflows, and explainable response. Edge-evaluated risk scoring with SOC governance.",
+      "isActive": true,
+      "displayOrder": 13,
+      "pricing": {
+        "model": "tieredByLicenseCount",
+        "billableUnit": "per named user annual",
+        "baseAmountUsdPerUser": 120
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Insider risk scoring",
+          "Case workflow and triage",
+          "Edge containment actions",
+          "Explainable response journal"
+        ],
+        "optionalAddOns": [
+          "ARCH",
+          "CONN-PURVIEW"
+        ]
+      }
+    },
+    {
+      "code": "SVM",
+      "name": "Secure Virtual Meetings",
+      "category": "10-Module",
+      "description": "Prevents data exposure, identity abuse, and compliance failures during virtual meetings. Meeting-aware screenshare exposure controls, participant identity assurance, and recording governance.",
+      "isActive": true,
+      "displayOrder": 14,
+      "pricing": {
+        "model": "tieredByLicenseCount",
+        "billableUnit": "per named user annual",
+        "baseAmountUsdPerUser": 120
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Meeting-aware screenshare controls",
+          "Participant identity assurance",
+          "Recording and evidence governance",
+          "Dynamic watermarking"
+        ],
+        "optionalAddOns": [
+          "CONN-TEAMS",
+          "CONN-ZOOM",
+          "CONN-WEBEX",
+          "CONN-GMEET"
+        ]
+      }
+    },
+    {
+      "code": "MSR",
+      "name": "Multi-Screen Recording",
+      "category": "10-Module",
+      "description": "Provides defensible, event-linked evidence of on-screen activity for investigations, incident reconstruction, high-fidelity response, and regulated review. Single and multi-monitor capture.",
+      "isActive": true,
+      "displayOrder": 15,
+      "pricing": {
+        "model": "tieredByLicenseCount",
+        "billableUnit": "per named user annual",
+        "baseAmountUsdPerUser": 120
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Multi-display screen capture",
+          "Event-linked evidence binding",
+          "Investigation timeline review",
+          "Compliance-aligned retention"
+        ],
+        "optionalAddOns": [
+          "MSR-ALL",
+          "MSR-ALERT",
+          "ARCH",
+          "CONN-PURVIEW"
+        ]
+      }
+    },
+    {
+      "code": "SR-QAM",
+      "name": "Screen Recording for QA/QM Anywhere",
+      "category": "10-Module",
+      "description": "Supports regulated review, QA, forensic reconstruction, and defensible evidence preservation when proof of on-screen activity is required.",
+      "isActive": true,
+      "displayOrder": 16,
+      "pricing": {
+        "model": "tieredByLicenseCount",
+        "billableUnit": "per named user annual",
+        "baseAmountUsdPerUser": 80
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Interaction scoring",
+          "Custom QA/QM criteria",
+          "Defensible evidence retention"
+        ],
+        "optionalAddOns": [
+          "STT"
+        ]
+      }
+    },
+    {
+      "code": "ECS",
+      "name": "Edge Computer Scan",
+      "category": "10-Module",
+      "description": "Monitors unproductive computer periods and precise geolocation. Activity scan with geolocation-anomaly alerting.",
+      "isActive": true,
+      "displayOrder": 17,
+      "pricing": {
+        "model": "tieredByLicenseCount",
+        "billableUnit": "per named user annual",
+        "baseAmountUsdPerUser": 80
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Activity scan",
+          "Precise geolocation tracking",
+          "Unproductive period detection"
+        ],
+        "optionalAddOns": [
+          "GEO-ALERT"
+        ]
+      }
+    },
+    {
+      "code": "EUBA",
+      "name": "Edge User Behavior & Activity Analytics",
+      "category": "10-Module",
+      "description": "Detects insider risk through direct observation of human behavior, providing earlier visibility than log-only analytics.",
+      "isActive": true,
+      "displayOrder": 20,
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": [
+          "BETA"
+        ]
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Behavioral anomaly detection",
+          "Activity enrichment",
+          "Explainable behavioral timelines"
+        ],
+        "optionalAddOns": []
+      }
+    },
+    {
+      "code": "GRC-CEA",
+      "name": "GRC Control Effectiveness & Audit Assurance",
+      "category": "10-Module",
+      "description": "Proves controls are active, effective, and reducing risk through continuous validation, attestation, and auditor-ready reporting.",
+      "isActive": true,
+      "displayOrder": 21,
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": [
+          "BETA"
+        ]
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Continuous control validation",
+          "Control drift detection",
+          "Auditor-ready reporting"
+        ],
+        "optionalAddOns": []
+      }
+    },
+    {
+      "code": "WEI",
+      "name": "Workforce Efficiency Intelligence",
+      "category": "10-Module",
+      "description": "Improves workforce efficiency and reveals engagement trends by analyzing work patterns and application usage.",
+      "isActive": true,
+      "displayOrder": 22,
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": [
+          "BETA"
+        ]
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Work pattern analysis",
+          "Application usage insights",
+          "Coaching and engagement metrics"
+        ],
+        "optionalAddOns": []
+      }
+    },
+    {
+      "code": "DWA",
+      "name": "Digital Workflow Analytics",
+      "category": "10-Module",
+      "description": "Reduces friction, rework, and unnecessary steps by mapping actual user journeys across applications.",
+      "isActive": true,
+      "displayOrder": 23,
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": [
+          "BETA"
+        ]
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Cross-application journey mapping",
+          "Intended-vs-actual flow comparison",
+          "Rework and friction detection"
+        ],
+        "optionalAddOns": []
+      }
+    },
+    {
+      "code": "AAO",
+      "name": "Application Adoption & Optimization",
+      "category": "10-Module",
+      "description": "Increases software ROI by identifying underused applications and features and improving adoption.",
+      "isActive": true,
+      "displayOrder": 24,
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": [
+          "BETA"
+        ]
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Application usage benchmarking",
+          "Feature-level adoption tracking",
+          "Training gap identification"
+        ],
+        "optionalAddOns": []
+      }
+    },
+    {
+      "code": "MCE",
+      "name": "Meeting & Collaboration Effectiveness",
+      "category": "10-Module",
+      "description": "Reduces unproductive meeting time and improves collaboration outcomes.",
+      "isActive": true,
+      "displayOrder": 25,
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": [
+          "BETA"
+        ]
+      },
+      "timing": "recurring",
+      "bundleEligible": true,
+      "features": {
+        "included": [
+          "Meeting engagement metrics",
+          "Participation quality analysis",
+          "Follow-through and action tracking"
+        ],
+        "optionalAddOns": []
+      }
+    },
+    {
+      "code": "ARCH",
+      "name": "Interaction Cold Storage Archive",
+      "category": "20-Module Option Recurring",
+      "description": "Long-term retention of screen, alert, and interaction evidence. v1 uses fixed defaults: 365d retention, 100GB storage, 50GB/mo transfer.",
+      "isActive": true,
+      "displayOrder": 30,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat annual",
+        "amountUsd": 12000
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "SWA",
+          "MSR",
+          "ITM",
+          "eDLP"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "MSR-ALL",
+      "name": "MSR - Capture All Mode",
+      "category": "20-Module Option Recurring",
+      "description": "Capture all screen activity continuously for QA review, investigations, and compliance archive.",
+      "isActive": true,
+      "displayOrder": 31,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat annual",
+        "amountUsd": 18000
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "MSR"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "MSR-ALERT",
+      "name": "MSR - Alert-Triggered Capture",
+      "category": "20-Module Option Recurring",
+      "description": "Capture screen evidence only when rules fire. Minimal-footprint alternative to capture-all.",
+      "isActive": true,
+      "displayOrder": 32,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat annual",
+        "amountUsd": 10000
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "MSR"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "STT",
+      "name": "Speech-to-Text Transcription",
+      "category": "20-Module Option Recurring",
+      "description": "Transcribe voice interactions for QA/QM review and searchability.",
+      "isActive": true,
+      "displayOrder": 33,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat annual",
+        "amountUsd": 8000
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "SR-QAM"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "GEO-ALERT",
+      "name": "Geolocation Anomaly Alerts",
+      "category": "20-Module Option Recurring",
+      "description": "Alerts on geolocation anomalies detected by ECS (unusual location patterns, jurisdiction crossings, policy-restricted regions).",
+      "isActive": true,
+      "displayOrder": 34,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat annual",
+        "amountUsd": 5000
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "ECS"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "PRIVSCR",
+      "name": "Privacy Screen Service",
+      "category": "20-Module Option Recurring",
+      "description": "Per-user privacy screen service. Billed like a service/lease, reduces unauthorized viewers.",
+      "isActive": true,
+      "displayOrder": 35,
+      "pricing": {
+        "model": "flatPerUser",
+        "billableUnit": "per named user annual",
+        "amountUsdPerUser": 20
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "SWA",
+          "SIA"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "OBSRVR-DET",
+      "name": "Observer Detection",
+      "category": "20-Module Option Recurring",
+      "description": "Detects unauthorized observers in the workspace. Per-user enhancement to SWA.",
+      "isActive": true,
+      "displayOrder": 36,
+      "pricing": {
+        "model": "flatPerUser",
+        "billableUnit": "per named user annual",
+        "amountUsdPerUser": 15
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "SWA"
+        ],
+        "displayBadges": [
+          "NEW GA"
+        ]
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "CONN-TEAMS",
+      "name": "Microsoft Teams Connector",
+      "category": "20-Module Option Recurring",
+      "description": "Connector enabling integration with Microsoft Teams.",
+      "isActive": true,
+      "displayOrder": 40,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat annual",
+        "amountUsd": 8000
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "SVM"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "CONN-ZOOM",
+      "name": "Zoom Connector",
+      "category": "20-Module Option Recurring",
+      "description": "Connector enabling integration with Zoom.",
+      "isActive": true,
+      "displayOrder": 41,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat annual",
+        "amountUsd": 8000
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "SVM"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "CONN-WEBEX",
+      "name": "Webex Connector",
+      "category": "20-Module Option Recurring",
+      "description": "Connector enabling integration with Webex.",
+      "isActive": true,
+      "displayOrder": 42,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat annual",
+        "amountUsd": 8000
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "SVM"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "CONN-GMEET",
+      "name": "Google Meet Connector",
+      "category": "20-Module Option Recurring",
+      "description": "Connector enabling integration with Google Meet.",
+      "isActive": true,
+      "displayOrder": 43,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat annual",
+        "amountUsd": 8000
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "SVM"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "CONN-PURVIEW",
+      "name": "Microsoft Purview Connector",
+      "category": "20-Module Option Recurring",
+      "description": "Connector enabling integration with Microsoft Purview.",
+      "isActive": true,
+      "displayOrder": 44,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat annual",
+        "amountUsd": 15000
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "eDLP",
+          "MSR",
+          "ITM"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "PLAT-AWSACC",
+      "name": "Dedicated AWS Workload Pipeline",
+      "category": "25-Platform Option Recurring",
+      "description": "Isolated compute and storage per domain. Single-tenant AWS footprint for data-residency-sensitive deployments.",
+      "isActive": true,
+      "displayOrder": 50,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat per tenant annual",
+        "amountUsd": 75000
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "PLAT-AWSBCP",
+      "name": "BCP Failover SLA Addendum",
+      "category": "25-Platform Option Recurring",
+      "description": "Pilot-light business continuity failover in a second AWS region. RPO and RTO commitments per SLA addendum.",
+      "isActive": true,
+      "displayOrder": 51,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat per tenant annual",
+        "amountUsd": 40000
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "PLAT-PBK",
+      "name": "Playbook Authoring Workspace",
+      "category": "25-Platform Option Recurring",
+      "description": "Dedicated authoring environment for governed response playbooks.",
+      "isActive": true,
+      "displayOrder": 52,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat per tenant annual",
+        "amountUsd": 20000
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "PLAT-SOC",
+      "name": "Managed SOC Analyst Hours Pool",
+      "category": "25-Platform Option Recurring",
+      "description": "Pool of Trendzact SOC analyst hours for triage and investigation assist.",
+      "isActive": true,
+      "displayOrder": 53,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat per tenant annual",
+        "amountUsd": 30000
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "PLAT-BI",
+      "name": "Embedded BI / Power BI Connector",
+      "category": "25-Platform Option Recurring",
+      "description": "Embedded BI workspace and Power BI connector for executive reporting.",
+      "isActive": true,
+      "displayOrder": 54,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "flat per tenant annual",
+        "amountUsd": 15000
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "INIT-ONBRD",
+      "name": "Initialization and Client Champions Onboarding",
+      "category": "30-Setup/Integration Option",
+      "description": "Tenant initialization and client champions onboarding. Tiered by company size per segment multiplier.",
+      "isActive": true,
+      "displayOrder": 60,
+      "pricing": {
+        "model": "tieredByCompanySize",
+        "billableUnit": "one-time, tier by company size",
+        "baseAmountUsd": 25000,
+        "multiplierRef": "presaleMultiplier"
+      },
+      "selection": {
+        "mode": "auto",
+        "parentCodes": null,
+        "displayBadges": [
+          "REQUIRED"
+        ]
+      },
+      "timing": "oneTime",
+      "bundleEligible": false
+    },
+    {
+      "code": "INIT-DPIA",
+      "name": "Data Privacy Impact Assessment",
+      "category": "30-Setup/Integration Option",
+      "description": "One-time DPIA aligned to prospect jurisdiction. GDPR, CCPA, BDSG, LGPD, and territory-specific assessment.",
+      "isActive": true,
+      "displayOrder": 61,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "one-time per assessment",
+        "amountUsd": 20000
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "oneTime",
+      "bundleEligible": false
+    },
+    {
+      "code": "INT-OKTA",
+      "name": "Okta SSO Integration",
+      "category": "30-Setup/Integration Option",
+      "description": "One-time integration with Okta as identity provider.",
+      "isActive": true,
+      "displayOrder": 62,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "one-time per integration",
+        "amountUsd": 8000
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "oneTime",
+      "bundleEligible": false
+    },
+    {
+      "code": "INT-PING",
+      "name": "Ping SSO Integration",
+      "category": "30-Setup/Integration Option",
+      "description": "One-time integration with Ping Identity as identity provider.",
+      "isActive": true,
+      "displayOrder": 63,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "one-time per integration",
+        "amountUsd": 8000
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "oneTime",
+      "bundleEligible": false
+    },
+    {
+      "code": "INT-GRAPH",
+      "name": "MS Graph API Integration",
+      "category": "30-Setup/Integration Option",
+      "description": "One-time integration with Microsoft Graph for Entra ID and M365 enrichment.",
+      "isActive": true,
+      "displayOrder": 64,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "one-time per integration",
+        "amountUsd": 12000
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "oneTime",
+      "bundleEligible": false
+    },
+    {
+      "code": "INT-SPLUNK",
+      "name": "Splunk SIEM Integration",
+      "category": "30-Setup/Integration Option",
+      "description": "One-time integration pushing GRC1 alerts, cases, and events to Splunk.",
+      "isActive": true,
+      "displayOrder": 65,
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "one-time per integration",
+        "amountUsd": 10000
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "oneTime",
+      "bundleEligible": false
+    }
+  ]
+}

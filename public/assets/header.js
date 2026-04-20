@@ -9,7 +9,7 @@
 (function () {
   const NAV_ITEMS = [
     { href: '/solution-builder.html', label: 'Solution Builder' },
-    { href: '/proposal-builder.html', label: 'Proposal' },
+    { href: '/proposal',              label: 'Proposal' },
     { href: '/live-demo.html',        label: 'Live Demo' },
     { href: '/products.html',         label: 'Products' },
     { href: '/case-studies.html',     label: 'Case Studies' },
@@ -20,7 +20,7 @@
   // Mobile drawer shows the full set (including items not in primary nav)
   const DRAWER_ITEMS = [
     { href: '/solution-builder.html', label: 'Solution Builder' },
-    { href: '/proposal-builder.html', label: 'Proposal Builder' },
+    { href: '/proposal',              label: 'Proposal Builder' },
     { href: '/live-demo.html',        label: 'Live Demo' },
     { href: '/products.html',         label: 'Product Details' },
     { href: '/case-studies.html',     label: 'Industry Case Studies' },
@@ -74,7 +74,7 @@
       ${navLinks}
     </nav>
     <div class="nav-cta">
-      <a href="/sales-order.html" class="btn btn-primary">New Sales Order</a>
+      <a href="/proposal" class="btn btn-primary">New Proposal</a>
       <button class="nav-toggle" aria-label="Open menu" id="navToggle">
         <span></span><span></span><span></span>
       </button>
