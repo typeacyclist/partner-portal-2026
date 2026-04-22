@@ -15,11 +15,11 @@
 // resolve them up-front at render time, but that triggers N Storage lookups
 // per page load. Lazy resolution on click is faster and uses fewer requests.
 //
-// PRODUCT cards render the two-column layout for Key Capabilities +
-// Business Outcomes bullets (more content than other card types).
-// All other card types (solutions, use cases, case studies, buyers)
-// render the compact unified shape: badge / title / summary / chips /
-// bullets / More Info / asset row.
+// Threat Vector cards (formerly Products) render the two-column layout
+// with Key Capabilities + Business Outcomes bullets. All other card
+// types (solutions, use cases, case studies, buyers) render the compact
+// unified shape: badge / title / summary / chips / bullets / More Info /
+// asset row.
 
 import {
   getStorage,
@@ -33,17 +33,17 @@ const ICON_INFOGRAPHIC = `<svg xmlns="http://www.w3.org/2000/svg" width="18" hei
 const ICON_VIDEO = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
 
 const TYPE_LABELS = {
-  solutions:   { tag: 'SOLUTION',    className: 'tag tag-solid' },
-  useCases:    { tag: 'USE CASE',    className: 'tag' },
-  products:    { tag: 'PRODUCT',     className: 'tag' },
-  caseStudies: { tag: 'CASE STUDY',  className: 'tag tag-solid' },
-  buyers:      { tag: 'IDEAL BUYER', className: 'tag' }
+  solutions:   { tag: 'SOLUTION',      className: 'tag tag-solid' },
+  useCases:    { tag: 'USE CASE',      className: 'tag' },
+  vectors:     { tag: 'THREAT VECTOR', className: 'tag' },
+  caseStudies: { tag: 'CASE STUDY',    className: 'tag tag-solid' },
+  buyers:      { tag: 'IDEAL BUYER',   className: 'tag' }
 };
 
 const TYPE_FILTER_KEY = {
   solutions:   'solution',
   useCases:    'usecase',
-  products:    'product',
+  vectors:     'vector',
   caseStudies: 'casestudy',
   buyers:      'buyer'
 };
@@ -104,11 +104,11 @@ function renderTag(tag, variant) {
 }
 
 /**
- * Product-typed cards on Discover use the full product layout so
- * capabilities and outcomes bullets appear on the card. Shares the
- * .product-card styles with the old /products page markup for visual
- * consistency; .sb-product-card scopes Discover-only overrides.
- * Tags + More Info link are rendered because Discover supports them.
+ * Two-column card with Key Capabilities + Business Outcomes bullets.
+ * Originally built for the old Products page; now used for Threat Vector
+ * cards on Discover. CSS classes keep the `product-card` naming for
+ * backward compatibility with styles.css; they describe layout, not
+ * semantic card type.
  */
 function renderProductStyleCard(card, typeKey) {
   const meta = TYPE_LABELS[typeKey];
@@ -172,9 +172,9 @@ function renderCompactCard(card, typeKey) {
 }
 
 function renderCard(card, typeKey) {
-  // Products get the full product-style layout with capability + outcome bullets.
-  // All other types (solutions, use cases, buyers) keep the compact layout.
-  if (typeKey === 'products') {
+  // Threat Vector cards use the full two-column layout with Key Capabilities
+  // + Business Outcomes bullets. All other types use the compact layout.
+  if (typeKey === 'vectors') {
     return renderProductStyleCard(card, typeKey);
   }
   return renderCompactCard(card, typeKey);
@@ -190,7 +190,7 @@ function renderAllCards() {
   }
 
   const html = [];
-  for (const typeKey of ['solutions', 'useCases', 'products', 'caseStudies', 'buyers']) {
+  for (const typeKey of ['solutions', 'useCases', 'vectors', 'caseStudies', 'buyers']) {
     const items = content[typeKey] || [];
     for (const card of items) {
       html.push(renderCard(card, typeKey));
