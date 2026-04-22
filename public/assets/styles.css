@@ -1094,6 +1094,44 @@ p { margin: 0 0 1em; color: var(--dark-gray); }
   .product-card { padding: 22px 20px; }
 }
 
+/* ========================================================================
+   Solution Builder — PRODUCT cards
+   ========================================================================
+   Product-typed cards render the full product format (badge / title /
+   summary / tags / bullets / links / assets) inside the 3-column
+   .card-grid on /solution-builder. They share .product-card styles with
+   the /products page, but these overrides adapt the layout for the
+   narrower grid slot: single-column bullets, tighter padding, smaller
+   heading so everything wraps cleanly.
+
+   The outer card uses three classes: `card product-card sb-product-card`.
+   - `.card` gives the default card hover lift.
+   - `.product-card` is shared with /products.
+   - `.sb-product-card` scopes these SB-only adjustments.
+   ======================================================================== */
+.sb-product-card {
+  padding: 22px 24px;
+  scroll-margin-top: 0;
+}
+.sb-product-card .product-card-head h3 {
+  font-size: 19px;
+}
+.sb-product-card .product-card-body {
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 14px 0;
+  margin: 14px 0 10px;
+}
+.sb-product-card .product-col .check-list li {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 5px 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.sb-product-card .card-tags {
+  margin: 10px 0 0;
+}
 
 /* ========================================================================
    Proposal Wizard (/proposal) — v5 interaction model, portal brand chrome

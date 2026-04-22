@@ -14,6 +14,11 @@
 // Firebase Storage paths get resolved to download URLs on click. We could
 // resolve them up-front at render time, but that triggers N Storage lookups
 // per page load. Lazy resolution on click is faster and uses fewer requests.
+//
+// PRODUCT cards render in the full product format:
+//   badge / title / summary / tags / Key Capabilities + Business Outcomes
+//   bullets / More Info link / asset icon row. Non-product card types
+//   (solutions, use cases, buyers) keep the compact layout.
 
 import {
   getStorage,
@@ -82,15 +87,67 @@ function renderAssetRow(card) {
   return `<div class="asset-row">${parts.join('')}</div>`;
 }
 
+/** Render a bulleted list. Returns empty string if list is empty/missing. */
+function renderBullets(items) {
+  if (!items || !items.length) return '';
+  return `<ul class="check-list">${
+    items.map(it => `<li>${escapeHtml(it)}</li>`).join('')
+  }</ul>`;
+}
+
 function renderTag(tag, variant) {
   const cls = variant === 'gray' ? 'tag tag-gray' : 'tag';
   return `<span class="${cls}">${escapeHtml(tag)}</span>`;
 }
 
-function renderCard(card, typeKey) {
+/**
+ * Product-typed cards on the Solution Builder use the full product layout
+ * so capabilities and outcomes bullets appear on the card. This mirrors the
+ * /products page markup (see product-render.js) so .product-card styles in
+ * styles.css apply. Tags + More Info link are kept because they exist on
+ * the Solution Builder contract but not on the Products page.
+ */
+function renderProductStyleCard(card, typeKey) {
   const meta = TYPE_LABELS[typeKey];
   const filterKey = TYPE_FILTER_KEY[typeKey];
-  const tags = (card.tags || []).map(t => renderTag(t, typeKey === 'products' ? null : (typeKey === 'useCases' ? 'gray' : null))).join('');
+  const tags = (card.tags || []).map(t => renderTag(t)).join('');
+  const moreInfo = card.moreInfoUrl && card.moreInfoUrl !== '#'
+    ? `<a href="${escapeHtml(card.moreInfoUrl)}" class="link-arrow">More Info →</a>`
+    : '';
+  const hasBullets = (card.capabilities && card.capabilities.length) ||
+                     (card.outcomes && card.outcomes.length);
+
+  return `
+    <article class="card product-card sb-product-card" data-solution-card data-type="${filterKey}" data-category="${escapeHtml((card.category || '').toUpperCase())}">
+      <div class="product-card-head">
+        <span class="${meta.className}">${meta.tag}</span>
+        <h3>${escapeHtml(card.title)}</h3>
+        ${card.summary ? `<p class="product-summary">${escapeHtml(card.summary)}</p>` : ''}
+      </div>
+
+      ${tags ? `<div class="card-tags">${tags}</div>` : ''}
+
+      ${hasBullets ? `
+      <div class="product-card-body">
+        <div class="product-col">
+          <h4>Key Capabilities</h4>
+          ${renderBullets(card.capabilities)}
+        </div>
+        <div class="product-col">
+          <h4>Business Outcomes</h4>
+          ${renderBullets(card.outcomes)}
+        </div>
+      </div>` : ''}
+
+      ${moreInfo ? `<div class="card-more">${moreInfo}</div>` : ''}
+      ${renderAssetRow(card)}
+    </article>`;
+}
+
+function renderCompactCard(card, typeKey) {
+  const meta = TYPE_LABELS[typeKey];
+  const filterKey = TYPE_FILTER_KEY[typeKey];
+  const tags = (card.tags || []).map(t => renderTag(t, typeKey === 'useCases' ? 'gray' : null)).join('');
   const moreInfo = card.moreInfoUrl && card.moreInfoUrl !== '#'
     ? `<a href="${escapeHtml(card.moreInfoUrl)}" class="link-arrow">More Info →</a>`
     : '';
@@ -105,6 +162,15 @@ function renderCard(card, typeKey) {
       ${moreInfo ? `<div class="card-more">${moreInfo}</div>` : ''}
       ${assetRow}
     </div>`;
+}
+
+function renderCard(card, typeKey) {
+  // Products get the full product-style layout with capability + outcome bullets.
+  // All other types (solutions, use cases, buyers) keep the compact layout.
+  if (typeKey === 'products') {
+    return renderProductStyleCard(card, typeKey);
+  }
+  return renderCompactCard(card, typeKey);
 }
 
 function renderAllCards() {
