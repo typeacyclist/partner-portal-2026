@@ -1,8 +1,8 @@
 // ========================================================================
-// Solution Builder Renderer
+// Discover Page Renderer
 // ========================================================================
 // Reads window.SOLUTION_CONTENT (defined in solution-content.js) and
-// renders cards into #cards-mount on the solution-builder page.
+// renders cards into #cards-mount on the /discover page.
 //
 // For each card, conditionally renders three asset icons:
 //   - Technical Report  (document icon)  → Firebase Storage file
@@ -32,17 +32,19 @@ const ICON_INFOGRAPHIC = `<svg xmlns="http://www.w3.org/2000/svg" width="18" hei
 const ICON_VIDEO = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
 
 const TYPE_LABELS = {
-  solutions: { tag: 'SOLUTION',   className: 'tag tag-solid' },
-  useCases:  { tag: 'USE CASE',   className: 'tag' },
-  products:  { tag: 'PRODUCT',    className: 'tag' },
-  buyers:    { tag: 'IDEAL BUYER', className: 'tag' }
+  solutions:   { tag: 'SOLUTION',    className: 'tag tag-solid' },
+  useCases:    { tag: 'USE CASE',    className: 'tag' },
+  products:    { tag: 'PRODUCT',     className: 'tag' },
+  caseStudies: { tag: 'CASE STUDY',  className: 'tag tag-solid' },
+  buyers:      { tag: 'IDEAL BUYER', className: 'tag' }
 };
 
 const TYPE_FILTER_KEY = {
-  solutions: 'solution',
-  useCases:  'usecase',
-  products:  'product',
-  buyers:    'buyer'
+  solutions:   'solution',
+  useCases:    'usecase',
+  products:    'product',
+  caseStudies: 'casestudy',
+  buyers:      'buyer'
 };
 
 function escapeHtml(s) {
@@ -101,11 +103,11 @@ function renderTag(tag, variant) {
 }
 
 /**
- * Product-typed cards on the Solution Builder use the full product layout
- * so capabilities and outcomes bullets appear on the card. This mirrors the
- * /products page markup (see product-render.js) so .product-card styles in
- * styles.css apply. Tags + More Info link are kept because they exist on
- * the Solution Builder contract but not on the Products page.
+ * Product-typed cards on Discover use the full product layout so
+ * capabilities and outcomes bullets appear on the card. Shares the
+ * .product-card styles with the old /products page markup for visual
+ * consistency; .sb-product-card scopes Discover-only overrides.
+ * Tags + More Info link are rendered because Discover supports them.
  */
 function renderProductStyleCard(card, typeKey) {
   const meta = TYPE_LABELS[typeKey];
@@ -118,7 +120,7 @@ function renderProductStyleCard(card, typeKey) {
                      (card.outcomes && card.outcomes.length);
 
   return `
-    <article class="card product-card sb-product-card" data-solution-card data-type="${filterKey}" data-category="${escapeHtml((card.category || '').toUpperCase())}">
+    <article class="card product-card sb-product-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}" data-category="${escapeHtml((card.category || '').toUpperCase())}">
       <div class="product-card-head">
         <span class="${meta.className}">${meta.tag}</span>
         <h3>${escapeHtml(card.title)}</h3>
@@ -178,12 +180,12 @@ function renderAllCards() {
   if (!mount) return;
   const content = window.SOLUTION_CONTENT;
   if (!content) {
-    console.error('[Solution Builder] solution-content.js did not load');
+    console.error('[Discover] solution-content.js did not load');
     return;
   }
 
   const html = [];
-  for (const typeKey of ['solutions', 'useCases', 'products', 'buyers']) {
+  for (const typeKey of ['solutions', 'useCases', 'products', 'caseStudies', 'buyers']) {
     const items = content[typeKey] || [];
     for (const card of items) {
       html.push(renderCard(card, typeKey));
@@ -224,7 +226,7 @@ async function handleAssetClick(e) {
     const url = await getDownloadURL(fileRef);
     window.open(url, '_blank', 'noopener');
   } catch (err) {
-    console.error('[Solution Builder] Asset load failed:', err);
+    console.error('[Discover] Asset load failed:', err);
     alert(`Could not load ${kind || 'asset'}. The file may not be available yet.`);
   } finally {
     link.innerHTML = originalHtml;

@@ -5,19 +5,18 @@
     {
       heading: 'Selling Tools',
       links: [
-        { href: '/solution-builder.html', label: 'Solution Builder' },
-        { href: '/proposal',              label: 'Proposal Builder' },
-        { href: '/live-demo.html',        label: 'Live Demo' },
-        { href: '/sales-order.html',      label: 'Sales Order' }
+        { href: '/discover.html',    label: 'Discover' },
+        { href: '/proposal',         label: 'Proposal Builder' },
+        { href: '/live-demo.html',   label: 'Demos' },
+        { href: '/sales-order.html', label: 'Sales Order' }
       ]
     },
     {
       heading: 'Learn',
       links: [
-        { href: '/products.html',         label: 'Products' },
-        { href: '/case-studies.html',     label: 'Case Studies' },
         { href: '/video-explainers.html', label: 'Video Explainers' },
-        { href: '/gtm-playbook.html',     label: 'GTM Playbook' }
+        { href: '/gtm-playbook.html',     label: 'GTM Playbook' },
+        { href: '/resources.html',        label: 'Resources' }
       ]
     },
     {

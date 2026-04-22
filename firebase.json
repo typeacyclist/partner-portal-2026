@@ -6,6 +6,38 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "redirects": [
+      {
+        "source": "/solution-builder.html",
+        "destination": "/discover.html",
+        "type": 301
+      },
+      {
+        "source": "/solution-builder",
+        "destination": "/discover",
+        "type": 301
+      },
+      {
+        "source": "/products.html",
+        "destination": "/discover.html",
+        "type": 301
+      },
+      {
+        "source": "/products",
+        "destination": "/discover",
+        "type": 301
+      },
+      {
+        "source": "/case-studies.html",
+        "destination": "/discover.html",
+        "type": 301
+      },
+      {
+        "source": "/case-studies",
+        "destination": "/discover",
+        "type": 301
+      }
+    ],
     "rewrites": [
       {
         "source": "/api/send-proposal",

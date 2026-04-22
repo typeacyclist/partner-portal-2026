@@ -8,22 +8,18 @@
 
 (function () {
   const NAV_ITEMS = [
-    { href: '/solution-builder.html', label: 'Solution Builder' },
-    { href: '/proposal',              label: 'Proposal' },
-    { href: '/live-demo.html',        label: 'Live Demo' },
-    { href: '/products.html',         label: 'Products' },
-    { href: '/case-studies.html',     label: 'Case Studies' },
+    { href: '/discover.html',         label: 'Discover' },
+    { href: '/proposal',              label: 'Proposal Builder' },
+    { href: '/live-demo.html',        label: 'Demos' },
     { href: '/gtm-playbook.html',     label: 'GTM Playbook' },
     { href: '/resources.html',        label: 'Resources' }
   ];
 
   // Mobile drawer shows the full set (including items not in primary nav)
   const DRAWER_ITEMS = [
-    { href: '/solution-builder.html', label: 'Solution Builder' },
+    { href: '/discover.html',         label: 'Discover' },
     { href: '/proposal',              label: 'Proposal Builder' },
-    { href: '/live-demo.html',        label: 'Live Demo' },
-    { href: '/products.html',         label: 'Product Details' },
-    { href: '/case-studies.html',     label: 'Industry Case Studies' },
+    { href: '/live-demo.html',        label: 'Demos' },
     { href: '/video-explainers.html', label: 'Video Explainers' },
     { href: '/gtm-playbook.html',     label: 'GTM Playbook' },
     { href: '/sales-order.html',      label: 'Sales Order Procurement' },

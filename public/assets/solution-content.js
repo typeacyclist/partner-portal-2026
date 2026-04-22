@@ -1,22 +1,30 @@
 // ========================================================================
-// TRENDZACT PARTNERS — SOLUTION BUILDER + PRODUCTS CONTENT
+// TRENDZACT PARTNERS — DISCOVER PAGE CONTENT
 // ========================================================================
 //
-// Single source of truth for cards on:
-//   - /solution-builder  (uses: title, description, tags, asset fields)
-//   - /products          (uses: title, summary, capabilities, outcomes,
-//                         category, asset fields)
+// Single source of truth for all cards rendered on /discover.
+//
+// Renders into five card types:
+//   - SOLUTION    (high-level business challenges)
+//   - USE CASE    (specific scenarios partners sell into)
+//   - PRODUCT     (the modules partners sell — shown with bullets)
+//   - CASE STUDY  (anonymized industry reference stories)
+//   - IDEAL BUYER (personas partners pitch to)
 //
 // Edit this file to add/update/remove cards. No other file needs changing.
 //
 // ---------- Common card fields ----------
 //
-//   id              — unique slug (letters, digits, dashes)
+//   id              — unique slug (letters, digits, dashes). Used as
+//                     the DOM id on product cards so in-page anchor
+//                     links work (e.g. `#grc1-core`).
 //   title           — heading shown on the card
-//   tags            — small chip labels (Solution Builder)
+//   tags            — small chip labels
 //   moreInfoUrl     — "More Info →" link target. Use "#" or omit to hide.
+//                     Product cards link to same-page anchors (e.g.
+//                     `#grc1-core`) so the link scrolls to the card.
 //
-// ---------- Asset fields (all optional, both pages) ----------
+// ---------- Asset fields (all optional) ----------
 //
 //   technicalReport  — Firebase Storage path OR https:// URL → Report icon
 //   infographic      — Firebase Storage path OR https:// URL → Infographic icon
@@ -24,29 +32,26 @@
 //
 //   Omit a field to hide that icon. Don't use empty strings.
 //
-// ---------- Solution Builder fields ----------
+// ---------- Solution / Use Case / Buyer fields ----------
 //
-//   description     — 1-3 sentences shown on the Solution Builder card.
+//   description     — 1-3 sentences shown on the card.
 //
-// ---------- Products page fields (only on items in `products`) ----------
+// ---------- Product-only fields ----------
 //
 //   category        — "CORE" | "MODULE" | "ENHANCE"
-//                     Used as the pill tag at top of the Products card.
-//                     Cards are grouped on the page in this order.
+//                     Shown as the pill tag category on the card.
 //
-//   summary         — Single short sentence under the title on the Products
-//                     page. Different from `description`: shorter, snappier.
+//   summary         — Single short sentence under the title. Shorter
+//                     and snappier than `description`.
 //
-//   capabilities    — Array of strings rendered as the "Key Capabilities"
-//                     bullet list. 4-8 items is the sweet spot.
+//   capabilities    — Array of strings rendered as "Key Capabilities"
+//                     bullets. 4-8 items is the sweet spot.
 //
-//   outcomes        — Array of strings rendered as the "Business Outcomes"
-//                     bullet list. 3-5 items.
+//   outcomes        — Array of strings rendered as "Business Outcomes"
+//                     bullets. 3-5 items.
 //
 // ---------- Tips for editors ----------
 //
-//   - To add a new ENHANCE-tier product, copy a MODULE block, change the
-//     id/title/category/etc., paste into the products array.
 //   - The SAMPLE_* constants below let you drop placeholder assets onto
 //     a card temporarily: e.g. `technicalReport: SAMPLE_REPORT`
 //   - Missing commas between items are the #1 cause of breakage — when in
@@ -54,7 +59,7 @@
 // ========================================================================
 
 // Sample asset paths — available as placeholders if you need one temporarily.
-// Today only the `insider-risk` card uses them.
+// Today only the `insider-risk` and `swa` cards use them.
 const SAMPLE_REPORT      = 'Trendzact logo horizontal on navy backdrop.pdf';
 const SAMPLE_INFOGRAPHIC = 'Trendzact logo stacked on navy backdrop.jpg';
 const SAMPLE_VIDEO       = 'https://vimeo.com/1179002076/d44cd25dc9';
@@ -177,9 +182,10 @@ window.SOLUTION_CONTENT = {
   // ========================================================================
   // PRODUCTS — the modules partners sell
   // ========================================================================
-  // Note: products carry extra fields used only by /products page:
-  //   category, summary, capabilities, outcomes
-  // The Solution Builder ignores those; it only reads title/description/tags.
+  // Product cards render the full format: badge / title / summary / tags /
+  // Key Capabilities + Business Outcomes bullets / More Info / asset row.
+  // moreInfoUrl uses same-page anchors (#<id>) because the render function
+  // sets `id="<card.id>"` on each product card's <article>.
   products: [
     {
       id: 'grc1-core',
@@ -188,7 +194,7 @@ window.SOLUTION_CONTENT = {
       description: 'Required foundation: policies, telemetry, detection, scoring, workflows, playbooks, evidence, and reporting.',
       summary: 'The required operational and governance foundation for every GRC1 deployment.',
       tags: [],
-      moreInfoUrl: '/products.html#core',
+      moreInfoUrl: '#grc1-core',
       capabilities: [
         'Policy and use-case configuration',
         'Telemetry ingestion and normalization',
@@ -213,7 +219,7 @@ window.SOLUTION_CONTENT = {
       description: 'Workspace object detection, observer detection, unattended sessions, and clear desk enforcement.',
       summary: 'Continuous workspace compliance for distributed and regulated environments.',
       tags: [],
-      moreInfoUrl: '/products.html#swa',
+      moreInfoUrl: '#swa',
       capabilities: [
         'Workspace object detection',
         'Observer detection',
@@ -240,7 +246,7 @@ window.SOLUTION_CONTENT = {
       description: 'Facial biometric authentication as a risk-based MFA factor, continuous confidence, liveness, and identity drift.',
       summary: 'Risk-based facial biometric authentication for sensitive activity.',
       tags: [],
-      moreInfoUrl: '/products.html#sia',
+      moreInfoUrl: '#sia',
       capabilities: [
         'Risk-triggered biometric step-up authentication',
         'Continuous confidence scoring',
@@ -263,7 +269,7 @@ window.SOLUTION_CONTENT = {
       description: 'Synchronized evidence across single- and multi-display workstations with policy-bound capture.',
       summary: 'Defensible, synchronized evidence across single- and multi-display workstations.',
       tags: [],
-      moreInfoUrl: '/products.html#msr',
+      moreInfoUrl: '#msr',
       capabilities: [
         'Single- and multi-display enumeration',
         'Continuous, burst, and event-based capture modes',
@@ -286,7 +292,7 @@ window.SOLUTION_CONTENT = {
       description: 'Visual, behavioral, and label-aware exposure prevention at the endpoint with masking and interruption.',
       summary: 'Visual, behavioral, and label-aware exposure prevention at the endpoint.',
       tags: [],
-      moreInfoUrl: '/products.html#edge-dlp',
+      moreInfoUrl: '#edge-dlp',
       capabilities: [
         'Sensitivity-aware enforcement',
         'Visual exposure intelligence',
@@ -309,7 +315,7 @@ window.SOLUTION_CONTENT = {
       description: 'Deterministic detection, explainable signatures, risk scoring, case workflows, and governed response playbooks.',
       summary: 'Deterministic detection, explainable signatures, and governed response.',
       tags: [],
-      moreInfoUrl: '/products.html#itm',
+      moreInfoUrl: '#itm',
       capabilities: [
         'Behavior-driven detections',
         'Explainable signatures and thresholds',
@@ -332,7 +338,7 @@ window.SOLUTION_CONTENT = {
       description: 'Meeting-aware masking, dynamic watermarking, and identity-aware controls for sensitive collaboration.',
       summary: 'Meeting-aware masking, watermarking, and identity-aware collaboration controls.',
       tags: [],
-      moreInfoUrl: '/products.html#svm',
+      moreInfoUrl: '#svm',
       capabilities: [
         'Meeting detection and context awareness',
         'Screenshare-aware masking',
@@ -347,6 +353,77 @@ window.SOLUTION_CONTENT = {
         'Strengthen compliance posture during remote collaboration',
         'Extend data protection into real collaboration workflows'
       ]
+    }
+  ],
+
+  // ========================================================================
+  // CASE STUDIES — anonymized industry reference stories
+  // ========================================================================
+  // Use these in discovery, solution shaping, and objection handling.
+  // `tags[0]` is the industry label; remaining tags are the module mix.
+  caseStudies: [
+    {
+      id: 'cs-global-bank',
+      title: 'Global Bank Reduces Insider Exfiltration by 72%',
+      description: 'Tier-1 bank deployed Edge DLP + ITM across 28,000 endpoints to close visual and clipboard exposure gaps in trading and research.',
+      tags: ['Financial Services', 'Edge DLP', 'ITM'],
+      moreInfoUrl: '#'
+    },
+    {
+      id: 'cs-hospital-phi',
+      title: 'Hospital System Strengthens PHI Workspace Controls',
+      description: 'Regional health system used Secure Workspaces Anywhere to enforce clear-desk and observer detection for remote billing and coding staff.',
+      tags: ['Healthcare', 'SWA'],
+      moreInfoUrl: '#'
+    },
+    {
+      id: 'cs-bpo-regulatory',
+      title: 'Global BPO Compliant Across Six Regulatory Regimes',
+      description: 'Multi-Screen Recording + SIA deployed to 12,000 agents, enabling PCI, HIPAA, and regional PII compliance without platform fragmentation.',
+      tags: ['BPO / Contact Center', 'MSR', 'SIA', 'Edge DLP'],
+      moreInfoUrl: '#'
+    },
+    {
+      id: 'cs-fed-audit',
+      title: 'Federal Agency Gains Continuous Audit Readiness',
+      description: 'GRC1 Core and governed workflows replaced a patchwork of logging and spreadsheet evidence processes, improving audit cycle times by 65%.',
+      tags: ['Public Sector', 'GRC1 Core'],
+      moreInfoUrl: '#'
+    },
+    {
+      id: 'cs-saas-ip',
+      title: 'SaaS Company Protects IP During Remote Collaboration',
+      description: 'Secure Virtual Meetings stopped sensitive screenshare exposure and screenshots during product and engineering reviews across distributed teams.',
+      tags: ['Technology', 'SVM', 'Edge DLP'],
+      moreInfoUrl: '#'
+    },
+    {
+      id: 'cs-manufacturer-trade-secrets',
+      title: 'Regulated Manufacturer Protects Trade Secrets',
+      description: 'Privileged user monitoring with ITM and MSR identified anomalous engineering access patterns before IP exfiltration could occur.',
+      tags: ['Manufacturing', 'ITM', 'MSR'],
+      moreInfoUrl: '#'
+    },
+    {
+      id: 'cs-insurance-sia',
+      title: 'Carrier Strengthens Identity Assurance for Claims Adjusters',
+      description: 'SIA deployed to 4,500 adjusters, adding risk-gated biometric step-up for high-value claim approvals and PII access.',
+      tags: ['Insurance', 'SIA'],
+      moreInfoUrl: '#'
+    },
+    {
+      id: 'cs-law-firm-remote',
+      title: 'Am Law 100 Firm Extends Workspace Controls to Remote Associates',
+      description: 'Observer detection and clear desk enforcement added to hybrid working associates handling confidential client matters.',
+      tags: ['Legal', 'SWA', 'Edge DLP'],
+      moreInfoUrl: '#'
+    },
+    {
+      id: 'cs-utility-ot-adjacent',
+      title: 'Utility Adds Edge Enforcement to Operational Technology Adjacent Systems',
+      description: 'GRC1 deployed on office and engineering endpoints adjacent to OT networks, preventing exposure of SCADA configuration and drawings.',
+      tags: ['Energy / Utilities', 'Edge DLP', 'ITM'],
+      moreInfoUrl: '#'
     }
   ],
 

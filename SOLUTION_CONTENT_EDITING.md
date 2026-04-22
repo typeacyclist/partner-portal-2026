@@ -1,6 +1,6 @@
-# Editing Solution Builder Content
+# Editing Discover Page Content
 
-The Solution Builder page on the Partners Portal displays cards for Solutions, Use Cases, Products, and Ideal Buyers. All card content lives in a single file so anyone comfortable editing text can update it without touching HTML.
+The Discover page on the Partners Portal displays cards for Solutions, Use Cases, Products, and Ideal Buyers. All card content lives in a single file so anyone comfortable editing text can update it without touching HTML.
 
 ## The one file you edit
 
@@ -14,35 +14,47 @@ Four arrays, one per card type:
 
 ```js
 window.SOLUTION_CONTENT = {
-  solutions: [ /* cards that show as "SOLUTION" */ ],
-  useCases:  [ /* cards that show as "USE CASE" */ ],
-  products:  [ /* cards that show as "PRODUCT" */ ],
-  buyers:    [ /* cards that show as "IDEAL BUYER" */ ]
+  solutions:   [ /* cards that show as "SOLUTION" */ ],
+  useCases:    [ /* cards that show as "USE CASE" */ ],
+  products:    [ /* cards that show as "PRODUCT" */ ],
+  caseStudies: [ /* cards that show as "CASE STUDY" */ ],
+  buyers:      [ /* cards that show as "IDEAL BUYER" */ ]
 };
 ```
 
-Each card is an object with these fields:
+### Common card fields (all four types)
 
 | Field | Required? | What it is |
 |---|---|---|
-| `id` | yes | Short unique identifier (e.g. `insider-risk`). Letters, numbers, dashes only. |
+| `id` | yes | Short unique identifier (e.g. `insider-risk`). Letters, numbers, dashes only. Used as the DOM id on product cards so anchor links like `#grc1-core` scroll to the card. |
 | `title` | yes | The card heading. Keep it short — 2-5 words typically. |
-| `description` | yes | 1-3 sentences describing the card. |
+| `description` | yes | 1-3 sentences describing the card. Product cards also use this if `summary` is missing. |
 | `tags` | no | Array of strings shown as small chips. 2-4 items looks best. |
-| `moreInfoUrl` | no | URL for the "More Info →" link at the bottom. Use `'#'` to hide the link. |
+| `moreInfoUrl` | no | URL for the "More Info →" link at the bottom. Use `'#'` to hide the link. For product cards you can use same-page anchors like `'#grc1-core'`. |
 | `technicalReport` | no | Firebase Storage filename (e.g. `reports/insider-risk.pdf`) OR a full `https://` URL. |
 | `infographic` | no | Same format as `technicalReport`. |
 | `vimeoUrl` | no | Full Vimeo URL for the explainer video icon. |
 
 **Missing asset fields → the icon for that asset simply doesn't render.** No placeholder, no grey button — clean cards with only the icons that have content.
 
+### Product-only fields
+
+Product cards render in the full format (with Key Capabilities and Business Outcomes bullets), so they carry a few extra fields:
+
+| Field | Required? | What it is |
+|---|---|---|
+| `category` | yes | `"CORE"`, `"MODULE"`, or `"ENHANCE"`. Shown as the pill tag. |
+| `summary` | recommended | Single short sentence under the title. Shorter/snappier than `description`. |
+| `capabilities` | recommended | Array of strings → "Key Capabilities" bullets. 4-8 items is the sweet spot. |
+| `outcomes` | recommended | Array of strings → "Business Outcomes" bullets. 3-5 items. |
+
 ## Adding a new card
 
-1. Find the right array (solutions, useCases, products, or buyers)
+1. Find the right array (solutions, useCases, products, caseStudies, or buyers)
 2. Copy an existing card block including the surrounding `{` and `},`
 3. Paste it at the end of the array, just before the closing `]`
 4. Edit the values
-5. Save and refresh the Solution Builder page
+5. Save and refresh the Discover page
 
 ```js
 // Example: adding a new use case
@@ -77,7 +89,7 @@ JavaScript object syntax is strict. The top three mistakes:
 2. **Unclosed strings** — especially if a description contains an apostrophe. Use either `'text'` with escaped apostrophes (`'don\'t'`) or `"text with apostrophes"`
 3. **Forgetting the comma between fields** — every field ends with a comma except the last one in its card
 
-**How to test:** open `https://trendzact-partners-001.web.app/solution-builder` in a browser, open DevTools (F12) → Console. Syntax errors show up immediately with a line number.
+**How to test:** open `https://trendzact-partners-001.web.app/discover` in a browser, open DevTools (F12) → Console. Syntax errors show up immediately with a line number.
 
 ## Uploading assets to Firebase Storage
 
@@ -96,7 +108,7 @@ Storage files require authentication — only signed-in partners can open the li
 
 ## What happens on the page
 
-1. Browser loads `solution-builder.html`
+1. Browser loads `discover.html`
 2. Browser loads `solution-content.js` (defines `window.SOLUTION_CONTENT`)
 3. Browser loads `solution-render.js` (reads the content, builds the cards, injects into the page)
 4. User clicks a report/infographic icon → render script fetches a signed download URL from Firebase Storage → opens it in a new tab
