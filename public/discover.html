@@ -9,6 +9,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/assets/styles.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<style>
+  /* The shared .filter-chips rule adds a top border + padding designed for
+     when chips sit under a search input. On Discover, chips sit directly
+     under the page lede, so we drop those ornaments. */
+  .page-head .filter-chips {
+    border-top: 0;
+    padding-top: 0;
+    margin-top: 20px;
+  }
+</style>
 </head>
 <body>
 
@@ -22,16 +32,7 @@
   <header class="page-head">
     <span class="eyebrow">Partner Tool · 01</span>
     <h1>Discover</h1>
-    <p class="lede">Explore Solutions, Use Cases, Products, and Ideal Buyers. Filter and select cards to assemble a tailored recommendation you can export to a proposal.</p>
-    <div class="page-actions">
-      <a href="/proposal" class="btn btn-primary">Continue to Proposal →</a>
-      <a href="#" class="btn btn-ghost">Save selection</a>
-    </div>
-  </header>
-
-  <!-- Search & filter bar -->
-  <section class="search-box">
-    <input class="search-input" type="search" data-solution-search placeholder="Search solutions, use cases, products, case studies, or buyer titles..." />
+    <p class="lede">Discover Trendzact capabilities, identify the ICP, and shape a tailored recommendation for your prospect.</p>
     <div class="filter-chips">
       <button class="chip active" data-filter-chip="all">All</button>
       <button class="chip" data-filter-chip="solution">Solutions</button>
@@ -40,7 +41,7 @@
       <button class="chip" data-filter-chip="casestudy">Case Studies</button>
       <button class="chip" data-filter-chip="buyer">Ideal Buyers</button>
     </div>
-  </section>
+  </header>
 
   <!-- Cards grid -->
   <section>
