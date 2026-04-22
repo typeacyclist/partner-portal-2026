@@ -15,10 +15,11 @@
 // resolve them up-front at render time, but that triggers N Storage lookups
 // per page load. Lazy resolution on click is faster and uses fewer requests.
 //
-// PRODUCT cards render in the full product format:
-//   badge / title / summary / tags / Key Capabilities + Business Outcomes
-//   bullets / More Info link / asset icon row. Non-product card types
-//   (solutions, use cases, buyers) keep the compact layout.
+// PRODUCT cards render the two-column layout for Key Capabilities +
+// Business Outcomes bullets (more content than other card types).
+// All other card types (solutions, use cases, case studies, buyers)
+// render the compact unified shape: badge / title / summary / chips /
+// bullets / More Info / asset row.
 
 import {
   getStorage,
@@ -154,13 +155,17 @@ function renderCompactCard(card, typeKey) {
     ? `<a href="${escapeHtml(card.moreInfoUrl)}" class="link-arrow">More Info →</a>`
     : '';
   const assetRow = renderAssetRow(card);
+  // Accept `summary` as the unified field; fall back to `description` for
+  // backward compatibility with any card blocks that haven't been migrated.
+  const summaryText = card.summary || card.description || '';
 
   return `
-    <div class="card" data-solution-card data-type="${filterKey}">
+    <div class="card sb-unified-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}">
       <span class="${meta.className}">${meta.tag}</span>
       <h3>${escapeHtml(card.title)}</h3>
-      <p>${escapeHtml(card.description)}</p>
+      ${summaryText ? `<p class="card-summary">${escapeHtml(summaryText)}</p>` : ''}
       ${tags ? `<div class="card-tags">${tags}</div>` : ''}
+      ${card.bullets && card.bullets.length ? `<div class="card-bullets">${renderBullets(card.bullets)}</div>` : ''}
       ${moreInfo ? `<div class="card-more">${moreInfo}</div>` : ''}
       ${assetRow}
     </div>`;

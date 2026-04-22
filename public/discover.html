@@ -18,6 +18,36 @@
     padding-top: 0;
     margin-top: 20px;
   }
+
+  /* Unified SB card layout —
+     badge / title / summary / chips / bullets / links row.
+     The summary sits tight under the h3; chips below summary;
+     bullets separated from chips by a thin top border to give
+     them a visual 'content block' feel. */
+  .card.sb-unified-card { scroll-margin-top: 90px; }
+  .card.sb-unified-card .card-summary {
+    font-size: 14px;
+    color: var(--med-gray);
+    margin: 0 0 12px;
+    line-height: 1.55;
+  }
+  .card.sb-unified-card .card-tags { margin-bottom: 12px; }
+  .card.sb-unified-card .card-bullets {
+    padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+    margin-top: 4px;
+  }
+  .card.sb-unified-card .card-bullets .check-list li {
+    padding-left: 20px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .card.sb-unified-card .card-bullets .check-list li::before {
+    width: 6px; height: 6px;
+    top: 8px; left: 4px;
+  }
+  .card.sb-unified-card .card-more { margin-top: 14px; }
 </style>
 </head>
 <body>
