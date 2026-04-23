@@ -99,10 +99,13 @@
     font-weight: 700;
   }
   .vector-key {
-    margin-top: 24px;
+    margin: 0 0 20px;
+    padding: 14px 18px;
+    background: var(--bg-soft);
+    border-radius: var(--radius);
     font-size: 13px;
     color: var(--med-gray);
-    line-height: 1.6;
+    line-height: 1.7;
   }
   .vector-key strong { color: var(--dark-gray); }
 </style>
@@ -130,6 +133,18 @@
   <section class="section">
     <h2>Use Case → Threat Vector Mapping</h2>
     <p class="section-sub">Each use case is evaluated by combining vectors in real time.</p>
+
+    <p class="vector-key">
+      <strong>Threat Vector key:</strong>
+      <strong>Visibility</strong> — what is visible &middot;
+      <strong>Presence</strong> — who is present &middot;
+      <strong>Environment</strong> — where exposure occurs &middot;
+      <strong>Behavior</strong> — how exposure happens &middot;
+      <strong>Context</strong> — why exposure matters &middot;
+      <strong>Continuity</strong> — exposure over time &middot;
+      <strong>Evidence</strong> — what can be proven &middot;
+      <strong>Control</strong> — act in real time
+    </p>
 
     <div class="map-scroll">
       <table class="map-tbl" aria-label="Use Case to Threat Vector mapping">
@@ -304,18 +319,6 @@
         </tbody>
       </table>
     </div>
-
-    <p class="vector-key">
-      <strong>Threat Vector key:</strong>
-      <strong>Visibility</strong> — what is visible &middot;
-      <strong>Presence</strong> — who is present &middot;
-      <strong>Environment</strong> — where exposure occurs &middot;
-      <strong>Behavior</strong> — how exposure happens &middot;
-      <strong>Context</strong> — why exposure matters &middot;
-      <strong>Continuity</strong> — exposure over time &middot;
-      <strong>Evidence</strong> — what can be proven &middot;
-      <strong>Control</strong> — act in real time
-    </p>
   </section>
 
   <section class="section" style="margin-top:56px;">
