@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GRC One Platform · Trendzact Partners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/styles.css" />
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<style>
+  /* GRC One Platform — long-form reference page.
+     Visual emphasis on the GRC1 anchor and the fundamental shift,
+     with a 2-col grid of numbered exposure categories below. */
+
+  /* Video embed — 16:9 aspect ratio.
+     Inserted directly below the page subtitle; spaces away from the
+     GRC1 hero anchor card that follows. */
+  .video-embed-16x9 {
+    position: relative;
+    padding-top: 56.25%;
+    margin: 0 0 32px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    background: #000;
+  }
+  .video-embed-16x9 iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  /* Hero anchor — bigger and more prominent than the smaller anchor
+     callout used on Compare. This is the canonical GRC1 statement. */
+  .grc1-hero {
+    background: linear-gradient(135deg, var(--tint-light), #fff);
+    border: 1px solid var(--med-green);
+    border-radius: var(--radius-lg);
+    padding: 32px 36px;
+    margin: 0 0 32px;
+    box-shadow: var(--shadow-sm);
+  }
+  .grc1-hero .anchor-label {
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dark-green);
+    display: block;
+    margin-bottom: 14px;
+  }
+  .grc1-hero p {
+    margin: 0;
+    font-family: var(--ff-display);
+    font-size: 22px;
+    color: var(--dark-gray);
+    line-height: 1.45;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  @media (max-width: 720px) {
+    .grc1-hero { padding: 24px; }
+    .grc1-hero p { font-size: 18px; }
+  }
+
+  /* The fundamental shift — old → new visualization */
+  .shift-block {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
+    align-items: stretch;
+    margin: 18px 0 8px;
+  }
+  .shift-side {
+    padding: 22px 24px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+  .shift-side .shift-label {
+    font-family: var(--ff-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--med-gray);
+    display: block;
+    margin-bottom: 8px;
+  }
+  .shift-old {
+    border-color: var(--border);
+    color: var(--med-gray);
+  }
+  .shift-old .shift-side-text { color: var(--med-gray); }
+  .shift-new {
+    border-color: var(--med-green);
+    background: var(--tint-light);
+  }
+  .shift-side-text {
+    font-family: var(--ff-display);
+    font-size: 17px;
+    line-height: 1.4;
+    margin: 0;
+    color: var(--dark-gray);
+    font-weight: 500;
+  }
+  .shift-side-detail {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--med-gray);
+  }
+  .shift-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: var(--dark-green);
+    font-weight: 300;
+  }
+  @media (max-width: 720px) {
+    .shift-block {
+      grid-template-columns: 1fr;
+    }
+    .shift-arrow { transform: rotate(90deg); padding: 8px 0; }
+  }
+
+  /* 11 exposure categories — 2-col grid */
+  .exposure-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  @media (max-width: 880px) {
+    .exposure-grid { grid-template-columns: 1fr; }
+  }
+  .exposure-cat {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .exposure-cat-num {
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--med-green);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .exposure-cat h3 {
+    font-family: var(--ff-display);
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--dark-gray);
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+  .exposure-cat ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .exposure-cat ul li {
+    position: relative;
+    padding-left: 18px;
+    margin: 6px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--dark-gray);
+  }
+  .exposure-cat ul li::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 8px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--med-green);
+  }
+
+  /* Vector reconciliation note */
+  .vector-note {
+    margin: 14px 0 32px;
+    padding: 12px 16px;
+    background: var(--bg-soft);
+    border-radius: var(--radius);
+    font-size: 13px;
+    color: var(--med-gray);
+    border-left: 3px solid var(--med-green);
+  }
+  .vector-note a { color: var(--dark-green); font-weight: 500; }
+
+  /* Traditional vs GRC1 side-by-side */
+  .summary-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 8px;
+  }
+  @media (max-width: 720px) {
+    .summary-block { grid-template-columns: 1fr; }
+  }
+  .summary-card {
+    padding: 24px 26px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+  .summary-card .summary-label {
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--med-gray);
+    display: block;
+    margin-bottom: 12px;
+  }
+  .summary-card.summary-trad {
+    background: var(--bg-soft);
+    color: var(--med-gray);
+  }
+  .summary-card.summary-grc1 {
+    background: var(--tint-light);
+    border-color: var(--med-green);
+  }
+  .summary-card.summary-grc1 .summary-label { color: var(--dark-green); }
+  .summary-card ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .summary-card ul li {
+    font-family: var(--ff-display);
+    font-size: 18px;
+    margin: 6px 0;
+    color: var(--dark-gray);
+    font-weight: 500;
+  }
+  .summary-card.summary-trad ul li { color: var(--med-gray); }
+  .grc1-focus {
+    font-family: var(--ff-display);
+    font-size: 28px;
+    color: var(--dark-green);
+    font-weight: 600;
+    margin: 8px 0 18px;
+    letter-spacing: -0.02em;
+  }
+  .across-label {
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--med-gray);
+    margin: 14px 0 8px;
+  }
+
+  /* Tighten section spacing for this dense reference page */
+  .section { margin-top: 48px; }
+  .section h2 { margin-bottom: 8px; }
+  .section .section-sub { margin-top: 0; margin-bottom: 24px; }
+
+  .next-step {
+    background: var(--tint-light) !important;
+    border-color: var(--med-green) !important;
+  }
+</style>
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<main class="page-shell">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a><span></span><a href="#" aria-current="page">GRC One</a>
+  </nav>
+
+  <header class="page-head">
+    <span class="eyebrow">Partner Tool · 01</span>
+    <h1>GRC One Platform</h1>
+    <p class="lede">A unified platform that understands and controls data exposure in real time — based on what is visible, who is present, and where it occurs.</p>
+  </header>
+
+  <div class="video-embed-16x9">
+    <iframe
+      src="https://player.vimeo.com/video/1185752726?h=7d2bbd2b14&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+      allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      title="GRC One – Introduction – Resolving Data Security Blind Spot"
+      loading="lazy"
+      allowfullscreen></iframe>
+  </div>
+
+  <div class="grc1-hero">
+    <span class="anchor-label">GRC1 Definition</span>
+    <p>GRC1 is a unified platform that understands and controls data exposure in real time — based on what is visible, who is present, and where it occurs.</p>
+  </div>
+
+  <section class="section">
+    <h2>The Fundamental Shift</h2>
+    <p class="section-sub">Traditional security operates on delay. GRC1 operates at the moment of exposure.</p>
+
+    <div class="shift-block">
+      <div class="shift-side shift-old">
+        <span class="shift-label">Traditional</span>
+        <p class="shift-side-text">Monitor → Detect → Respond</p>
+        <p class="shift-side-detail">In hours or days</p>
+      </div>
+      <div class="shift-arrow" aria-hidden="true">→</div>
+      <div class="shift-side shift-new">
+        <span class="shift-label">GRC1</span>
+        <p class="shift-side-text">Understand → Decide → Act</p>
+        <p class="shift-side-detail">Real-time, at the endpoint</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>11 Categories of Data Exposure</h2>
+    <p class="section-sub">All exposure shares one characteristic: it occurs at the moment data is visible — not when it is transferred.</p>
+
+    <p class="vector-note">
+      These 11 exposure categories are evaluated through 8 underlying Exposure Vectors. See <a href="/compare.html">Compare</a> for the mapping.
+    </p>
+
+    <div class="exposure-grid">
+
+      <div class="exposure-cat">
+        <span class="exposure-cat-num">01</span>
+        <h3>Visual Exposure (What is visible)</h3>
+        <ul>
+          <li>Sensitive data displayed on screen in open environments</li>
+          <li>Financial, PHI, or IP visible during screen sharing</li>
+          <li>Multi-monitor setups exposing different data simultaneously</li>
+          <li>Documents or dashboards left open and unattended</li>
+          <li>Screens visible through glass walls, public seating, or travel</li>
+        </ul>
+      </div>
+
+      <div class="exposure-cat">
+        <span class="exposure-cat-num">02</span>
+        <h3>Unauthorized Presence (Who is present)</h3>
+        <ul>
+          <li>Shoulder surfing in office or public locations</li>
+          <li>Unknown individuals visible in camera frame during work</li>
+          <li>Family members or bystanders viewing remote work screens</li>
+          <li>External participants in meetings viewing restricted data</li>
+          <li>Session takeover (user leaves, another person continues work)</li>
+        </ul>
+      </div>
+
+      <div class="exposure-cat">
+        <span class="exposure-cat-num">03</span>
+        <h3>Environmental Exposure (Where it occurs)</h3>
+        <ul>
+          <li>Remote work in uncontrolled environments (cafes, airports, hotels)</li>
+          <li>Shared workspaces or hot-desking without controls</li>
+          <li>Sensitive work conducted during travel</li>
+          <li>External meeting environments with unknown participants</li>
+          <li>Use of unmanaged or insecure physical locations</li>
+        </ul>
+      </div>
+
+      <div class="exposure-cat">
+        <span class="exposure-cat-num">04</span>
+        <h3>Behavioral Exposure (How it happens)</h3>
+        <ul>
+          <li>Screenshots of sensitive data</li>
+          <li>Screen recordings during workflows or meetings</li>
+          <li>Copy/paste (clipboard) of sensitive information to other apps</li>
+          <li>Sharing data via personal email, chat, or cloud storage</li>
+          <li>Opening multiple apps to move or replicate data</li>
+          <li>Rapid switching between sensitive and non-sensitive contexts</li>
+        </ul>
+      </div>
+
+      <div class="exposure-cat">
+        <span class="exposure-cat-num">05</span>
+        <h3>Collaboration-Based Exposure</h3>
+        <ul>
+          <li>Sensitive data shared in virtual meetings</li>
+          <li>Unauthorized attendees joining calls</li>
+          <li>Screen sharing without awareness of audience</li>
+          <li>Recording or capturing meeting content</li>
+          <li>Chat-based sharing of restricted information</li>
+        </ul>
+      </div>
+
+      <div class="exposure-cat">
+        <span class="exposure-cat-num">06</span>
+        <h3>Multi-Channel / Multi-Surface Exposure</h3>
+        <ul>
+          <li>Data visible on one screen and captured on another</li>
+          <li>Secondary monitor used to bypass controls</li>
+          <li>Split workflows across devices or windows</li>
+          <li>Simultaneous use of secure and insecure apps</li>
+        </ul>
+      </div>
+
+      <div class="exposure-cat">
+        <span class="exposure-cat-num">07</span>
+        <h3>Shadow Capture (Off-System Exposure)</h3>
+        <ul>
+          <li>Phone camera capturing screens or documents</li>
+          <li>Personal devices used to photograph sensitive data</li>
+          <li>External recording tools not managed by IT</li>
+          <li>Printed material photographed or scanned</li>
+        </ul>
+      </div>
+
+      <div class="exposure-cat">
+        <span class="exposure-cat-num">08</span>
+        <h3>Identity-Related Exposure</h3>
+        <ul>
+          <li>Credential sharing between employees</li>
+          <li>Unauthorized person using an active session</li>
+          <li>Identity not verified during sensitive actions</li>
+          <li>Multiple individuals interacting with the same session</li>
+        </ul>
+      </div>
+
+      <div class="exposure-cat">
+        <span class="exposure-cat-num">09</span>
+        <h3>Privileged / High-Risk Exposure</h3>
+        <ul>
+          <li>Admin viewing or exporting sensitive datasets</li>
+          <li>Engineering access to IP or source code</li>
+          <li>Finance/legal reviewing confidential transactions</li>
+          <li>Executive sessions involving M&amp;A or strategy</li>
+        </ul>
+      </div>
+
+      <div class="exposure-cat">
+        <span class="exposure-cat-num">10</span>
+        <h3>Timing &amp; Contextual Exposure (When it matters)</h3>
+        <ul>
+          <li>Exposure during high-risk workflows (e.g., data export, reporting)</li>
+          <li>Late-night or unusual access patterns</li>
+          <li>Exposure during role transitions (resignations, layoffs)</li>
+          <li>Repeated exposure events over time (pattern-based risk)</li>
+        </ul>
+      </div>
+
+      <div class="exposure-cat">
+        <span class="exposure-cat-num">11</span>
+        <h3>Evidence &amp; Accountability Gaps</h3>
+        <ul>
+          <li>No record of what data was visible</li>
+          <li>No proof of who was present</li>
+          <li>No timeline of exposure events</li>
+          <li>Inability to demonstrate control during audits</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>How This Ties to GRC1</h2>
+    <p class="section-sub">All eleven exposure categories share a common characteristic: they occur at the moment data is visible, not when it is transferred.</p>
+
+    <div class="card" style="background:var(--tint-light); border-color:var(--med-green);">
+      <h3 style="margin-top:0;">GRC1 Addresses These By:</h3>
+      <ul class="check-list">
+        <li>Understanding exposure across all vectors simultaneously</li>
+        <li>Evaluating risk in real time</li>
+        <li>Taking action during the exposure moment</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Simple Summary</h2>
+    <p class="section-sub">Where traditional security stops, GRC1 begins.</p>
+
+    <div class="summary-block">
+      <div class="summary-card summary-trad">
+        <span class="summary-label">Traditional Security Focuses On</span>
+        <ul>
+          <li>Networks</li>
+          <li>Files</li>
+          <li>Transfers</li>
+        </ul>
+      </div>
+      <div class="summary-card summary-grc1">
+        <span class="summary-label">GRC1 Focuses On</span>
+        <p class="grc1-focus">Exposure itself</p>
+        <p class="across-label">Across</p>
+        <ul>
+          <li>What is visible</li>
+          <li>Who is present</li>
+          <li>Where it occurs</li>
+          <li>How it happens</li>
+          <li>When it matters</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="margin-top:56px;">
+    <div class="card next-step">
+      <span class="next-step-label">Next Step</span>
+      <h3 style="margin-top:8px;">Take this into a prospect conversation.</h3>
+      <p>Now that you understand how GRC1 sees exposure, jump to Discover to assemble a tailored recommendation, or open Compare to map use cases to vectors.</p>
+      <a href="/discover.html" class="btn btn-primary">Open Discover →</a>
+      <a href="/compare.html" class="btn" style="margin-left:8px;">Open Compare →</a>
+    </div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="/assets/firebase-config.js"></script>
+<script type="module" src="/assets/auth.js"></script>
+<script src="/assets/header.js"></script>
+<script src="/assets/footer.js"></script>
+<script src="/assets/app.js"></script>
+</body>
+</html>
