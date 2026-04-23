@@ -9,6 +9,7 @@
 (function () {
   const NAV_ITEMS = [
     { href: '/discover.html',         label: 'Discover' },
+    { href: '/compare.html',          label: 'Compare' },
     { href: '/proposal',              label: 'Proposal Builder' },
     { href: '/live-demo.html',        label: 'Demos' },
     { href: '/gtm-playbook.html',     label: 'GTM Playbook' },
@@ -18,6 +19,7 @@
   // Mobile drawer shows the full set (including items not in primary nav)
   const DRAWER_ITEMS = [
     { href: '/discover.html',         label: 'Discover' },
+    { href: '/compare.html',          label: 'Compare' },
     { href: '/proposal',              label: 'Proposal Builder' },
     { href: '/live-demo.html',        label: 'Demos' },
     { href: '/video-explainers.html', label: 'Video Explainers' },
