@@ -6,6 +6,7 @@
       heading: 'Selling Tools',
       links: [
         { href: '/discover.html',    label: 'Discover' },
+        { href: '/compare.html',     label: 'Compare' },
         { href: '/proposal',         label: 'Proposal Builder' },
         { href: '/live-demo.html',   label: 'Demos' },
         { href: '/sales-order.html', label: 'Sales Order' }
