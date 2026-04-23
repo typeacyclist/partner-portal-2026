@@ -49,6 +49,29 @@
   }
   .card.sb-unified-card .card-more { margin-top: 14px; }
 
+  /* Vector tag row — sits below the module/product chips on Use Case
+     and (optionally) Vector cards. Smaller, muted pills with a tinted
+     fill so they read as metadata, not primary content. */
+  .card-vector-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 8px 0 4px;
+  }
+  .vector-chip {
+    font-family: var(--ff-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: var(--bg-soft);
+    color: var(--med-gray);
+    border: 1px solid var(--border-soft);
+    line-height: 1.4;
+    font-weight: 500;
+  }
+
   /* Asset row — every card always renders 3 icons (Details, Infographic,
      Video). When the card has no real value (placeholder '#'), the icon
      renders as a non-clickable span with a muted grey appearance. */
@@ -81,7 +104,7 @@
       <button class="chip active" data-filter-chip="all">All</button>
       <button class="chip" data-filter-chip="solution">Solutions</button>
       <button class="chip" data-filter-chip="usecase">Use Cases</button>
-      <button class="chip" data-filter-chip="vector">Threat Vectors</button>
+      <button class="chip" data-filter-chip="vector">Exposure Vectors</button>
       <button class="chip" data-filter-chip="casestudy">Case Studies</button>
       <button class="chip" data-filter-chip="buyer">Ideal Buyers</button>
     </div>

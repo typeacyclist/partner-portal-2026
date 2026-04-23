@@ -12,7 +12,7 @@
 // Renders into five card types:
 //   - SOLUTION       (high-level business challenges)
 //   - USE CASE       (specific scenarios partners sell into)
-//   - THREAT VECTOR  (the lenses GRC1 uses to evaluate exposure)
+//   - EXPOSURE VECTOR (the lenses GRC1 uses to evaluate exposure)
 //   - CASE STUDY     (anonymized industry reference stories)
 //   - IDEAL BUYER    (personas partners pitch to)
 //
@@ -21,14 +21,14 @@
 // ---------- Unified card shape ----------
 //
 // All card types render in the same shape:
-//   1. Primary badge (SOLUTION / USE CASE / THREAT VECTOR / CASE STUDY / IDEAL BUYER)
+//   1. Primary badge (SOLUTION / USE CASE / EXPOSURE VECTOR / CASE STUDY / IDEAL BUYER)
 //   2. Title
 //   3. Summary (1 short sentence / paragraph)
 //   4. Secondary chips (tags)
 //   5. Bullets (type-specific content)
 //   6. Links row (report / infographic / video — when present)
 //
-// Threat Vector cards use a two-column layout for
+// Exposure Vector cards use a two-column layout for
 // Key Capabilities + Business Outcomes bullets.
 //
 // ---------- Common fields (all card types) ----------
@@ -48,7 +48,7 @@
 //     · Case Studies → outcomes / results
 //     · Ideal Buyers → priorities / pains this persona owns
 //
-// For THREAT VECTORS (two-column format):
+// For EXPOSURE VECTORS (two-column format):
 //   capabilities — "Key Capabilities" bullets
 //   outcomes     — "Business Outcomes" bullets
 //
@@ -77,8 +77,8 @@ window.SOLUTION_CONTENT = {
     {
       id: 'insider-risk',
       title: 'Insider Risk & Data Protection',
-      summary: 'Control insider-driven exposure at the moment data is seen across screens, behavior, and environment. ' + ANCHOR_TAIL,
-      tags: ['Edge DLP', 'ITM', 'SIA'],
+      summary: 'Control insider-driven data exposure at the moment it becomes visible across screens, behavior, and environment. ' + ANCHOR_TAIL,
+      tags: ['primary:behavior', 'Edge DLP', 'ITM', 'SIA'],
       bullets: [
         'Sensitive data becomes exposed through screens, clipboard, and visual channels',
         'Insider risk occurs during normal user behavior, not just malicious activity',
@@ -86,15 +86,15 @@ window.SOLUTION_CONTENT = {
         'Detection typically occurs after the fact'
       ],
       moreInfoUrl: '#',
-      technicalReport: SAMPLE_REPORT,
-      infographic: SAMPLE_INFOGRAPHIC,
-      vimeoUrl: SAMPLE_VIDEO
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'workforce-intelligence',
       title: 'Workforce Intelligence & HR Analytics',
       summary: 'Understand workforce behavior and exposure risk through real-time visibility into user activity and context. ' + ANCHOR_TAIL,
-      tags: ['GRC1 Core', 'BI'],
+      tags: ['primary:behavior', 'GRC1 Core', 'BI'],
       bullets: [
         'No visibility into how users interact with sensitive data',
         'Exposure risk tied to behavior is not understood',
@@ -109,8 +109,8 @@ window.SOLUTION_CONTENT = {
     {
       id: 'identity-access',
       title: 'Identity, Access & Workspace Security',
-      summary: 'Ensure the right person is present and the environment is secure when sensitive data is visible. ' + ANCHOR_TAIL,
-      tags: ['SIA', 'SWA', 'SVM'],
+      summary: 'Ensure the right person is present and the environment is secure when sensitive data is visible—across sessions, workspaces, and collaboration. ' + ANCHOR_TAIL,
+      tags: ['primary:presence', 'SIA', 'SWA', 'SVM'],
       bullets: [
         'Identity assurance stops at login, not during exposure',
         'Credential sharing goes undetected during active sessions',
@@ -126,7 +126,7 @@ window.SOLUTION_CONTENT = {
       id: 'audit-readiness',
       title: 'Audit Readiness & Regulatory Adherence',
       summary: 'Provide continuous, real-time evidence of how exposure is controlled and managed. ' + ANCHOR_TAIL,
-      tags: ['GRC1 Core', 'MSR'],
+      tags: ['primary:evidence', 'GRC1 Core', 'MSR'],
       bullets: [
         'No proof of what happened at the moment of exposure',
         'Evidence is collected after incidents occur',
@@ -142,7 +142,7 @@ window.SOLUTION_CONTENT = {
       id: 'enterprise-risk',
       title: 'Enterprise Risk & Ecosystem Oversight',
       summary: 'Extend exposure control across third parties, endpoints, and distributed environments. ' + ANCHOR_TAIL,
-      tags: ['ITM', 'Edge DLP'],
+      tags: ['primary:environment', 'ITM', 'Edge DLP'],
       bullets: [
         'Third-party exposure occurs without visibility',
         'Shadow IT introduces unmanaged exposure points',
@@ -158,7 +158,7 @@ window.SOLUTION_CONTENT = {
       id: 'executive-governance',
       title: 'Executive Governance & Specialized Controls',
       summary: 'Control high-risk exposure for privileged users and sensitive environments. ' + ANCHOR_TAIL,
-      tags: ['MSR', 'ITM'],
+      tags: ['primary:control', 'MSR', 'ITM'],
       bullets: [
         'Executive and privileged exposure is not monitored in real time',
         'High-value sessions lack visibility and control',
@@ -175,12 +175,13 @@ window.SOLUTION_CONTENT = {
   // ========================================================================
   // USE CASES — specific scenarios partners sell into
   // ========================================================================
+  // Vector chips are represented in tags for UI filtering / explanation.
   useCases: [
     {
       id: 'clear-desk',
       title: 'Clear Desk Compliance',
       summary: 'Control exposure from physical workspace conditions in real time. ' + ANCHOR_TAIL,
-      tags: ['Secure Workspaces Anywhere'],
+      tags: ['Secure Workspaces Anywhere', 'visibility', 'presence', 'environment', 'context', 'evidence', 'control'],
       bullets: [
         'Sensitive data visible in uncontrolled environments',
         'Observers present during exposure moments',
@@ -196,7 +197,7 @@ window.SOLUTION_CONTENT = {
       id: 'data-exfil',
       title: 'Advanced Data Exfiltration Prevention',
       summary: 'Prevent data exposure across visual, behavioral, and multi-screen activity. ' + ANCHOR_TAIL,
-      tags: ['Edge DLP', 'ITM'],
+      tags: ['Edge DLP', 'ITM', 'visibility', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'Data becomes exposed during normal user actions',
         'Clipboard, screenshot, and multi-screen activity create risk',
@@ -212,7 +213,7 @@ window.SOLUTION_CONTENT = {
       id: 'identity-assurance',
       title: 'Continuous Identity Assurance',
       summary: 'Ensure identity is verified at the moment sensitive data is visible. ' + ANCHOR_TAIL,
-      tags: ['Session Identity Assurance'],
+      tags: ['Session Identity Assurance', 'visibility', 'presence', 'behavior', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'Identity unknown during active sessions',
         'Credential sharing during exposure events',
@@ -228,7 +229,7 @@ window.SOLUTION_CONTENT = {
       id: 'secure-meetings',
       title: 'Secure Virtual Meetings',
       summary: 'Control exposure during meetings by validating presence and visibility. ' + ANCHOR_TAIL,
-      tags: ['Secure Virtual Meetings'],
+      tags: ['Secure Virtual Meetings', 'visibility', 'presence', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'Sensitive data shared in meetings without control',
         'External participants viewing confidential information',
@@ -244,7 +245,7 @@ window.SOLUTION_CONTENT = {
       id: 'privileged-user',
       title: 'Privileged User Monitoring',
       summary: 'Control exposure for admin, engineering, and executive accounts with explainable, attributable oversight at the moment it occurs. ' + ANCHOR_TAIL,
-      tags: ['ITM', 'MSR'],
+      tags: ['ITM', 'MSR', 'visibility', 'presence', 'behavior', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'Privileged accounts operate without real-time exposure visibility',
         'No attribution of exposure events to specific privileged users',
@@ -260,7 +261,7 @@ window.SOLUTION_CONTENT = {
       id: 'contact-center',
       title: 'Contact Center Compliance',
       summary: 'Control exposure of PII and regulated data during agent sessions across visual, identity, and screen dimensions. ' + ANCHOR_TAIL,
-      tags: ['MSR', 'SIA', 'Edge DLP'],
+      tags: ['MSR', 'SIA', 'Edge DLP', 'visibility', 'presence', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'Sensitive customer data visible on agent screens across many workflows',
         'No identity assurance during access to PII-bearing systems',
@@ -276,7 +277,7 @@ window.SOLUTION_CONTENT = {
       id: 'dlp-augmentation',
       title: 'DLP Augmentation',
       summary: 'Add real-time exposure control at the endpoint to existing Purview or legacy DLP investments. ' + ANCHOR_TAIL,
-      tags: ['Edge DLP'],
+      tags: ['Edge DLP', 'visibility', 'behavior', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'Classification labels exist but exposure still occurs on screen',
         'Visual and clipboard channels uncovered by file-oriented DLP',
@@ -292,7 +293,7 @@ window.SOLUTION_CONTENT = {
       id: 'audit-automation',
       title: 'Audit Trail Automation',
       summary: 'Generate continuous, policy-bound evidence tied to the exact moment of exposure. ' + ANCHOR_TAIL,
-      tags: ['GRC1 Core'],
+      tags: ['GRC1 Core', 'visibility', 'context', 'continuity', 'evidence'],
       bullets: [
         'Audit evidence still collected manually across disconnected tools',
         'No record of what was visible or who was present during exposure',
@@ -307,8 +308,8 @@ window.SOLUTION_CONTENT = {
     {
       id: 'screenshare-exposure',
       title: 'Screenshare Exposure Control',
-      summary: 'Control exposure when sensitive data is shared on screen during meetings.',
-      tags: ['SVM', 'Edge DLP'],
+      summary: 'Control exposure when sensitive data is shared on screen during meetings. ' + ANCHOR_TAIL,
+      tags: ['SVM', 'Edge DLP', 'visibility', 'presence', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'Sensitive content visible during screenshare sessions',
         'External participants present in high-risk meetings',
@@ -323,8 +324,8 @@ window.SOLUTION_CONTENT = {
     {
       id: 'observer-detection',
       title: 'Unauthorized Observer Detection',
-      summary: 'Detect and respond when unauthorized individuals can view sensitive data.',
-      tags: ['SWA'],
+      summary: 'Detect and respond when unauthorized individuals can view sensitive data. ' + ANCHOR_TAIL,
+      tags: ['SWA', 'visibility', 'presence', 'environment', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'Additional people present near the workstation',
         'Work conducted in shared or public spaces',
@@ -339,8 +340,8 @@ window.SOLUTION_CONTENT = {
     {
       id: 'clipboard-screenshot',
       title: 'Clipboard & Screenshot Control',
-      summary: 'Prevent exposure via clipboard, screenshots, and user-initiated capture actions.',
-      tags: ['Edge DLP'],
+      summary: 'Prevent exposure via clipboard, screenshots, and user-initiated capture actions. ' + ANCHOR_TAIL,
+      tags: ['Edge DLP', 'visibility', 'behavior', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'Copy/paste of sensitive data to unmanaged apps',
         'Frequent screenshot or recording behavior',
@@ -355,8 +356,8 @@ window.SOLUTION_CONTENT = {
     {
       id: 'multi-display-exfil',
       title: 'Multi-Display Exfiltration',
-      summary: 'Detect exposure across multiple monitors and correlated on-screen activity.',
-      tags: ['MSR', 'Edge DLP'],
+      summary: 'Detect exposure across multiple monitors and correlated on-screen activity. ' + ANCHOR_TAIL,
+      tags: ['MSR', 'Edge DLP', 'visibility', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'Sensitive data on one screen, transfer on another',
         'Secondary monitors used to bypass controls',
@@ -371,8 +372,8 @@ window.SOLUTION_CONTENT = {
     {
       id: 'shadow-capture',
       title: 'External Device / Shadow Capture',
-      summary: 'Reduce exposure from external devices (phones/cameras) capturing on-screen data.',
-      tags: ['SWA', 'SVM'],
+      summary: 'Reduce exposure from external devices (phones/cameras) capturing on-screen data. ' + ANCHOR_TAIL,
+      tags: ['SWA', 'SVM', 'visibility', 'presence', 'environment', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'Phone cameras capturing screens or documents',
         'Unmanaged devices in proximity to sensitive data',
@@ -387,8 +388,8 @@ window.SOLUTION_CONTENT = {
     {
       id: 'exec-session',
       title: 'Executive Session Protection',
-      summary: 'Protect high-sensitivity sessions (board, M&A, legal) with presence and visibility controls.',
-      tags: ['SVM', 'SIA'],
+      summary: 'Protect high-sensitivity sessions (board, M&A, legal) with presence and visibility controls. ' + ANCHOR_TAIL,
+      tags: ['SVM', 'SIA', 'visibility', 'presence', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
       bullets: [
         'High-value discussions with sensitive content',
         'Mixed internal/external participant lists',
@@ -403,7 +404,7 @@ window.SOLUTION_CONTENT = {
   ],
 
   // ========================================================================
-  // THREAT VECTORS — the lenses GRC1 uses to evaluate exposure
+  // EXPOSURE VECTORS — the lenses GRC1 uses to evaluate exposure
   // ========================================================================
   // Each vector is one dimension of the exposure-control model. Cards use
   // the two-column layout (Key Capabilities + Business Outcomes).
@@ -495,10 +496,11 @@ window.SOLUTION_CONTENT = {
     {
       id: 'edge-dlp',
       title: 'Control (Act in real time)',
-      summary: 'Act immediately to control exposure when it occurs. ' + ANCHOR_TAIL,
+      summary: 'Decide and act in real time to control exposure as it occurs—based on visibility, presence, and context. ' + ANCHOR_TAIL,
       tags: [],
       moreInfoUrl: '#edge-dlp',
       capabilities: [
+        'Evaluate exposure using combined visibility, presence, and context signals',
         'Apply masking and blocking controls',
         'Trigger real-time interventions',
         'Enforce policy at the endpoint',
@@ -516,11 +518,11 @@ window.SOLUTION_CONTENT = {
     {
       id: 'vector-context',
       title: 'Context (Why exposure matters)',
-      summary: 'Evaluate why an exposure matters by incorporating data sensitivity, user role, and situational risk at the moment data is visible.',
+      summary: 'Evaluate why an exposure matters by incorporating data sensitivity, user role, and situational risk at the moment data is visible. ' + ANCHOR_TAIL,
       tags: [],
       moreInfoUrl: '#vector-context',
       capabilities: [
-        'Sensitivity/label awareness (e.g., AIP/MIP)',
+        'Sensitivity label integration (AIP / MIP / DG)',
         'Role- and policy-based risk context',
         'Time/session-aware conditions',
         'Contextual risk scoring'
@@ -537,7 +539,7 @@ window.SOLUTION_CONTENT = {
     {
       id: 'vector-continuity',
       title: 'Continuity (Exposure over time)',
-      summary: 'Track how exposure evolves across a session to detect persistence, escalation, and patterns — not just single events.',
+      summary: 'Track how exposure evolves across a session to detect persistence, escalation, and patterns—not just single events. ' + ANCHOR_TAIL,
       tags: [],
       moreInfoUrl: '#vector-continuity',
       capabilities: [
@@ -558,7 +560,7 @@ window.SOLUTION_CONTENT = {
     {
       id: 'vector-evidence',
       title: 'Evidence (What can be proven)',
-      summary: 'Generate audit-ready evidence tied to the exact moment of exposure, including visibility, presence, and actions taken.',
+      summary: 'Generate audit-ready evidence tied to the exact moment of exposure, including visibility, presence, and actions taken. ' + ANCHOR_TAIL,
       tags: [],
       moreInfoUrl: '#vector-evidence',
       capabilities: [
@@ -623,7 +625,7 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cco',
       title: 'Chief Compliance Officer',
-      summary: 'Prove exposure is controlled continuously — not just audited later. ' + ANCHOR_TAIL,
+      summary: 'Prove exposure is controlled continuously—not just audited later. ' + ANCHOR_TAIL,
       tags: ['Audit Readiness'],
       bullets: [
         'Require real-time evidence of control',
