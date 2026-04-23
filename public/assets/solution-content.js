@@ -586,9 +586,9 @@ window.SOLUTION_CONTENT = {
   caseStudies: [
     {
       id: 'cs-global-bank',
-      title: 'Global Bank Reduces Exposure Risk',
-      summary: 'A global bank reduced exposure by controlling data visibility and behavior in real time. ' + ANCHOR_TAIL,
-      tags: ['Financial Services'],
+      title: 'Global Bank Reduces Insider Exfiltration by 72%',
+      summary: 'Tier-1 bank deployed Edge DLP + ITM across 28,000 endpoints to close visual and clipboard exposure gaps in trading and research. ' + ANCHOR_TAIL,
+      tags: ['Financial Services', 'Edge DLP', 'ITM'],
       bullets: [
         'Exposure risk reduced significantly across endpoints',
         'Real-time controls replaced delayed detection',
@@ -603,7 +603,7 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cs-hospital-phi',
       title: 'Hospital System Strengthens PHI Workspace Controls',
-      summary: 'A regional health system controlled exposure of patient data by enforcing clear-desk and observer detection across remote billing and coding staff. ' + ANCHOR_TAIL,
+      summary: 'Regional health system used Secure Workspaces Anywhere to enforce clear-desk and observer detection for remote billing and coding staff. ' + ANCHOR_TAIL,
       tags: ['Healthcare', 'SWA'],
       bullets: [
         'Workspace exposure of PHI controlled in real time across remote staff',
@@ -618,8 +618,8 @@ window.SOLUTION_CONTENT = {
     },
     {
       id: 'cs-bpo-regulatory',
-      title: 'Global BPO Reaches Compliance Across Six Regulatory Regimes',
-      summary: 'A global BPO controlled exposure across 12,000 agents by combining multi-screen evidence, identity assurance, and edge enforcement under one platform. ' + ANCHOR_TAIL,
+      title: 'Global BPO Compliant Across Six Regulatory Regimes',
+      summary: 'Multi-Screen Recording + SIA deployed to 12,000 agents, enabling PCI, HIPAA, and regional PII compliance without platform fragmentation. ' + ANCHOR_TAIL,
       tags: ['BPO / Contact Center', 'MSR', 'SIA', 'Edge DLP'],
       bullets: [
         'PCI, HIPAA, and regional PII exposure controlled under one platform',
@@ -635,7 +635,7 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cs-public-sector-audit',
       title: 'Federal Agency Gains Continuous Audit Readiness',
-      summary: 'A federal agency replaced patchwork logging and spreadsheet evidence with continuous, policy-bound audit evidence — improving audit cycle times by 65%. ' + ANCHOR_TAIL,
+      summary: 'GRC1 Core and governed workflows replaced a patchwork of logging and spreadsheet evidence processes, improving audit cycle times by 65%. ' + ANCHOR_TAIL,
       tags: ['Public Sector', 'GRC1 Core'],
       bullets: [
         'Continuous evidence replaced point-in-time spreadsheet collection',
@@ -651,7 +651,7 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cs-saas-ip',
       title: 'SaaS Company Protects IP During Remote Collaboration',
-      summary: 'A SaaS company controlled IP exposure during product and engineering reviews by stopping screenshare exposure and screenshot capture in real time. ' + ANCHOR_TAIL,
+      summary: 'Secure Virtual Meetings stopped sensitive screenshare exposure and screenshots during product and engineering reviews across distributed teams. ' + ANCHOR_TAIL,
       tags: ['Technology', 'SVM', 'Edge DLP'],
       bullets: [
         'Screenshare exposure of sensitive product designs controlled at the moment',
@@ -667,7 +667,7 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cs-manufacturing-trade-secrets',
       title: 'Regulated Manufacturer Protects Trade Secrets',
-      summary: 'A regulated manufacturer detected anomalous engineering access patterns before IP exfiltration could occur, using behavior monitoring tied to multi-screen evidence. ' + ANCHOR_TAIL,
+      summary: 'Privileged user monitoring with ITM and MSR identified anomalous engineering access patterns before IP exfiltration could occur. ' + ANCHOR_TAIL,
       tags: ['Manufacturing', 'ITM', 'MSR'],
       bullets: [
         'Anomalous engineering access patterns detected at the moment they occurred',
@@ -682,8 +682,8 @@ window.SOLUTION_CONTENT = {
     },
     {
       id: 'cs-insurance-sia',
-      title: 'Insurance Carrier Strengthens Identity Assurance for Claims Adjusters',
-      summary: 'An insurance carrier controlled exposure during high-value claim approvals and PII access by adding risk-gated biometric step-up across 4,500 adjusters. ' + ANCHOR_TAIL,
+      title: 'Carrier Strengthens Identity Assurance for Claims Adjusters',
+      summary: 'SIA deployed to 4,500 adjusters, adding risk-gated biometric step-up for high-value claim approvals and PII access. ' + ANCHOR_TAIL,
       tags: ['Insurance', 'SIA'],
       bullets: [
         'Identity verified at the moment of high-value claim approvals',
@@ -699,7 +699,7 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cs-law-firm-workspace',
       title: 'Am Law 100 Firm Extends Workspace Controls to Remote Associates',
-      summary: 'An Am Law 100 firm controlled exposure of confidential client matters by adding observer detection and clear-desk enforcement to hybrid-working associates. ' + ANCHOR_TAIL,
+      summary: 'Observer detection and clear desk enforcement added to hybrid working associates handling confidential client matters. ' + ANCHOR_TAIL,
       tags: ['Legal', 'SWA', 'Edge DLP'],
       bullets: [
         'Observer-driven exposure of client matters detected in remote workspaces',
@@ -714,8 +714,8 @@ window.SOLUTION_CONTENT = {
     },
     {
       id: 'cs-utility-ot-adjacent',
-      title: 'Utility Adds Edge Enforcement to OT-Adjacent Systems',
-      summary: 'A utility controlled exposure of SCADA configuration and engineering drawings on office and engineering endpoints adjacent to OT networks. ' + ANCHOR_TAIL,
+      title: 'Utility Adds Edge Enforcement to Operational Technology Adjacent Systems',
+      summary: 'GRC1 deployed on office and engineering endpoints adjacent to OT networks, preventing exposure of SCADA configuration and drawings. ' + ANCHOR_TAIL,
       tags: ['Energy / Utilities', 'Edge DLP', 'ITM'],
       bullets: [
         'SCADA configuration exposure controlled at the office endpoint',
