@@ -599,6 +599,134 @@ window.SOLUTION_CONTENT = {
       technicalReport: '#',
       infographic: '#',
       vimeoUrl: '#'
+    },
+    {
+      id: 'cs-hospital-phi',
+      title: 'Hospital System Strengthens PHI Workspace Controls',
+      summary: 'A regional health system controlled exposure of patient data by enforcing clear-desk and observer detection across remote billing and coding staff. ' + ANCHOR_TAIL,
+      tags: ['Healthcare', 'SWA'],
+      bullets: [
+        'Workspace exposure of PHI controlled in real time across remote staff',
+        'Observer-driven exposure events detected and deterred',
+        'Clear-desk policy enforced continuously, not via training alone',
+        'Defensible workspace evidence provided for HIPAA audit'
+      ],
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
+    },
+    {
+      id: 'cs-bpo-regulatory',
+      title: 'Global BPO Reaches Compliance Across Six Regulatory Regimes',
+      summary: 'A global BPO controlled exposure across 12,000 agents by combining multi-screen evidence, identity assurance, and edge enforcement under one platform. ' + ANCHOR_TAIL,
+      tags: ['BPO / Contact Center', 'MSR', 'SIA', 'Edge DLP'],
+      bullets: [
+        'PCI, HIPAA, and regional PII exposure controlled under one platform',
+        'Identity assurance verified presence during sensitive customer sessions',
+        'Multi-screen evidence captured the exact moment of any exposure event',
+        'Platform fragmentation eliminated across recording and DLP tooling'
+      ],
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
+    },
+    {
+      id: 'cs-public-sector-audit',
+      title: 'Federal Agency Gains Continuous Audit Readiness',
+      summary: 'A federal agency replaced patchwork logging and spreadsheet evidence with continuous, policy-bound audit evidence — improving audit cycle times by 65%. ' + ANCHOR_TAIL,
+      tags: ['Public Sector', 'GRC1 Core'],
+      bullets: [
+        'Continuous evidence replaced point-in-time spreadsheet collection',
+        'Audit cycle times improved by 65%',
+        'Control execution proved continuously, not at audit time',
+        'Governed workflows tied evidence directly to policy'
+      ],
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
+    },
+    {
+      id: 'cs-saas-ip',
+      title: 'SaaS Company Protects IP During Remote Collaboration',
+      summary: 'A SaaS company controlled IP exposure during product and engineering reviews by stopping screenshare exposure and screenshot capture in real time. ' + ANCHOR_TAIL,
+      tags: ['Technology', 'SVM', 'Edge DLP'],
+      bullets: [
+        'Screenshare exposure of sensitive product designs controlled at the moment',
+        'Screenshot capture during sensitive reviews prevented in real time',
+        'Engineering and product collaboration secured without blocking productivity',
+        'IP exposure visibility extended across distributed teams'
+      ],
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
+    },
+    {
+      id: 'cs-manufacturing-trade-secrets',
+      title: 'Regulated Manufacturer Protects Trade Secrets',
+      summary: 'A regulated manufacturer detected anomalous engineering access patterns before IP exfiltration could occur, using behavior monitoring tied to multi-screen evidence. ' + ANCHOR_TAIL,
+      tags: ['Manufacturing', 'ITM', 'MSR'],
+      bullets: [
+        'Anomalous engineering access patterns detected at the moment they occurred',
+        'IP exfiltration risk identified before any data left the environment',
+        'Privileged user behavior tied to attributable, defensible evidence',
+        'Trade-secret exposure contained without blocking legitimate engineering work'
+      ],
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
+    },
+    {
+      id: 'cs-insurance-sia',
+      title: 'Insurance Carrier Strengthens Identity Assurance for Claims Adjusters',
+      summary: 'An insurance carrier controlled exposure during high-value claim approvals and PII access by adding risk-gated biometric step-up across 4,500 adjusters. ' + ANCHOR_TAIL,
+      tags: ['Insurance', 'SIA'],
+      bullets: [
+        'Identity verified at the moment of high-value claim approvals',
+        'Risk-gated biometric step-up applied to PII access events',
+        'Credential sharing among adjusters detected and deterred',
+        'Defensible identity evidence captured for fraud and audit review'
+      ],
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
+    },
+    {
+      id: 'cs-law-firm-workspace',
+      title: 'Am Law 100 Firm Extends Workspace Controls to Remote Associates',
+      summary: 'An Am Law 100 firm controlled exposure of confidential client matters by adding observer detection and clear-desk enforcement to hybrid-working associates. ' + ANCHOR_TAIL,
+      tags: ['Legal', 'SWA', 'Edge DLP'],
+      bullets: [
+        'Observer-driven exposure of client matters detected in remote workspaces',
+        'Clear-desk policy enforced continuously across hybrid associates',
+        'Visual exposure of confidential documents prevented in real time',
+        'Workspace evidence captured for client-confidentiality compliance'
+      ],
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
+    },
+    {
+      id: 'cs-utility-ot-adjacent',
+      title: 'Utility Adds Edge Enforcement to OT-Adjacent Systems',
+      summary: 'A utility controlled exposure of SCADA configuration and engineering drawings on office and engineering endpoints adjacent to OT networks. ' + ANCHOR_TAIL,
+      tags: ['Energy / Utilities', 'Edge DLP', 'ITM'],
+      bullets: [
+        'SCADA configuration exposure controlled at the office endpoint',
+        'Engineering drawings prevented from leaving controlled environments',
+        'Behavior on OT-adjacent systems monitored without disrupting operations',
+        'Defensible evidence captured for regulatory and incident review'
+      ],
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     }
   ],
 
