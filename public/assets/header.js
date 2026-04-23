@@ -8,6 +8,7 @@
 
 (function () {
   const NAV_ITEMS = [
+    { href: '/grc-one.html',          label: 'GRC One' },
     { href: '/discover.html',         label: 'Discover' },
     { href: '/compare.html',          label: 'Compare' },
     { href: '/proposal',              label: 'Proposal Builder' },
@@ -18,6 +19,7 @@
 
   // Mobile drawer shows the full set (including items not in primary nav)
   const DRAWER_ITEMS = [
+    { href: '/grc-one.html',          label: 'GRC One' },
     { href: '/discover.html',         label: 'Discover' },
     { href: '/compare.html',          label: 'Compare' },
     { href: '/proposal',              label: 'Proposal Builder' },

@@ -6,7 +6,6 @@
       heading: 'Selling Tools',
       links: [
         { href: '/discover.html',    label: 'Discover' },
-        { href: '/compare.html',     label: 'Compare' },
         { href: '/proposal',         label: 'Proposal Builder' },
         { href: '/live-demo.html',   label: 'Demos' },
         { href: '/sales-order.html', label: 'Sales Order' }
@@ -15,6 +14,7 @@
     {
       heading: 'Learn',
       links: [
+        { href: '/grc-one.html',          label: 'GRC One' },
         { href: '/video-explainers.html', label: 'Video Explainers' },
         { href: '/gtm-playbook.html',     label: 'GTM Playbook' },
         { href: '/resources.html',        label: 'Resources' }
