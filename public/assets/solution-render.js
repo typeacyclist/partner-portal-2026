@@ -4,12 +4,14 @@
 // Reads window.SOLUTION_CONTENT (defined in solution-content.js) and
 // renders cards into #cards-mount on the /discover page.
 //
-// For each card, conditionally renders three asset icons:
-//   - Technical Report  (document icon)  → Firebase Storage file
-//   - Infographic       (image icon)     → Firebase Storage file
-//   - Explainer Video   (play icon)      → Vimeo URL
+// For each card, always renders three asset icons (consistent layout):
+//   - Details      (document icon)  → Firebase Storage file
+//   - Infographic  (image icon)     → Firebase Storage file
+//   - Explainer Video (play icon)   → Vimeo URL
 //
-// Missing assets are hidden (no greyed-out "coming soon" state).
+// When a card's value is '#' (placeholder), the icon renders disabled
+// instead of being hidden — keeps the asset row visually consistent
+// across all cards even before real assets are uploaded.
 //
 // Firebase Storage paths get resolved to download URLs on click. We could
 // resolve them up-front at render time, but that triggers N Storage lookups
@@ -18,8 +20,7 @@
 // Threat Vector cards (formerly Products) render the two-column layout
 // with Key Capabilities + Business Outcomes bullets. All other card
 // types (solutions, use cases, case studies, buyers) render the compact
-// unified shape: badge / title / summary / chips / bullets / More Info /
-// asset row.
+// unified shape: badge / title / summary / chips / bullets / asset row.
 
 import {
   getStorage,
@@ -61,33 +62,63 @@ function isHttpUrl(s) {
   return typeof s === 'string' && /^https?:\/\//i.test(s);
 }
 
-/** Renders the asset icon row; returns empty string if no assets present. */
+/** Renders the asset icon row.
+ *  Always renders all three icons (Details / Infographic / Video).
+ *  When a card's value is '#' (placeholder), the icon renders in a
+ *  disabled state with no click handler — visually present so the card
+ *  layout stays consistent, but obviously not actionable. */
 function renderAssetRow(card) {
   const parts = [];
 
-  if (card.technicalReport) {
-    parts.push(
-      `<a href="#" class="asset-icon" title="Technical Report"
-         data-asset-type="storage" data-asset-path="${escapeHtml(card.technicalReport)}"
-         data-asset-kind="report">${ICON_REPORT}<span>Report</span></a>`
-    );
-  }
-  if (card.infographic) {
-    parts.push(
-      `<a href="#" class="asset-icon" title="Infographic"
-         data-asset-type="storage" data-asset-path="${escapeHtml(card.infographic)}"
-         data-asset-kind="infographic">${ICON_INFOGRAPHIC}<span>Infographic</span></a>`
-    );
-  }
-  if (card.vimeoUrl) {
-    parts.push(
-      `<a href="${escapeHtml(card.vimeoUrl)}" target="_blank" rel="noopener"
-         class="asset-icon" title="Explainer Video">${ICON_VIDEO}<span>Video</span></a>`
-    );
+  // Details (formerly Report)
+  parts.push(renderAssetIcon({
+    value: card.technicalReport,
+    title: 'Details',
+    label: 'Details',
+    icon: ICON_REPORT,
+    kind: 'details',
+    isExternal: false
+  }));
+
+  // Infographic
+  parts.push(renderAssetIcon({
+    value: card.infographic,
+    title: 'Infographic',
+    label: 'Infographic',
+    icon: ICON_INFOGRAPHIC,
+    kind: 'infographic',
+    isExternal: false
+  }));
+
+  // Video (Vimeo URL — opens directly, no Storage lookup)
+  parts.push(renderAssetIcon({
+    value: card.vimeoUrl,
+    title: 'Explainer Video',
+    label: 'Video',
+    icon: ICON_VIDEO,
+    kind: 'video',
+    isExternal: true
+  }));
+
+  return `<div class="asset-row">${parts.join('')}</div>`;
+}
+
+/** Renders one asset icon. Disabled state if value is missing or '#'. */
+function renderAssetIcon({ value, title, label, icon, kind, isExternal }) {
+  const isPlaceholder = !value || value === '#';
+
+  if (isPlaceholder) {
+    // Disabled — span instead of <a>, no click handler attached
+    return `<span class="asset-icon asset-icon-disabled" title="${escapeHtml(title)} (coming soon)" aria-disabled="true">${icon}<span>${escapeHtml(label)}</span></span>`;
   }
 
-  if (parts.length === 0) return '';
-  return `<div class="asset-row">${parts.join('')}</div>`;
+  if (isExternal) {
+    // External URL (e.g. Vimeo) — open directly
+    return `<a href="${escapeHtml(value)}" target="_blank" rel="noopener" class="asset-icon" title="${escapeHtml(title)}">${icon}<span>${escapeHtml(label)}</span></a>`;
+  }
+
+  // Firebase Storage path — resolved on click
+  return `<a href="#" class="asset-icon" title="${escapeHtml(title)}" data-asset-type="storage" data-asset-path="${escapeHtml(value)}" data-asset-kind="${escapeHtml(kind)}">${icon}<span>${escapeHtml(label)}</span></a>`;
 }
 
 /** Render a bulleted list. Returns empty string if list is empty/missing. */
@@ -114,9 +145,6 @@ function renderProductStyleCard(card, typeKey) {
   const meta = TYPE_LABELS[typeKey];
   const filterKey = TYPE_FILTER_KEY[typeKey];
   const tags = (card.tags || []).map(t => renderTag(t)).join('');
-  const moreInfo = card.moreInfoUrl && card.moreInfoUrl !== '#'
-    ? `<a href="${escapeHtml(card.moreInfoUrl)}" class="link-arrow">More Info →</a>`
-    : '';
   const hasBullets = (card.capabilities && card.capabilities.length) ||
                      (card.outcomes && card.outcomes.length);
 
@@ -142,7 +170,6 @@ function renderProductStyleCard(card, typeKey) {
         </div>
       </div>` : ''}
 
-      ${moreInfo ? `<div class="card-more">${moreInfo}</div>` : ''}
       ${renderAssetRow(card)}
     </article>`;
 }
@@ -151,9 +178,6 @@ function renderCompactCard(card, typeKey) {
   const meta = TYPE_LABELS[typeKey];
   const filterKey = TYPE_FILTER_KEY[typeKey];
   const tags = (card.tags || []).map(t => renderTag(t, typeKey === 'useCases' ? 'gray' : null)).join('');
-  const moreInfo = card.moreInfoUrl && card.moreInfoUrl !== '#'
-    ? `<a href="${escapeHtml(card.moreInfoUrl)}" class="link-arrow">More Info →</a>`
-    : '';
   const assetRow = renderAssetRow(card);
   // Accept `summary` as the unified field; fall back to `description` for
   // backward compatibility with any card blocks that haven't been migrated.
@@ -166,7 +190,6 @@ function renderCompactCard(card, typeKey) {
       ${summaryText ? `<p class="card-summary">${escapeHtml(summaryText)}</p>` : ''}
       ${tags ? `<div class="card-tags">${tags}</div>` : ''}
       ${card.bullets && card.bullets.length ? `<div class="card-bullets">${renderBullets(card.bullets)}</div>` : ''}
-      ${moreInfo ? `<div class="card-more">${moreInfo}</div>` : ''}
       ${assetRow}
     </div>`;
 }

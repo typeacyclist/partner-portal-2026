@@ -48,6 +48,20 @@
     top: 8px; left: 4px;
   }
   .card.sb-unified-card .card-more { margin-top: 14px; }
+
+  /* Asset row — every card always renders 3 icons (Details, Infographic,
+     Video). When the card has no real value (placeholder '#'), the icon
+     renders as a non-clickable span with a muted grey appearance. */
+  .asset-icon-disabled {
+    color: var(--border);
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.55;
+  }
+  .asset-icon-disabled:hover {
+    color: var(--border);
+    background: transparent;
+  }
 </style>
 </head>
 <body>

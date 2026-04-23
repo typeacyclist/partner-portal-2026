@@ -101,7 +101,10 @@ window.SOLUTION_CONTENT = {
         'Engagement and conduct risks emerge without early signals',
         'Privacy concerns limit traditional monitoring approaches'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'identity-access',
@@ -114,7 +117,10 @@ window.SOLUTION_CONTENT = {
         'Workspace and observer risks are not controlled',
         'Exposure occurs without validating presence or context'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'audit-readiness',
@@ -127,7 +133,10 @@ window.SOLUTION_CONTENT = {
         'Controls cannot be validated in real time',
         'Audit processes rely on incomplete or delayed data'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'enterprise-risk',
@@ -140,7 +149,10 @@ window.SOLUTION_CONTENT = {
         'Behavioral risk is not captured across ecosystems',
         'Exposure events surface only after damage occurs'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'executive-governance',
@@ -153,7 +165,10 @@ window.SOLUTION_CONTENT = {
         'Sensitive environments require stronger exposure controls',
         'No attribution of who was present during critical exposure'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     }
   ],
 
@@ -172,7 +187,10 @@ window.SOLUTION_CONTENT = {
         'Workspace conditions create compliance risk',
         'Exposure occurs outside secure office settings'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'data-exfil',
@@ -185,7 +203,10 @@ window.SOLUTION_CONTENT = {
         'Exposure occurs before any transfer or logging',
         'No real-time control during the exposure moment'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'identity-assurance',
@@ -198,7 +219,10 @@ window.SOLUTION_CONTENT = {
         'No verification tied to sensitive actions',
         'Lack of session-level identity proof'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'secure-meetings',
@@ -211,7 +235,10 @@ window.SOLUTION_CONTENT = {
         'Screenshots and recordings create exposure risk',
         'No awareness of who is present during sharing'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'privileged-user',
@@ -224,7 +251,10 @@ window.SOLUTION_CONTENT = {
         'Black-box analytics leave legal and HR without defensible evidence',
         'Exposure during high-privilege actions surfaces only after the fact'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'contact-center',
@@ -237,7 +267,10 @@ window.SOLUTION_CONTENT = {
         'Screen capture and clipboard activity create uncontrolled exposure paths',
         'Multi-regulatory footprint requires unified evidence, not siloed recordings'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'dlp-augmentation',
@@ -250,7 +283,10 @@ window.SOLUTION_CONTENT = {
         'Legacy DLP creates high false-positive noise, not enforcement',
         'Existing investment needs real-time action, not just after-the-fact logs'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'audit-automation',
@@ -263,7 +299,10 @@ window.SOLUTION_CONTENT = {
         'Point-in-time snapshots do not satisfy continuous-evidence requirements',
         'Controls cannot be proven effective without attributable timelines'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'screenshare-exposure',
@@ -276,7 +315,10 @@ window.SOLUTION_CONTENT = {
         'Screenshot/recording risk during sharing',
         'Need for real-time masking or restriction'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'observer-detection',
@@ -289,7 +331,10 @@ window.SOLUTION_CONTENT = {
         'Compliance requirement for observer controls',
         'Lack of visibility into physical presence'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'clipboard-screenshot',
@@ -302,7 +347,10 @@ window.SOLUTION_CONTENT = {
         'Invisible channels not covered by legacy DLP',
         'Need for real-time blocking or masking'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'multi-display-exfil',
@@ -315,7 +363,10 @@ window.SOLUTION_CONTENT = {
         'Lack of synchronized visibility across displays',
         'Need for cross-display correlation and control'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'shadow-capture',
@@ -328,7 +379,10 @@ window.SOLUTION_CONTENT = {
         'No control over off-device capture methods',
         'Need for detection and deterrence'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'exec-session',
@@ -341,7 +395,10 @@ window.SOLUTION_CONTENT = {
         'Need for identity assurance during sharing',
         'Requirement for attributable evidence'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     }
   ],
 
@@ -367,7 +424,10 @@ window.SOLUTION_CONTENT = {
         'Know when and where data is exposed',
         'Reduce blind spots in visibility',
         'Improve exposure awareness across endpoints'
-      ]
+      ],
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'sia',
@@ -385,7 +445,10 @@ window.SOLUTION_CONTENT = {
         'Confirm identity during exposure',
         'Prevent unauthorized presence',
         'Provide auditable identity assurance'
-      ]
+      ],
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'swa',
@@ -403,7 +466,10 @@ window.SOLUTION_CONTENT = {
         'Reduce exposure from physical conditions',
         'Enforce workspace compliance',
         'Improve environmental risk control'
-      ]
+      ],
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'itm',
@@ -421,7 +487,10 @@ window.SOLUTION_CONTENT = {
         'Identify risky behavior early',
         'Reduce insider-driven exposure',
         'Improve behavioral risk understanding'
-      ]
+      ],
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'edge-dlp',
@@ -439,7 +508,10 @@ window.SOLUTION_CONTENT = {
         'Stop exposure in real time',
         'Reduce reliance on delayed detection',
         'Prevent data loss before it happens'
-      ]
+      ],
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'vector-context',
@@ -457,7 +529,10 @@ window.SOLUTION_CONTENT = {
         'Prioritize high-impact exposures',
         'Reduce noise from low-risk events',
         'Align controls to real business risk'
-      ]
+      ],
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'vector-continuity',
@@ -475,7 +550,10 @@ window.SOLUTION_CONTENT = {
         'Catch slow or repeated exposure patterns',
         'Improve detection accuracy over time',
         'Reduce alert fatigue via session context'
-      ]
+      ],
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'vector-evidence',
@@ -493,7 +571,10 @@ window.SOLUTION_CONTENT = {
         'Defensible audit and investigation records',
         'Faster, higher-confidence case resolution',
         'Reduced data retention risk'
-      ]
+      ],
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     }
   ],
 
@@ -512,7 +593,10 @@ window.SOLUTION_CONTENT = {
         'Improved audit outcomes with clear evidence',
         'Consolidated multiple security tools'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     }
   ],
 
@@ -531,7 +615,10 @@ window.SOLUTION_CONTENT = {
         'Improve visibility into real exposure',
         'Align security with modern work environments'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     },
     {
       id: 'cco',
@@ -544,7 +631,10 @@ window.SOLUTION_CONTENT = {
         'Ensure compliance across environments',
         'Provide defensible audit trails'
       ],
-      moreInfoUrl: '#'
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
     }
   ]
 };
