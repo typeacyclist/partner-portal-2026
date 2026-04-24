@@ -13,7 +13,6 @@
     { href: '/live-demo.html',        label: 'Demos' },
     { href: '/gtm-playbook.html',     label: 'GTM Playbook' },
     { href: '/proposal',              label: 'Proposal Builder' },
-    { href: '/sales-order.html',      label: 'Sales Order' },
     { href: '/contact.html',          label: 'Contact' }
   ];
 
