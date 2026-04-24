@@ -583,8 +583,12 @@
       }).length;
 
       var rightSide = '';
-      if (!beta && childSelectedCount > 0) {
-        rightSide = '<span class="tp-sku-opt-count">+' + childSelectedCount + ' enhancement' + (childSelectedCount > 1 ? 's' : '') + '</span>';
+      if (beta) {
+        rightSide = '';
+      } else if (childSelectedCount > 0) {
+        rightSide = '<span class="tp-sku-opt-count">+' + childSelectedCount + ' option' + (childSelectedCount > 1 ? 's' : '') + '</span>';
+      } else {
+        rightSide = '<span class="tp-sku-price">' + esc(priceLabel(m)) + '</span>';
       }
 
       var accordionBody = '';
@@ -593,7 +597,7 @@
         var featsHtml = '';
         if (incl.length) {
           featsHtml =
-            '<div class="tp-feature-head">Included Detections</div>' +
+            '<div class="tp-feature-head">Included features</div>' +
             '<div class="tp-feature-list">' +
               incl.map(function (f) { return '<span class="inc">' + esc(f) + '</span>'; }).join('') +
             '</div>';
@@ -605,7 +609,7 @@
           var visibleChildren = children.filter(function (c) { return !isBeta(c); });
           if (visibleChildren.length) {
             optsHtml =
-              '<div class="tp-feature-head">Enhancements</div>' +
+              '<div class="tp-feature-head">Optional add-ons</div>' +
               visibleChildren.map(function (o) {
                 var oSel = d.selectedModuleOptions.indexOf(o.code) !== -1;
                 var oDisabled = !selected;
@@ -619,7 +623,7 @@
                        '</div>';
               }).join('');
             if (!selected) {
-              optsHtml += '<p class="tp-hint" style="margin-top:6px;">Select the parent coverage to enable these enhancements.</p>';
+              optsHtml += '<p class="tp-hint" style="margin-top:6px;">Select the parent module to enable these options.</p>';
             }
           }
         }
@@ -673,6 +677,7 @@
                  '<div class="tp-sku-line">' +
                    '<span class="tp-sku-code">' + esc(p.code) + '</span>' +
                    '<span class="tp-sku-name">' + esc(p.name) + '</span>' +
+                   '<span class="tp-sku-price">' + esc(priceLabel(p)) + '</span>' +
                  '</div>' +
                  '<p class="tp-sku-desc">' + esc(p.description || '') + '</p>' +
                '</div>' +
@@ -700,6 +705,7 @@
                  '<div class="tp-sku-line">' +
                    '<span class="tp-sku-code">' + esc(o.code) + '</span>' +
                    '<span class="tp-sku-name">' + esc(o.name) + '</span>' +
+                   '<span class="tp-sku-price">' + esc(priceLabel(o)) + '</span>' +
                    requiredBadge +
                  '</div>' +
                  '<p class="tp-sku-desc">' + esc(o.description || '') + '</p>' +
@@ -708,20 +714,16 @@
     }).join('');
 
     // Helper to render a section
-    function sectionHtml(id, title, bodyInnerHtml, subtext) {
+    function sectionHtml(id, title, bodyInnerHtml) {
       var st = sectionStatus(id);
       var invalid = state.draft.sectionErrors && state.draft.sectionErrors[id];
       var classes = 'tp-section';
       if (d.sectionOpen[id]) classes += ' open';
       if (invalid) classes += ' invalid';
-      var subtextHtml = subtext
-        ? '<span class="tp-section-subtext">' + esc(subtext) + '</span>'
-        : '';
       return '<div class="' + classes + '" data-section="' + id + '">' +
                '<div class="tp-section-toggle" data-section-toggle="' + id + '">' +
                  '<span class="tp-section-caret">▶</span>' +
                  '<span class="tp-section-title">' + esc(title) + '</span>' +
-                 subtextHtml +
                  '<span class="tp-section-count ' + (st.klass || '') + '">' + esc(st.label) + '</span>' +
                '</div>' +
                (d.sectionOpen[id] ? '<div class="tp-section-body">' + bodyInnerHtml + '</div>' : '') +
@@ -738,12 +740,7 @@
       '<p class="tp-lede">Pick what the prospect needs in each section. If a section doesn\'t apply, check "None needed" to acknowledge.</p>' +
 
       sectionHtml('core', 'Core Services', coreHtml) +
-      sectionHtml(
-        'modules',
-        'Select Your Data Exposure Coverage',
-        modulesNone + modulesHtml,
-        'Define where sensitive data is exposed — and apply real-time protection'
-      ) +
+      sectionHtml('modules', 'Modules', modulesNone + modulesHtml) +
       sectionHtml('platform', 'Platform Options', platformNone + platformHtml) +
       sectionHtml('oneTime', 'One-Time Setup & Integrations', oneTimeNone + oneTimeHtml) +
       blocker
@@ -1013,7 +1010,7 @@
 
       '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
-          '<span class="tp-review-title">Data Exposure Coverage</span>' +
+          '<span class="tp-review-title">Modules</span>' +
           '<span class="tp-review-count">' + mods.length + ' selected' + (d.sectionNone.modules ? ' (none needed)' : '') + '</span>' +
           '<button class="tp-review-edit" data-goto="1">Edit →</button>' +
         '</div>' +
@@ -1022,7 +1019,7 @@
 
       '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
-          '<span class="tp-review-title">Enhancements</span>' +
+          '<span class="tp-review-title">Module Options</span>' +
           '<span class="tp-review-count">' + modOpts.length + ' selected</span>' +
         '</div>' +
         '<ul class="tp-review-items">' + itemList(modOpts, 'None') + '</ul>' +
