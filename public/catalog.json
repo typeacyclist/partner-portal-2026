@@ -133,8 +133,8 @@
     }
   ],
   "bundleDiscount": {
-    "perModulePct": 15,
-    "maxPct": 45,
+    "perModulePct": 17,
+    "maxPct": 55,
     "startAtCount": 2,
     "_doc": "Discount applies only to Modules that have bundleEligible:true and are not BETA. n=count of selected eligible modules. discount% = min(maxPct, max(0, (n - startAtCount + 1) * perModulePct)). So n=1 -> 0%, n=2 -> 15%, n=3 -> 30%, n=4+ -> 45%."
   },
@@ -155,7 +155,7 @@
       "pricing": {
         "model": "flat",
         "billableUnit": "flat per tenant annual",
-        "amountUsd": 25000
+        "amountUsd": 5000
       },
       "selection": {
         "mode": "auto",
@@ -186,7 +186,7 @@
       "pricing": {
         "model": "tieredByCompanySize",
         "billableUnit": "per segment tier annual",
-        "baseAmountUsd": 20000,
+        "baseAmountUsd": 15000,
         "multiplierRef": "careMultiplier"
       },
       "selection": {
