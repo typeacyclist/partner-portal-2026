@@ -141,7 +141,7 @@
   "multiYearContinuity": {
     "year1Pct": 0,
     "year2Pct": 15,
-    "year3Pct": 30,
+    "year3Pct": 35,
     "_doc": "Applied to recurring totals. Year 1 = full price. Year 2 = (1 - 0.15) of Year 1 recurring. Year 3 = (1 - 0.30) of Year 1 recurring."
   },
   "skus": [
@@ -218,7 +218,7 @@
       "pricing": {
         "model": "tieredByLicenseCount",
         "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 180
+        "baseAmountUsdPerUser": 120
       },
       "selection": {
         "mode": "partner",
@@ -237,16 +237,15 @@
           "Sensitive work occurring in uncontrolled physical environments"
         ],
         "optionalAddOns": [
-          "SIA",
-          "OBSRVR-DET",
           "PRIVSCR",
-          "ARCH"
+          "UVA-WEBCAM",
+          "MSR"
         ]
       }
     },
     {
       "code": "SIA",
-      "name": "Imposters & Identity Spoofing",
+      "name": "Identity Spoofing and Imposter Access",
       "category": "10-Data Exposure Coverage",
       "description": "Protects sensitive sessions when login credentials alone are not enough. Uses continuous facial recognition, presence assurance, and liveness signals to detect imposters, proxy work, credential sharing, and identity uncertainty in real time.",
       "isActive": true,
@@ -254,7 +253,7 @@
       "pricing": {
         "model": "tieredByLicenseCount",
         "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 180
+        "baseAmountUsdPerUser": 80
       },
       "selection": {
         "mode": "partner",
@@ -274,23 +273,21 @@
         ],
         "optionalAddOns": [
           "PRIVSCR",
-          "OBSRVR-DET",
-          "ITM",
-          "ARCH"
+          "MSR"
         ]
       }
     },
     {
-      "code": "eDLP",
-      "name": "On-Screen Sensitive Data Exposure",
+      "code": "eDLP-EUBA",
+      "name": "High Risk Exposure based on User Time, Place, and Application",
       "category": "10-Data Exposure Coverage",
       "description": "Protects sensitive data at the moment it appears on screen. Detects restricted, labeled, or high-risk content visibility across displays and applies real-time masking, watermarking, restriction, or control.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 12,
       "pricing": {
         "model": "tieredByLicenseCount",
         "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 180
+        "baseAmountUsdPerUser": 140
       },
       "selection": {
         "mode": "partner",
@@ -306,18 +303,25 @@
           "Sensitive content appears on secondary displays",
           "Unauthorized screenshot, screen capture, or recording condition detected",
           "Data visibility requires mask, restrict, or watermark action",
-          "Screen exposure exceeds policy threshold"
+          "Screen exposure exceeds policy threshold",
+          "Sensitive activity occurs at unusual time of day",
+          "User operates from unexpected, restricted, or anomalous location",
+          "Application usage deviates from normal baseline",
+          "Sensitive application opened with unusual supporting tools",
+          "Activity pattern suggests staging or exfiltration preparation",
+          "Work session includes unexplained idle, active, or location gaps",
+          "Unproductive or unexplained computer activity periods",
+          "Geolocation anomalies and jurisdiction crossings",
+          "Policy-restricted work location conditions",
+          "Activity gaps requiring exposure review",
+          "Work activity occurs outside expected time-place pattern"
         ],
-        "optionalAddOns": [
-          "CONN-PURVIEW",
-          "MSR",
-          "ARCH"
-        ]
+        "optionalAddOns": ["MSR"]
       }
     },
     {
       "code": "ITM",
-      "name": "Insider Risk & Exfiltration Behavior",
+      "name": "Insider Threat Exfiltration Behavior",
       "category": "10-Data Exposure Coverage",
       "description": "Protects against negligent, malicious, or collusive insider behavior before it becomes data loss. Detects staging, suspicious handling, external transfer indicators, and activity patterns requiring containment or SOC review.",
       "isActive": true,
@@ -325,7 +329,7 @@
       "pricing": {
         "model": "tieredByLicenseCount",
         "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 120
+        "baseAmountUsdPerUser": 80
       },
       "selection": {
         "mode": "partner",
@@ -343,13 +347,7 @@
           "User behavior crosses containment threshold",
           "Insider activity requires case creation or SOC review"
         ],
-        "optionalAddOns": [
-          "eDLP",
-          "EUBA",
-          "MSR",
-          "CONN-PURVIEW",
-          "INT-SPLUNK"
-        ]
+        "optionalAddOns": ["MSR"]
       }
     },
     {
@@ -362,7 +360,7 @@
       "pricing": {
         "model": "tieredByLicenseCount",
         "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 120
+        "baseAmountUsdPerUser": 180
       },
       "selection": {
         "mode": "partner",
@@ -373,34 +371,27 @@
       "bundleEligible": true,
       "features": {
         "included": [
-          "Sensitive data exposed during screen sharing",
+          "Sensitive data exposed during MS Teams screen sharing",
           "MIP/AIP or Microsoft Purview-labeled content visible in meeting context",
           "External or unauthorized participant present while restricted data is visible",
           "Unknown participant, observer, or attendee identity risk",
           "Screen sharing continues after sensitive content appears",
           "Meeting recording or evidence governance risk"
         ],
-        "optionalAddOns": [
-          "CONN-TEAMS",
-          "CONN-PURVIEW",
-          "CONN-ZOOM",
-          "CONN-WEBEX",
-          "CONN-GMEET",
-          "MSR"
-        ]
+        "optionalAddOns": ["MSR"]
       }
     },
     {
       "code": "MSR",
-      "name": "Evidence, Audit & Reconstruction",
+      "name": "Multi-Screen Recording",
       "category": "10-Data Exposure Coverage",
-      "description": "Captures defensible evidence when exposure occurs. Records and links screen activity to events so teams can reconstruct incidents, support regulated review, and prove what happened.",
+      "description": "Multi-screen recording for quality assurance or defensible evidence when exposure occurs. Records and links screen activity to events so teams can reconstruct incidents, support regulated review, and prove what happened.",
       "isActive": true,
       "displayOrder": 15,
       "pricing": {
         "model": "tieredByLicenseCount",
         "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 120
+        "baseAmountUsdPerUser": 140
       },
       "selection": {
         "mode": "partner",
@@ -417,227 +408,6 @@
           "Alert-triggered event requires linked screen evidence",
           "Compliance review requires retained proof",
           "Investigation requires event-linked visual timeline"
-        ],
-        "optionalAddOns": [
-          "MSR-ALERT",
-          "MSR-ALL",
-          "ARCH",
-          "SR-QAM",
-          "STT"
-        ]
-      }
-    },
-    {
-      "code": "SR-QAM",
-      "name": "Quality & Compliance Review",
-      "category": "10-Data Exposure Coverage",
-      "description": "Supports regulated review and QA/QM when interactions must be scored, audited, or reconstructed. Preserves on-screen and interaction evidence for compliance validation.",
-      "isActive": true,
-      "displayOrder": 16,
-      "pricing": {
-        "model": "tieredByLicenseCount",
-        "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 80
-      },
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": true,
-      "features": {
-        "included": [
-          "Interactions require QA/QM scoring",
-          "Compliance review requires retained evidence",
-          "On-screen activity requires forensic reconstruction",
-          "Customer or agent interaction requires defensible review",
-          "Retention conditions apply to regulated workflows"
-        ],
-        "optionalAddOns": [
-          "STT",
-          "ARCH",
-          "MSR"
-        ]
-      }
-    },
-    {
-      "code": "ECS",
-      "name": "Location & Activity Exposure",
-      "category": "10-Data Exposure Coverage",
-      "description": "Detects location and activity conditions that increase exposure risk. Flags anomalous geolocation, policy-restricted work locations, unproductive periods, and unexplained activity gaps.",
-      "isActive": true,
-      "displayOrder": 17,
-      "pricing": {
-        "model": "tieredByLicenseCount",
-        "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 80
-      },
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": true,
-      "features": {
-        "included": [
-          "Unproductive or unexplained computer activity periods",
-          "Geolocation anomalies and jurisdiction crossings",
-          "Policy-restricted work location conditions",
-          "Activity gaps requiring exposure review",
-          "Work activity occurs outside expected time-place pattern"
-        ],
-        "optionalAddOns": [
-          "GEO-ALERT",
-          "EUBA",
-          "ITM"
-        ]
-      }
-    },
-    {
-      "code": "EUBA",
-      "name": "Time-Place-Application Anomalies",
-      "category": "10-Data Exposure Coverage",
-      "description": "Detects behavioral risk by comparing user activity against expected time, place, and application patterns. Flags unusual access, abnormal application combinations, suspicious work patterns, and behavior that no longer matches the user baseline.",
-      "isActive": true,
-      "displayOrder": 20,
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": true,
-      "features": {
-        "included": [
-          "Sensitive activity occurs at unusual time of day",
-          "User operates from unexpected, restricted, or anomalous location",
-          "Application usage deviates from normal baseline",
-          "Sensitive application opened with unusual supporting tools",
-          "Activity pattern suggests staging or exfiltration preparation",
-          "Work session includes unexplained idle, active, or location gaps"
-        ],
-        "optionalAddOns": [
-          "ECS",
-          "ITM",
-          "eDLP",
-          "CONN-PURVIEW",
-          "INT-SPLUNK"
-        ]
-      }
-    },
-    {
-      "code": "GRC-CEA",
-      "name": "Control Effectiveness Coverage",
-      "category": "10-Data Exposure Coverage",
-      "description": "Proves controls are active, effective, and reducing risk through continuous validation, attestation, and auditor-ready reporting.",
-      "isActive": true,
-      "displayOrder": 21,
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": true,
-      "features": {
-        "included": [
-          "Control effectiveness drift",
-          "Attestation gaps",
-          "Auditor-ready evidence requirements"
-        ],
-        "optionalAddOns": []
-      }
-    },
-    {
-      "code": "WEI",
-      "name": "Workforce Efficiency Coverage",
-      "category": "10-Data Exposure Coverage",
-      "description": "Improves workforce efficiency and reveals engagement trends by analyzing work patterns and application usage.",
-      "isActive": true,
-      "displayOrder": 22,
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": true,
-      "features": {
-        "included": [
-          "Work pattern inefficiencies",
-          "Application usage anomalies",
-          "Coaching and engagement opportunities"
-        ],
-        "optionalAddOns": []
-      }
-    },
-    {
-      "code": "DWA",
-      "name": "Workflow Exposure Coverage",
-      "category": "10-Data Exposure Coverage",
-      "description": "Reduces friction, rework, and unnecessary steps by mapping actual user journeys across applications.",
-      "isActive": true,
-      "displayOrder": 23,
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": true,
-      "features": {
-        "included": [
-          "Cross-application workflow friction",
-          "Intended-vs-actual process deviations",
-          "Rework and unnecessary step patterns"
-        ],
-        "optionalAddOns": []
-      }
-    },
-    {
-      "code": "AAO",
-      "name": "Application Adoption Coverage",
-      "category": "10-Data Exposure Coverage",
-      "description": "Increases software ROI by identifying underused applications and features and improving adoption.",
-      "isActive": true,
-      "displayOrder": 24,
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": true,
-      "features": {
-        "included": [
-          "Underused applications",
-          "Feature-level adoption gaps",
-          "Training and enablement gaps"
-        ],
-        "optionalAddOns": []
-      }
-    },
-    {
-      "code": "MCE",
-      "name": "Meeting Effectiveness Coverage",
-      "category": "10-Data Exposure Coverage",
-      "description": "Reduces unproductive meeting time and improves collaboration outcomes.",
-      "isActive": true,
-      "displayOrder": 25,
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": true,
-      "features": {
-        "included": [
-          "Low meeting engagement",
-          "Participation quality gaps",
-          "Follow-through and action tracking gaps"
         ],
         "optionalAddOns": []
       }
@@ -772,6 +542,28 @@
         "parentCodes": [
           "SWA",
           "SIA"
+        ],
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "bundleEligible": false
+    },
+    {
+      "code": "UVA-WEBCAM",
+      "name": "Ultrawide Webcam Enhancement",
+      "category": "20-Extended Coverage Option",
+      "description": "Enhances workspace exposure coverage with an ultrawide webcam to improve visibility of the physical workspace, including phones, paper, observers, unattended screens, and surrounding exposure conditions.",
+      "isActive": true,
+      "displayOrder": 37,
+      "pricing": {
+        "model": "flatPerUser",
+        "billableUnit": "per named user annual",
+        "amountUsdPerUser": 30
+      },
+      "selection": {
+        "mode": "conditional",
+        "parentCodes": [
+          "SWA"
         ],
         "displayBadges": []
       },
