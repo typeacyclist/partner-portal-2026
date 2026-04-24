@@ -1068,7 +1068,10 @@
     var fmt = TrendzactMath.formatMoney;
     var userEmail = (state.user && state.user.email) || 'partner.user@example.com';
 
-    var defaultTitle = d.proposalTitle || (d.prospectCompany ? 'Proposal for ' + d.prospectCompany : '');
+    var defaultTitle = d.proposalTitle || '';
+    var titleHelper = defaultTitle && defaultTitle.trim()
+      ? ''
+      : '<p class="tp-hint" style="margin-top:4px;">Add a descriptive title</p>';
 
      var banner = '';
      if (state.submitResult) {
@@ -1109,6 +1112,7 @@
         '<div class="tp-submit-field">' +
           '<label>Proposal Title<span class="req">*</span></label>' +
           '<input type="text" id="sf-title" value="' + esc(defaultTitle) + '" placeholder="e.g., Proposal for Acme Manufacturing"/>' +
+          titleHelper +
           '<p class="tp-hint" style="margin-top:4px;">Appears on the PDF cover.</p>' +
         '</div>' +
 
