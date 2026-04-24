@@ -44,11 +44,11 @@
     doc.text(str || '', x, y, opts.align ? { align: opts.align } : undefined);
   }
 
-  function pageFooter(doc, pageNum, totalPages, proposalId) {
-    text(doc, 'Trendzact GRC1 - Partner Proposal', MARGIN, PAGE_H - 8, { size: 8, color: C.medGray });
+  function pageFooter(doc, pageNum, totalPages, proposalId, portalDomain) {
+    var domainLabel = portalDomain || 'partner portal';
+    text(doc, 'Trendzact GRC1 - Partner Proposal ' + proposalId + ' - Confidential. For ' + domainLabel + ' use only.',
+         MARGIN, PAGE_H - 8, { size: 8, color: C.medGray });
     text(doc, 'Page ' + pageNum + ' of ' + totalPages, PAGE_W - MARGIN, PAGE_H - 8, { size: 8, color: C.medGray, align: 'right' });
-    text(doc, proposalId + ' - Confidential. For partner and named prospect use only.',
-         PAGE_W / 2, PAGE_H - 8, { size: 8, color: C.medGray, align: 'center' });
   }
 
   function buildPdf(input) {
@@ -63,6 +63,7 @@
     var proposalId = calc.proposalId;
     var generatedAt = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     var totalPages = 3;
+    var portalDomain = (window.location && window.location.hostname) || 'partner portal';
 
     // ============== PAGE 1 - COVER ==============
     fillRect(doc, 0, 0, PAGE_W, 52, C.darkGray);
@@ -117,17 +118,41 @@
     var introLines = doc.splitTextToSize(intro, CONTENT_W);
     doc.text(introLines, MARGIN, 168);
 
-    // Year 1 hero
-    fillRect(doc, MARGIN, 200, CONTENT_W, 44, C.darkGray);
-    text(doc, 'YEAR 1 INDICATIVE TOTAL', MARGIN + 8, 212, { size: 8, color: [200, 200, 210] });
-    text(doc, fmt(calc.totals.year1AnnualUsd), MARGIN + 8, 232, { size: 28, style: 'bold', color: C.white });
-    var subline = fmt(calc.totals.recurringYear1Usd) + ' recurring   +   ' + fmt(calc.totals.oneTimeUsd) + ' one-time';
-    text(doc, subline, PAGE_W - MARGIN - 8, 232, { size: 10, color: [180, 220, 218], align: 'right' });
+    // Pricing summary hero
+    var contractYears = calc.totals.contractYears || draft.contractYears || 1;
+    var page1BoxY = 198;
+    var page1BoxH = 54;
+    var page1LabelColor = [200, 200, 210];
+    var page1ValueColor = C.white;
+    fillRect(doc, MARGIN, page1BoxY, CONTENT_W, page1BoxH, C.darkGray);
+    text(doc, 'INDICATIVE PRICING SUMMARY', MARGIN + 8, page1BoxY + 10, { size: 8, color: page1LabelColor });
+
+    var pricingRows = [
+      ['Year 1 Total (recurring + one-time)', fmt(calc.totals.year1AnnualUsd)],
+      ['Year 2 recurring', contractYears >= 2 ? fmt(calc.totals.recurringYear2Usd) : '—'],
+      ['Year 3 recurring', contractYears >= 3 ? fmt(calc.totals.recurringYear3Usd) : '—'],
+      ['Total Contract Value', fmt(calc.totals.tcvUsd)]
+    ];
+    pricingRows.forEach(function (row, idx) {
+      var isLast = idx === pricingRows.length - 1;
+      var rowY = page1BoxY + 18 + idx * 8;
+      text(doc, row[0], MARGIN + 8, rowY, {
+        size: isLast ? 9 : 8.5,
+        style: isLast ? 'bold' : 'normal',
+        color: isLast ? C.tintDark : page1LabelColor
+      });
+      text(doc, row[1], PAGE_W - MARGIN - 8, rowY, {
+        size: isLast ? 12 : 10,
+        style: 'bold',
+        color: isLast ? C.tintDark : page1ValueColor,
+        align: 'right'
+      });
+    });
 
     // Footer
     text(doc, 'Generated ' + generatedAt, MARGIN, 265, { size: 8, color: C.medGray });
     if (partnerEmail) text(doc, 'Prepared by ' + partnerEmail, PAGE_W - MARGIN, 265, { size: 8, color: C.medGray, align: 'right' });
-    pageFooter(doc, 1, totalPages, proposalId);
+    pageFooter(doc, 1, totalPages, proposalId, portalDomain);
 
     // ============== PAGE 2 - LINE ITEMS ==============
     doc.addPage();
@@ -152,10 +177,8 @@
 
     // Table
     var cols = [
-      { label: 'SKU',        x: MARGIN + 3,   w: 28,  align: 'left'  },
-      { label: 'Description',x: MARGIN + 31,  w: 95,  align: 'left'  },
-      { label: 'Unit',       x: MARGIN + 126, w: 28,  align: 'left'  },
-      { label: 'Annual',     x: MARGIN + 154, w: 24,  align: 'right' }
+      { label: 'SKU',         x: MARGIN + 3,  w: 28,  align: 'left' },
+      { label: 'Description', x: MARGIN + 31, w: 145, align: 'left' }
     ];
     var tableLeft = MARGIN, tableRight = PAGE_W - MARGIN, tableWidth = tableRight - tableLeft;
     var headerH = 9, rowH = 8;
@@ -175,7 +198,7 @@
     var pageBreakAt = PAGE_H - 50;
     calc.lines.forEach(function (l, i) {
       if (y > pageBreakAt) {
-        pageFooter(doc, doc.internal.getNumberOfPages(), totalPages, proposalId);
+        pageFooter(doc, doc.internal.getNumberOfPages(), totalPages, proposalId, portalDomain);
         doc.addPage();
         fillRect(doc, 0, 0, PAGE_W, 14, C.tintLight);
         text(doc, 'Scope & Pricing (continued)', MARGIN, 9.5, { size: 11, style: 'bold', color: C.darkGray });
@@ -193,13 +216,12 @@
       if (i % 2 === 1) fillRect(doc, tableLeft, y, tableWidth, rowH, [250, 250, 251]);
       var name = l.name + (l.timing === 'oneTime' ? ' (one-time)' : '');
       // Truncate name if too long
-      if (name.length > 60) name = name.slice(0, 59) + '…';
-      var row = [l.code, name, l.unitDescription, fmt(l.lineAmountUsd)];
+      if (name.length > 110) name = name.slice(0, 109) + '…';
+      var row = [l.code, name];
       row.forEach(function (cell, ci) {
         var col = cols[ci];
         var tx = col.align === 'right' ? col.x + col.w - 2 : col.x;
         var cellText = String(cell);
-        if (ci === 2 && cellText.length > 30) cellText = cellText.slice(0, 29) + '…';
         text(doc, cellText, tx, y + 5.5, { size: 8.5, color: C.darkGray, align: col.align === 'right' ? 'right' : undefined });
       });
       doc.setDrawColor(C.border[0], C.border[1], C.border[2]);
@@ -209,45 +231,6 @@
 
     y += 4;
 
-    // Totals block
-    if (calc.bundleDiscount.discountAmountUsd > 0) {
-      text(doc, 'Bundle discount (' + calc.bundleDiscount.eligibleModuleCount + ' modules, ' +
-                calc.bundleDiscount.discountPct + '%):',
-           MARGIN, y + 5, { size: 9, color: C.medGray });
-      text(doc, '\u2212' + fmt(calc.bundleDiscount.discountAmountUsd), tableRight - 2, y + 5,
-           { size: 9, color: C.darkGray, align: 'right' });
-      y += 8;
-    }
-
-    fillRect(doc, tableLeft, y, tableWidth, 11, C.tintLight);
-    doc.setDrawColor(C.medGreen[0], C.medGreen[1], C.medGreen[2]);
-    doc.setLineWidth(0.4);
-    doc.line(tableLeft, y, tableRight, y);
-    text(doc, 'Year 1 Total (recurring + one-time)', MARGIN + 4, y + 7,
-         { size: 10, style: 'bold', color: C.darkGray });
-    text(doc, fmt(calc.totals.year1AnnualUsd), tableRight - 2, y + 7,
-         { size: 12, style: 'bold', color: C.darkGreen, align: 'right' });
-    y += 14;
-
-    // Multi-year if applicable
-    if ((draft.contractYears || 1) > 1) {
-      text(doc, 'MULTI-YEAR', MARGIN, y, { size: 8, color: C.medGreen });
-      y += 6;
-      var rows = [
-        ['Year 2 recurring (' + (100 - calc.multiYearContinuity.year2Pct) + '% of Y1)', fmt(calc.totals.recurringYear2Usd)]
-      ];
-      if (draft.contractYears >= 3) {
-        rows.push(['Year 3 recurring (' + (100 - calc.multiYearContinuity.year3Pct) + '% of Y1)', fmt(calc.totals.recurringYear3Usd)]);
-      }
-      rows.push(['Total Contract Value (TCV)', fmt(calc.totals.tcvUsd)]);
-      rows.forEach(function (rw, idx) {
-        var bold = idx === rows.length - 1;
-        text(doc, rw[0], MARGIN, y + 5, { size: 9, color: C.darkGray, style: bold ? 'bold' : 'normal' });
-        text(doc, rw[1], tableRight - 2, y + 5, { size: 10, color: bold ? C.darkGreen : C.darkGray, align: 'right', style: bold ? 'bold' : 'normal' });
-        y += 6;
-      });
-      y += 4;
-    }
 
     // Validity line — applies whether single-year or multi-year
     var issuedAt = new Date();
@@ -274,7 +257,7 @@
       y += notesLines.length * 4.5 + 4;
     }
 
-    pageFooter(doc, doc.internal.getNumberOfPages(), totalPages, proposalId);
+    pageFooter(doc, doc.internal.getNumberOfPages(), totalPages, proposalId, portalDomain);
 
     // ============== PAGE 3 - NEXT STEPS ==============
     doc.addPage();
@@ -328,7 +311,7 @@
     text(doc, 'deal-desk@trendzact.com', MARGIN + 8, y + 26, { size: 11, style: 'bold', color: C.white });
     text(doc, 'Response within 1 business day', MARGIN + 8, y + 32, { size: 8, color: [180, 220, 218] });
 
-    pageFooter(doc, doc.internal.getNumberOfPages(), totalPages, proposalId);
+    pageFooter(doc, doc.internal.getNumberOfPages(), totalPages, proposalId, portalDomain);
 
     return { doc: doc, proposalId: proposalId };
   }
