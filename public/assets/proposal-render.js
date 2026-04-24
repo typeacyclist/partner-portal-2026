@@ -93,10 +93,9 @@
     text(doc, proposalId, PAGE_W - MARGIN, 25.5, { size: 8, color: [180, 220, 218], align: 'right' });
 
     text(doc, 'Prepared for', MARGIN, 72, { size: 9, color: C.medGray });
-    text(doc, draft.companyName || 'Prospect', MARGIN, 82, { size: 24, style: 'bold', color: C.darkGray });
-    if (draft.contactName) {
-      text(doc, 'Primary contact: ' + draft.contactName, MARGIN, 90, { size: 10, color: C.medGray });
-    }
+    text(doc, draft.contactName || 'Primary Contact', MARGIN, 80, { size: 12, style: 'bold', color: C.darkGray });
+    text(doc, draft.companyName || 'Prospect', MARGIN, 91, { size: 22, style: 'bold', color: C.darkGray });
+    text(doc, draft.proposalTitle || 'Proposal', MARGIN, 100, { size: 11, color: C.medGray });
 
     // Key details block
     var yKd = 110;

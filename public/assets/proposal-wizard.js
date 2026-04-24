@@ -911,6 +911,7 @@
     return {
       companyName: d.prospectCompany,
       contactName: d.primaryContactName,
+      proposalTitle: d.proposalTitle,
       primaryUseCase: d.solutionChallenge,
       dealStage: 'Proposal',
       estimatedCloseDate: d.estDecisionDate,
