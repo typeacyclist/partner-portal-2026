@@ -93,9 +93,12 @@
     text(doc, proposalId, PAGE_W - MARGIN, 25.5, { size: 8, color: [180, 220, 218], align: 'right' });
 
     text(doc, 'Prepared for', MARGIN, 72, { size: 9, color: C.medGray });
-    text(doc, draft.contactName || 'Primary Contact', MARGIN, 80, { size: 12, style: 'bold', color: C.darkGray });
-    text(doc, draft.companyName || 'Prospect', MARGIN, 91, { size: 22, style: 'bold', color: C.darkGray });
-    text(doc, draft.proposalTitle || 'Proposal', MARGIN, 100, { size: 11, color: C.medGray });
+    text(doc, 'Primary contact: ' + (draft.contactName || '—'), MARGIN, 80, { size: 10, color: C.medGray });
+    var projectName = draft.proposalTitle && draft.proposalTitle.trim()
+      ? draft.proposalTitle.trim()
+      : '—';
+    text(doc, 'Project Name: "' + projectName + '"', MARGIN, 86, { size: 10, color: C.medGray });
+    text(doc, draft.companyName || 'Prospect', MARGIN, 97, { size: 22, style: 'bold', color: C.darkGray });
 
     // Key details block
     var yKd = 110;
