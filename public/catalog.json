@@ -621,7 +621,7 @@
       "name": "Zoom Coverage Connector",
       "category": "20-Extended Coverage Option",
       "description": "Enhances virtual meeting exposure coverage by connecting Zoom meeting context to real-time screen-share detection, participant awareness, and meeting-specific controls.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 41,
       "pricing": {
         "model": "flat",
@@ -643,7 +643,7 @@
       "name": "Webex Coverage Connector",
       "category": "20-Extended Coverage Option",
       "description": "Enhances virtual meeting exposure coverage by connecting Webex meeting context to real-time screen-share detection, participant awareness, and meeting-specific controls.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 42,
       "pricing": {
         "model": "flat",
@@ -665,7 +665,7 @@
       "name": "Google Meet Coverage Connector",
       "category": "20-Extended Coverage Option",
       "description": "Enhances virtual meeting exposure coverage by connecting Google Meet context to real-time screen-share detection, participant awareness, and meeting-specific controls.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 43,
       "pricing": {
         "model": "flat",
