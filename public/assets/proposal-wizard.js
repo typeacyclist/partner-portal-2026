@@ -120,10 +120,13 @@
       return;
     }
 
-    // Load Firestore module dynamically
-    if (state.user && state.db) {
-      try {
-        state.fsModule = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
+     // Load Firestore module dynamically
+     if (state.user && state.db) {
+       try {
+         // Keep URL in a variable to avoid IDE unresolved-literal inspection noise.
+         var firestoreCdnUrl = 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+         // @ts-ignore - External CDN module, resolves at runtime in browser.
+         state.fsModule = await import(firestoreCdnUrl);
         state.docRef = state.fsModule.doc(state.db, 'users', state.user.uid, 'activeProposal', 'current');
       } catch (e) {
         console.warn('[TP Wizard] Firestore module load failed; running without persistence', e);
@@ -385,11 +388,15 @@
     );
   }
 
-  function fieldHtml(label, id, type, val, ph, hint, key, extra) {
-    extra = extra || '';
-    return '<div class="tp-field">' +
-           '<label>' + label + '<span class="req">*</span></label>' +
-           '<input type="' + type + '" id="' + id + '" value="' + esc(val) + '" placeholder="' + esc(ph) + '" class="' + fieldCls(key) + '" ' + extra + '/>' +
+   function fieldHtml(label, id, type, val, ph, hint, key, extra) {
+     extra = extra || '';
+      var typeAttr = 'type="text"';
+      if (type === 'email') typeAttr = 'type="email"';
+      else if (type === 'number') typeAttr = 'type="number"';
+      else if (type === 'month') typeAttr = 'type="month"';
+     return '<div class="tp-field">' +
+            '<label>' + label + '<span class="req">*</span></label>' +
+              '<input ' + typeAttr + ' id="' + id + '" value="' + esc(val) + '" placeholder="' + esc(ph) + '" class="' + fieldCls(key) + '" ' + extra + '/>' +
            '<p class="tp-hint">' + esc(hint) + '</p>' +
            fieldErrHtml(key) +
            '</div>';
@@ -427,11 +434,10 @@
       var el = g(id);
       if (!el) return;
       var key = map[id];
-      var handler = function () {
-        var v = el.value;
-        if (key === 'expectedLicenseCount') v = parseInt(v, 10) || '';
-        if (key === 'termYears') v = v;
-        state.draft[key] = v;
+       var handler = function () {
+         var v = el.value;
+         if (key === 'expectedLicenseCount') v = parseInt(v, 10) || '';
+         state.draft[key] = v;
         if (state.draft.fieldErrors && state.draft.fieldErrors[key]) {
           delete state.draft.fieldErrors[key];
           el.classList.remove('invalid');
@@ -469,17 +475,17 @@
   // ==============================================================
   // STEP 2 — Solution Selectors
   // ==============================================================
-  function catalogByCategory() {
-    // Returns grouped SKU arrays for Step 2 rendering.
-    var cat = state.catalog.skus.filter(function (s) { return s.isActive !== false; });
-    return {
-      required: cat.filter(function (s) {
-        var b = (s.selection && s.selection.displayBadges) || [];
-        return b.indexOf('REQUIRED') !== -1 && s.category !== '30-Setup/Integration Option';
-      }).sort(byDisplayOrder),
-      modules: cat.filter(function (s) {
-        return s.category === '10-Module';
-      }).sort(byDisplayOrder),
+   function catalogByCategory() {
+     // Returns grouped SKU arrays for Step 2 rendering.
+     var cat = state.catalog.skus.filter(function (s) { return s.isActive !== false; });
+     return {
+       required: cat.filter(function (s) {
+         var b = (s.selection && s.selection.displayBadges) || [];
+         return b.indexOf('REQUIRED') !== -1 && s.category !== '30-Setup/Integration Option';
+       }).sort(byDisplayOrder),
+       modules: cat.filter(function (s) {
+         return s.category === '10-Data Exposure Coverage' || s.category === '10-Module';
+       }).sort(byDisplayOrder),
       platform: cat.filter(function (s) {
         return s.category === '25-Platform Option Recurring';
       }).sort(byDisplayOrder),
@@ -508,22 +514,12 @@
     return b.indexOf('BETA') !== -1;
   }
 
-  function isNewGa(sku) {
-    var b = (sku.selection && sku.selection.displayBadges) || [];
-    return b.indexOf('NEW GA') !== -1;
-  }
+   function isNewGa(sku) {
+     var b = (sku.selection && sku.selection.displayBadges) || [];
+     return b.indexOf('NEW GA') !== -1;
+   }
 
-  function priceLabel(sku) {
-    var p = sku.pricing;
-    if (!p) return '';
-    if (p.model === 'flat') return TrendzactMath.formatMoney(p.amountUsd) + '/yr';
-    if (p.model === 'flatPerUser') return TrendzactMath.formatMoney(p.amountUsdPerUser) + '/user/yr';
-    if (p.model === 'tieredByLicenseCount') return 'from ' + TrendzactMath.formatMoney(p.baseAmountUsdPerUser) + '/user/yr';
-    if (p.model === 'tieredByCompanySize') return 'from ' + TrendzactMath.formatMoney(p.baseAmountUsd) + '/yr';
-    return '';
-  }
-
-  function sectionStatus(id) {
+   function sectionStatus(id) {
     var d = state.draft;
     if (id === 'core') {
       var ct = catalogByCategory().required.length;
@@ -577,28 +573,28 @@
       if (beta) badgeHtml = '<span class="tp-badge tp-badge-beta">BETA</span>';
       else if (newga) badgeHtml = '<span class="tp-badge tp-badge-newga">NEW GA</span>';
 
-      var children = childOptionsFor(m.code);
-      var childSelectedCount = children.filter(function (c) {
-        return d.selectedModuleOptions.indexOf(c.code) !== -1;
-      }).length;
+       var children = childOptionsFor(m.code);
+       var childSelectedCount = children.filter(function (c) {
+         return d.selectedModuleOptions.indexOf(c.code) !== -1;
+       }).length;
 
-      var rightSide = '';
-      if (beta) {
-        rightSide = '';
-      } else if (childSelectedCount > 0) {
-        rightSide = '<span class="tp-sku-opt-count">+' + childSelectedCount + ' option' + (childSelectedCount > 1 ? 's' : '') + '</span>';
-      } else {
-        rightSide = '<span class="tp-sku-price">' + esc(priceLabel(m)) + '</span>';
-      }
+       var rightSide;
+       if (beta) {
+         rightSide = '';
+       } else if (childSelectedCount > 0) {
+         rightSide = '<span class="tp-sku-opt-count">+' + childSelectedCount + ' option' + (childSelectedCount > 1 ? 's' : '') + '</span>';
+       } else {
+         rightSide = '';
+       }
 
       var accordionBody = '';
       if (open) {
         var incl = (m.features && m.features.included) || [];
         var featsHtml = '';
         if (incl.length) {
-          featsHtml =
-            '<div class="tp-feature-head">Included features</div>' +
-            '<div class="tp-feature-list">' +
+           featsHtml =
+             '<div class="tp-feature-head">Included Detections</div>' +
+             '<div class="tp-feature-list">' +
               incl.map(function (f) { return '<span class="inc">' + esc(f) + '</span>'; }).join('') +
             '</div>';
         }
@@ -608,18 +604,17 @@
         if (!beta) {
           var visibleChildren = children.filter(function (c) { return !isBeta(c); });
           if (visibleChildren.length) {
-            optsHtml =
-              '<div class="tp-feature-head">Optional add-ons</div>' +
-              visibleChildren.map(function (o) {
+             optsHtml =
+               '<div class="tp-feature-head">Enhancements</div>' +
+               visibleChildren.map(function (o) {
                 var oSel = d.selectedModuleOptions.indexOf(o.code) !== -1;
                 var oDisabled = !selected;
                 return '<div class="tp-opt-row">' +
                          '<input type="checkbox" data-mopt="' + esc(o.code) + '" ' +
                            (oSel ? 'checked' : '') + (oDisabled ? ' disabled' : '') + '/>' +
-                         '<label>' +
-                           '<span class="tp-sku-code">' + esc(o.code) + '</span> ' + esc(o.name) +
-                           ' <span class="tp-opt-price">' + esc(priceLabel(o)) + '</span>' +
-                         '</label>' +
+                          '<label>' +
+                            '<span class="tp-sku-code">' + esc(o.code) + '</span> ' + esc(o.name) +
+                          '</label>' +
                        '</div>';
               }).join('');
             if (!selected) {
@@ -674,11 +669,10 @@
       return '<div class="tp-sku-row' + (sel ? ' selected' : '') + (disabled ? ' disabled' : '') + '" data-platform="' + esc(p.code) + '">' +
                '<input type="checkbox" ' + (sel ? 'checked' : '') + (disabled ? ' disabled' : '') + '/>' +
                '<div class="tp-sku-body">' +
-                 '<div class="tp-sku-line">' +
-                   '<span class="tp-sku-code">' + esc(p.code) + '</span>' +
-                   '<span class="tp-sku-name">' + esc(p.name) + '</span>' +
-                   '<span class="tp-sku-price">' + esc(priceLabel(p)) + '</span>' +
-                 '</div>' +
+                  '<div class="tp-sku-line">' +
+                    '<span class="tp-sku-code">' + esc(p.code) + '</span>' +
+                    '<span class="tp-sku-name">' + esc(p.name) + '</span>' +
+                  '</div>' +
                  '<p class="tp-sku-desc">' + esc(p.description || '') + '</p>' +
                '</div>' +
              '</div>';
@@ -702,19 +696,18 @@
       return '<div class="tp-sku-row' + (sel ? ' selected' : '') + (disabled ? ' disabled' : '') + '" data-onetime="' + esc(o.code) + '">' +
                '<input type="checkbox" ' + (sel ? 'checked' : '') + (req || disabled ? ' disabled' : '') + '/>' +
                '<div class="tp-sku-body">' +
-                 '<div class="tp-sku-line">' +
-                   '<span class="tp-sku-code">' + esc(o.code) + '</span>' +
-                   '<span class="tp-sku-name">' + esc(o.name) + '</span>' +
-                   '<span class="tp-sku-price">' + esc(priceLabel(o)) + '</span>' +
-                   requiredBadge +
-                 '</div>' +
+                  '<div class="tp-sku-line">' +
+                    '<span class="tp-sku-code">' + esc(o.code) + '</span>' +
+                    '<span class="tp-sku-name">' + esc(o.name) + '</span>' +
+                    requiredBadge +
+                  '</div>' +
                  '<p class="tp-sku-desc">' + esc(o.description || '') + '</p>' +
                '</div>' +
              '</div>';
     }).join('');
 
-    // Helper to render a section
-    function sectionHtml(id, title, bodyInnerHtml) {
+     // Helper to render a section
+     function sectionHtml(id, title, bodyInnerHtml, subtext) {
       var st = sectionStatus(id);
       var invalid = state.draft.sectionErrors && state.draft.sectionErrors[id];
       var classes = 'tp-section';
@@ -726,7 +719,7 @@
                  '<span class="tp-section-title">' + esc(title) + '</span>' +
                  '<span class="tp-section-count ' + (st.klass || '') + '">' + esc(st.label) + '</span>' +
                '</div>' +
-               (d.sectionOpen[id] ? '<div class="tp-section-body">' + bodyInnerHtml + '</div>' : '') +
+                (d.sectionOpen[id] ? '<div class="tp-section-body">' + (subtext ? '<p class="tp-lede">' + esc(subtext) + '</p>' : '') + bodyInnerHtml + '</div>' : '') +
              '</div>';
     }
 
@@ -735,14 +728,19 @@
       blocker = '<div class="tp-section-blocker">Every optional section needs at least one selection or a "None needed" acknowledgment before continuing.</div>';
     }
 
-    return (
-      '<h3>Step 2 — Solution Selectors</h3>' +
-      '<p class="tp-lede">Pick what the prospect needs in each section. If a section doesn\'t apply, check "None needed" to acknowledge.</p>' +
+     return (
+       '<h3>Step 2 — Solution Selectors</h3>' +
+       '<p class="tp-lede">Select coverage areas for the prospect. If a section does not apply, check "None needed" to acknowledge.</p>' +
 
-      sectionHtml('core', 'Core Services', coreHtml) +
-      sectionHtml('modules', 'Modules', modulesNone + modulesHtml) +
-      sectionHtml('platform', 'Platform Options', platformNone + platformHtml) +
-      sectionHtml('oneTime', 'One-Time Setup & Integrations', oneTimeNone + oneTimeHtml) +
+       sectionHtml('core', 'Core Services', coreHtml) +
+       sectionHtml(
+         'modules',
+         'Select Your Data Exposure Coverage',
+         modulesNone + modulesHtml,
+         'Define where sensitive data is exposed—and apply real-time protection'
+       ) +
+       sectionHtml('platform', 'Platform Infrastructure', platformNone + platformHtml) +
+       sectionHtml('oneTime', 'Initialization & Integrations', oneTimeNone + oneTimeHtml) +
       blocker
     );
   }
@@ -1008,35 +1006,35 @@
         '</ul>' +
       '</div>' +
 
-      '<div class="tp-review-section">' +
-        '<div class="tp-review-head">' +
-          '<span class="tp-review-title">Modules</span>' +
-          '<span class="tp-review-count">' + mods.length + ' selected' + (d.sectionNone.modules ? ' (none needed)' : '') + '</span>' +
+       '<div class="tp-review-section">' +
+         '<div class="tp-review-head">' +
+           '<span class="tp-review-title">Data Exposure Coverage</span>' +
+           '<span class="tp-review-count">' + mods.length + ' selected' + (d.sectionNone.modules ? ' (none needed)' : '') + '</span>' +
           '<button class="tp-review-edit" data-goto="1">Edit →</button>' +
         '</div>' +
         '<ul class="tp-review-items">' + itemList(mods, 'None needed') + '</ul>' +
       '</div>' +
 
-      '<div class="tp-review-section">' +
-        '<div class="tp-review-head">' +
-          '<span class="tp-review-title">Module Options</span>' +
-          '<span class="tp-review-count">' + modOpts.length + ' selected</span>' +
+       '<div class="tp-review-section">' +
+         '<div class="tp-review-head">' +
+           '<span class="tp-review-title">Enhancements</span>' +
+           '<span class="tp-review-count">' + modOpts.length + ' selected</span>' +
         '</div>' +
         '<ul class="tp-review-items">' + itemList(modOpts, 'None') + '</ul>' +
       '</div>' +
 
-      '<div class="tp-review-section">' +
-        '<div class="tp-review-head">' +
-          '<span class="tp-review-title">Platform Options</span>' +
-          '<span class="tp-review-count">' + plat.length + ' selected' + (d.sectionNone.platform ? ' (none needed)' : '') + '</span>' +
+       '<div class="tp-review-section">' +
+         '<div class="tp-review-head">' +
+           '<span class="tp-review-title">Platform Infrastructure</span>' +
+           '<span class="tp-review-count">' + plat.length + ' selected' + (d.sectionNone.platform ? ' (none needed)' : '') + '</span>' +
         '</div>' +
         '<ul class="tp-review-items">' + itemList(plat, 'None needed') + '</ul>' +
       '</div>' +
 
-      '<div class="tp-review-section">' +
-        '<div class="tp-review-head">' +
-          '<span class="tp-review-title">One-Time Setup</span>' +
-          '<span class="tp-review-count">' + one.length + ' selected' + (d.sectionNone.oneTime ? ' (no add-ons needed)' : '') + '</span>' +
+       '<div class="tp-review-section">' +
+         '<div class="tp-review-head">' +
+           '<span class="tp-review-title">Initialization & Integrations</span>' +
+           '<span class="tp-review-count">' + one.length + ' selected' + (d.sectionNone.oneTime ? ' (no add-ons needed)' : '') + '</span>' +
         '</div>' +
         '<ul class="tp-review-items">' +
           '<li><code>INIT-ONBRD</code> — Initialization and Client Champions Onboarding</li>' +
@@ -1071,11 +1069,11 @@
 
     var defaultTitle = d.proposalTitle || (d.prospectCompany ? 'Proposal for ' + d.prospectCompany : '');
 
-    var banner = '';
-    if (state.submitResult) {
-      var er = state.submitResult.emailResult || {};
-      var emailLine = '';
-      if (er.ok) {
+     var banner = '';
+     if (state.submitResult) {
+       var er = state.submitResult.emailResult || {};
+       var emailLine;
+       if (er.ok) {
         var ccPart = (d.ccTo && d.ccTo.trim()) ? ' and CC\'d to ' + esc(d.ccTo.trim()) : '';
         emailLine = '<br/>Email copy sent to <code>' + esc(state.user && state.user.email || 'you') + '</code>' + ccPart + '.';
       } else {
