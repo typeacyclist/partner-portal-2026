@@ -417,7 +417,7 @@
       "name": "Evidence Retention Enhancement",
       "category": "20-Extended Coverage Option",
       "description": "Enhances exposure coverage by retaining screen, alert, and interaction evidence after risk occurs. Supports investigation, audit review, and compliance validation when proof must be preserved.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 30,
       "pricing": {
         "model": "flat",
@@ -575,7 +575,7 @@
       "name": "Observer Detection Enhancement",
       "category": "20-Extended Coverage Option",
       "description": "Enhances workspace exposure coverage by detecting unauthorized observers near sensitive activity. Flags shoulder-surfing, unknown presence, and observer-driven exposure risk in real time.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 36,
       "pricing": {
         "model": "flatPerUser",
@@ -731,7 +731,7 @@
       "name": "BCP Failover SLA Addendum",
       "category": "25-Platform Option Recurring",
       "description": "Pilot-light business continuity failover in a second AWS region. RPO and RTO commitments per SLA addendum.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 51,
       "pricing": {
         "model": "flat",
@@ -751,7 +751,7 @@
       "name": "Playbook Authoring Workspace",
       "category": "25-Platform Option Recurring",
       "description": "Dedicated authoring environment for governed response playbooks.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 52,
       "pricing": {
         "model": "flat",
@@ -771,7 +771,7 @@
       "name": "Managed SOC Analyst Hours Pool",
       "category": "25-Platform Option Recurring",
       "description": "Pool of Trendzact SOC analyst hours for triage and investigation assist.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 53,
       "pricing": {
         "model": "flat",
@@ -791,7 +791,7 @@
       "name": "Embedded BI / Power BI Connector",
       "category": "25-Platform Option Recurring",
       "description": "Embedded BI workspace and Power BI connector for executive reporting.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 54,
       "pricing": {
         "model": "flat",
