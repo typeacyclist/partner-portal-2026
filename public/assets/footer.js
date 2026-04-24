@@ -3,30 +3,28 @@
 (function () {
   const COLUMNS = [
     {
-      heading: 'Selling Tools',
+      heading: 'Primary Navigation',
       links: [
         { href: '/discover.html',    label: 'Discover' },
-        { href: '/proposal',         label: 'Proposal Builder' },
+        { href: '/resources.html',   label: 'Resources' },
         { href: '/live-demo.html',   label: 'Demos' },
-        { href: '/sales-order.html', label: 'Sales Order' }
+        { href: '/gtm-playbook.html',label: 'Playbook' },
+        { href: '/proposal',         label: 'Proposal Builder' },
+        { href: '/sales-order.html', label: 'Sales Order' },
+        { href: '/contact.html',     label: 'Contact' }
       ]
     },
     {
-      heading: 'Learn',
+      heading: 'More to Explore',
       links: [
-        { href: '/grc-one.html',          label: 'GRC One' },
-        { href: '/video-explainers.html', label: 'Video Explainers' },
-        { href: '/gtm-playbook.html',     label: 'GTM Playbook' },
-        { href: '/resources.html',        label: 'Resources' }
+        { href: '/grc-one.html',          label: 'GRC One' }
       ]
     },
     {
       heading: 'Partner Ops',
       links: [
-        { href: '/newsletter.html', label: 'Newsletter' },
-        { href: '/press.html',      label: 'Press Releases' },
-        { href: '/contact.html',    label: 'Contact Us' },
-        { href: '#',                label: 'Partner Terms' }
+        { href: '/contact.html',    label: 'Contact' },
+        { href: '/sales-order.html',label: 'Sales Order' }
       ]
     }
   ];

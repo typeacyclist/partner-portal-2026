@@ -10,9 +10,26 @@
 <link rel="stylesheet" href="/assets/styles.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
 <style>
+  .video-embed-16x9 {
+    position: relative;
+    padding-top: 56.25%;
+    margin: 20px 0 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    background: #000;
+  }
+  .video-embed-16x9 iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
   /* The shared .filter-chips rule adds a top border + padding designed for
-     when chips sit under a search input. On Discover, chips sit directly
-     under the page lede, so we drop those ornaments. */
+     when chips sit under a search input. On Discover, chips sit under the
+     lede and intro video, so we drop those ornaments. */
   .page-head .filter-chips {
     border-top: 0;
     padding-top: 0;
@@ -59,7 +76,7 @@
     margin: 8px 0 4px;
   }
   .vector-chip {
-    font-family: var(--ff-mono);
+    font-family: var(--ff-mono), sans-serif;
     font-size: 10px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -97,9 +114,17 @@
   </nav>
 
   <header class="page-head">
-    <span class="eyebrow">Partner Tool · 01</span>
     <h1>Discover</h1>
-    <p class="lede">Discover Trendzact capabilities, identify the ICP, and shape a tailored recommendation for your prospect.</p>
+    <p class="lede">A unified platform that understands and controls data exposure in real time — based on what is visible, who is present, and where it occurs.</p>
+    <div class="video-embed-16x9">
+      <iframe
+        src="https://player.vimeo.com/video/1185752726?h=7d2bbd2b14&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        title="GRC One – Introduction – Resolving Data Security Blind Spot"
+        loading="lazy"
+        allowfullscreen></iframe>
+    </div>
     <div class="filter-chips">
       <button class="chip active" data-filter-chip="all">All</button>
       <button class="chip" data-filter-chip="solution">Solutions</button>

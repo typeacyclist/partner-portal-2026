@@ -19,7 +19,6 @@
   <nav class="breadcrumb"><a href="/">Home</a><span></span><a href="#" aria-current="page">Contact Us</a></nav>
 
   <header class="page-head">
-    <span class="eyebrow">Partner Support</span>
     <h1>Contact Trendzact</h1>
     <p class="lede">Route your question to the right Trendzact team — deal desk, SE, partner ops, marketing, or support.</p>
     
@@ -29,12 +28,12 @@
   <section class="section">
     <h2>How can we help?</h2>
     <div class="card-grid">
-      <div class="card"><span class="tag tag-solid">DEAL DESK</span><h3>Pricing &amp; Deal Support</h3><p>Custom pricing, non-standard terms, deal registration, and volume approvals.</p><p style="font-family:var(--ff-mono); font-size:13px;"><strong>deal-desk@trendzact.com</strong></p><p style="font-size:13px; color:var(--med-gray);">Response within 1 business day</p></div>
-      <div class="card"><span class="tag tag-solid">SALES ENGINEERING</span><h3>Technical &amp; SE Support</h3><p>Architecture discussions, integration deep dives, demo support, and competitive situations.</p><p style="font-family:var(--ff-mono); font-size:13px;"><strong>partner-se@trendzact.com</strong></p></div>
-      <div class="card"><span class="tag tag-solid">PARTNER OPS</span><h3>Partner Operations</h3><p>Onboarding, portal access, enablement, marketing co-funding, and program questions.</p><p style="font-family:var(--ff-mono); font-size:13px;"><strong>partners@trendzact.com</strong></p></div>
-      <div class="card"><span class="tag tag-solid">MARKETING</span><h3>Marketing &amp; Co-brand</h3><p>Joint campaigns, events, press coordination, and co-branded asset approvals.</p><p style="font-family:var(--ff-mono); font-size:13px;"><strong>partner-marketing@trendzact.com</strong></p></div>
-      <div class="card"><span class="tag tag-solid">SUPPORT</span><h3>Customer Success &amp; Escalation</h3><p>Existing customer escalations, renewal support, and technical account management.</p><p style="font-family:var(--ff-mono); font-size:13px;"><strong>partner-cs@trendzact.com</strong></p></div>
-      <div class="card"><span class="tag tag-solid">CONTRACTS</span><h3>Legal &amp; Contracts</h3><p>Master reseller agreements, NDAs, data processing agreements, and compliance attestations.</p><p style="font-family:var(--ff-mono); font-size:13px;"><strong>legal@trendzact.com</strong></p></div>
+      <div class="card"><span class="tag tag-solid">DEAL DESK</span><h3>Pricing &amp; Deal Support</h3><p>Custom pricing, non-standard terms, deal registration, and volume approvals.</p><p style="font-family:var(--ff-mono), monospace; font-size:13px;"><strong>deal-desk@trendzact.com</strong></p><p style="font-size:13px; color:var(--med-gray);">Response within 1 business day</p></div>
+      <div class="card"><span class="tag tag-solid">SALES ENGINEERING</span><h3>Technical &amp; SE Support</h3><p>Architecture discussions, integration deep dives, demo support, and competitive situations.</p><p style="font-family:var(--ff-mono), monospace; font-size:13px;"><strong>partner-se@trendzact.com</strong></p></div>
+      <div class="card"><span class="tag tag-solid">PARTNER OPS</span><h3>Partner Operations</h3><p>Onboarding, portal access, enablement, marketing co-funding, and program questions.</p><p style="font-family:var(--ff-mono), monospace; font-size:13px;"><strong>partners@trendzact.com</strong></p></div>
+      <div class="card"><span class="tag tag-solid">MARKETING</span><h3>Marketing &amp; Co-brand</h3><p>Joint campaigns, events, press coordination, and co-branded asset approvals.</p><p style="font-family:var(--ff-mono), monospace; font-size:13px;"><strong>partner-marketing@trendzact.com</strong></p></div>
+      <div class="card"><span class="tag tag-solid">SUPPORT</span><h3>Customer Success &amp; Escalation</h3><p>Existing customer escalations, renewal support, and technical account management.</p><p style="font-family:var(--ff-mono), monospace; font-size:13px;"><strong>partner-cs@trendzact.com</strong></p></div>
+      <div class="card"><span class="tag tag-solid">CONTRACTS</span><h3>Legal &amp; Contracts</h3><p>Master reseller agreements, NDAs, data processing agreements, and compliance attestations.</p><p style="font-family:var(--ff-mono), monospace; font-size:13px;"><strong>legal@trendzact.com</strong></p></div>
     </div>
   </section>
 
@@ -42,12 +41,12 @@
     <h2>Send a Message</h2>
     <form class="card" style="padding:28px;">
       <div class="form-grid">
-        <div class="form-field"><label>Your Name</label><input type="text" /></div>
-        <div class="form-field"><label>Your Company</label><input type="text" /></div>
-        <div class="form-field"><label>Email</label><input type="email" /></div>
-        <div class="form-field"><label>Route To</label><select><option>Deal Desk</option><option>Sales Engineering</option><option>Partner Operations</option><option>Marketing</option><option>Support</option><option>Legal</option></select></div>
-        <div class="form-field full"><label>Subject</label><input type="text" /></div>
-        <div class="form-field full"><label>Message</label><textarea></textarea></div>
+          <div class="form-field"><label for="contact-name">Your Name</label><input id="contact-name" type="text" /></div>
+          <div class="form-field"><label for="contact-company">Your Company</label><input id="contact-company" type="text" /></div>
+          <div class="form-field"><label for="contact-email">Email</label><input id="contact-email" type="email" /></div>
+          <div class="form-field"><label for="contact-route">Route To</label><select id="contact-route"><option>Deal Desk</option><option>Sales Engineering</option><option>Partner Operations</option><option>Marketing</option><option>Support</option><option>Legal</option></select></div>
+          <div class="form-field full"><label for="contact-subject">Subject</label><input id="contact-subject" type="text" /></div>
+          <div class="form-field full"><label for="contact-message">Message</label><textarea id="contact-message"></textarea></div>
       </div>
       <div class="form-actions">
         <button type="button" class="btn btn-primary">Send Message</button>

@@ -19,7 +19,6 @@
   <nav class="breadcrumb"><a href="/">Home</a><span></span><a href="#" aria-current="page">Sales Order</a></nav>
 
   <header class="page-head">
-    <span class="eyebrow">Partner Tool · 04</span>
     <h1>Sales Order Procurement</h1>
     <p class="lede">Convert a closed-won opportunity into a provisioned tenant. All orders route through Trendzact Deal Desk and Partner Ops.</p>
     
@@ -33,48 +32,48 @@
     <form class="card" style="padding:28px;">
       <div class="form-grid">
         <div class="form-field">
-          <label>Partner</label>
-          <input type="text" value="Reseller Demo Partner" readonly style="background:var(--bg-soft);" />
+          <label for="so-partner">Partner</label>
+          <input id="so-partner" type="text" value="Reseller Demo Partner" readonly style="background:var(--bg-soft);" />
         </div>
         <div class="form-field">
-          <label>Opportunity ID</label>
-          <input type="text" placeholder="OPP-00000-0000" />
+          <label for="so-opportunity-id">Opportunity ID</label>
+          <input id="so-opportunity-id" type="text" placeholder="OPP-00000-0000" />
         </div>
         <div class="form-field full">
-          <label>End Customer Legal Entity</label>
-          <input type="text" placeholder="Full legal entity name" />
+          <label for="so-legal-entity">End Customer Legal Entity</label>
+          <input id="so-legal-entity" type="text" placeholder="Full legal entity name" />
         </div>
         <div class="form-field">
-          <label>Billing Contact Name</label>
-          <input type="text" />
+          <label for="so-billing-contact">Billing Contact Name</label>
+          <input id="so-billing-contact" type="text" />
         </div>
         <div class="form-field">
-          <label>Billing Email</label>
-          <input type="email" />
+          <label for="so-billing-email">Billing Email</label>
+          <input id="so-billing-email" type="email" />
         </div>
         <div class="form-field full">
-          <label>Billing Address</label>
-          <input type="text" />
+          <label for="so-billing-address">Billing Address</label>
+          <input id="so-billing-address" type="text" />
         </div>
         <div class="form-field">
-          <label>Term Length</label>
-          <select>
+          <label for="so-term-length">Term Length</label>
+          <select id="so-term-length">
             <option>12 months</option>
             <option>24 months</option>
             <option>36 months</option>
           </select>
         </div>
         <div class="form-field">
-          <label>Start Date</label>
-          <input type="date" />
+          <label for="so-start-date">Start Date</label>
+          <input id="so-start-date" type="date" />
         </div>
         <div class="form-field">
-          <label>Licensed Users</label>
-          <input type="number" />
+          <label for="so-licensed-users">Licensed Users</label>
+          <input id="so-licensed-users" type="number" />
         </div>
         <div class="form-field">
-          <label>Deployment Region</label>
-          <select><option>North America</option><option>EMEA</option><option>APAC</option><option>LATAM</option></select>
+          <label for="so-deployment-region">Deployment Region</label>
+          <select id="so-deployment-region"><option>North America</option><option>EMEA</option><option>APAC</option><option>LATAM</option></select>
         </div>
       </div>
     </form>

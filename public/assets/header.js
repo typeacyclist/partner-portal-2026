@@ -8,26 +8,28 @@
 
 (function () {
   const NAV_ITEMS = [
-    { href: '/grc-one.html',          label: 'GRC One' },
     { href: '/discover.html',         label: 'Discover' },
-    { href: '/proposal',              label: 'Proposal Builder' },
+    { href: '/resources.html',        label: 'Resources' },
     { href: '/live-demo.html',        label: 'Demos' },
     { href: '/gtm-playbook.html',     label: 'GTM Playbook' },
-    { href: '/resources.html',        label: 'Resources' }
+    { href: '/proposal',              label: 'Proposal Builder' },
+    { href: '/sales-order.html',      label: 'Sales Order' },
+    { href: '/contact.html',          label: 'Contact' }
   ];
 
   // Mobile drawer shows the full set (including items not in primary nav)
   const DRAWER_ITEMS = [
-    { href: '/grc-one.html',          label: 'GRC One' },
     { href: '/discover.html',         label: 'Discover' },
-    { href: '/proposal',              label: 'Proposal Builder' },
+    { href: '/resources.html',        label: 'Resources' },
     { href: '/live-demo.html',        label: 'Demos' },
-    { href: '/video-explainers.html', label: 'Video Explainers' },
     { href: '/gtm-playbook.html',     label: 'GTM Playbook' },
-    { href: '/sales-order.html',      label: 'Sales Order Procurement' },
+    { href: '/proposal',              label: 'Proposal Builder' },
+    { href: '/sales-order.html',      label: 'Sales Order' },
+    { href: '/contact.html',          label: 'Contact' },
+    { href: '/grc-one.html',          label: 'GRC One' },
+    { href: '/video-explainers.html', label: 'Video Explainers' },
     { href: '/newsletter.html',       label: 'Newsletter' },
-    { href: '/press.html',            label: 'Press Release' },
-    { href: '/contact.html',          label: 'Contact Us' }
+    { href: '/press.html',            label: 'Press Releases' }
   ];
 
   const BRAND_SVG = `

@@ -14,26 +14,6 @@
      Visual emphasis on the GRC1 anchor and the fundamental shift,
      with a 2-col grid of numbered exposure categories below. */
 
-  /* Video embed — 16:9 aspect ratio.
-     Inserted directly below the page subtitle; spaces away from the
-     GRC1 hero anchor card that follows. */
-  .video-embed-16x9 {
-    position: relative;
-    padding-top: 56.25%;
-    margin: 0 0 32px;
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-    background: #000;
-  }
-  .video-embed-16x9 iframe {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-  }
-
   /* Hero anchor — large, prominent treatment of the canonical GRC1
      definition statement. */
   .grc1-hero {
@@ -45,7 +25,7 @@
     box-shadow: var(--shadow-sm);
   }
   .grc1-hero .anchor-label {
-    font-family: var(--ff-mono);
+    font-family: var(--ff-mono), monospace;
     font-size: 11px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -55,7 +35,7 @@
   }
   .grc1-hero p {
     margin: 0;
-    font-family: var(--ff-display);
+    font-family: var(--ff-display), serif;
     font-size: 22px;
     color: var(--dark-gray);
     line-height: 1.45;
@@ -82,7 +62,7 @@
     background: #fff;
   }
   .shift-side .shift-label {
-    font-family: var(--ff-mono);
+    font-family: var(--ff-mono), monospace;
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -100,7 +80,7 @@
     background: var(--tint-light);
   }
   .shift-side-text {
-    font-family: var(--ff-display);
+    font-family: var(--ff-display), serif;
     font-size: 17px;
     line-height: 1.4;
     margin: 0;
@@ -145,7 +125,7 @@
     position: relative;
   }
   .exposure-cat-num {
-    font-family: var(--ff-mono);
+    font-family: var(--ff-mono), monospace;
     font-size: 11px;
     letter-spacing: 0.14em;
     color: var(--med-green);
@@ -154,7 +134,7 @@
     margin-bottom: 6px;
   }
   .exposure-cat h3 {
-    font-family: var(--ff-display);
+    font-family: var(--ff-display), serif;
     font-weight: 500;
     font-size: 18px;
     color: var(--dark-gray);
@@ -203,7 +183,7 @@
     background: #fff;
   }
   .summary-card .summary-label {
-    font-family: var(--ff-mono);
+    font-family: var(--ff-mono), monospace;
     font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -226,7 +206,7 @@
     list-style: none;
   }
   .summary-card ul li {
-    font-family: var(--ff-display);
+    font-family: var(--ff-display), serif;
     font-size: 18px;
     margin: 6px 0;
     color: var(--dark-gray);
@@ -234,7 +214,7 @@
   }
   .summary-card.summary-trad ul li { color: var(--med-gray); }
   .grc1-focus {
-    font-family: var(--ff-display);
+    font-family: var(--ff-display), serif;
     font-size: 28px;
     color: var(--dark-green);
     font-weight: 600;
@@ -242,7 +222,7 @@
     letter-spacing: -0.02em;
   }
   .across-label {
-    font-family: var(--ff-mono);
+    font-family: var(--ff-mono), monospace;
     font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -271,20 +251,10 @@
   </nav>
 
   <header class="page-head">
-    <span class="eyebrow">Partner Tool · 01</span>
     <h1>GRC One Platform</h1>
     <p class="lede">A unified platform that understands and controls data exposure in real time — based on what is visible, who is present, and where it occurs.</p>
   </header>
 
-  <div class="video-embed-16x9">
-    <iframe
-      src="https://player.vimeo.com/video/1185752726?h=7d2bbd2b14&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-      allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-      referrerpolicy="strict-origin-when-cross-origin"
-      title="GRC One – Introduction – Resolving Data Security Blind Spot"
-      loading="lazy"
-      allowfullscreen></iframe>
-  </div>
 
   <div class="grc1-hero">
     <span class="anchor-label">GRC1 Definition</span>
