@@ -8,7 +8,6 @@
     "  - License-count bracket multipliers: 1.20x (1-100) / 1.00x (101-500) / 0.85x (501-2500) / 0.70x (2501+)",
     "  - Bundle discount FORMULA-BASED: 15% per module from 2+, caps at 45%",
     "  - Multi-year continuity: 15% Year 2, 30% Year 3",
-    "  - 6 BETA modules (EUBA/GRC-CEA/WEI/DWA/AAO/MCE) have NO pricing block",
     "  - PRIVSCR is per-user $20/user/yr service on SWA + SIA",
     "  - OBSRVR-DET is per-user $15/user/yr on SWA",
     "  - Meeting connectors $8K each (TEAMS/ZOOM/WEBEX/GMEET), CONN-PURVIEW $15K (multi-parent)",
@@ -23,15 +22,9 @@
     "",
     "Allowed displayBadges values (v1):",
     "   REQUIRED  - auto-included, un-toggleable (blue in wizard)",
-    "   BETA      - visible but NOT selectable (amber in wizard)",
     "   NEW GA    - recently promoted to GA, visible and selectable (green in wizard)",
     "",
-    "BETA visibility rule:",
-    "   - SKU renders with amber BETA badge",
     "   - Checkbox is disabled (cursor not-allowed)",
-    "   - Bundle-discount thresholds do NOT count BETA SKUs",
-    "   - If a parent Module is BETA, its nested optional add-ons are HIDDEN",
-    "   - BETA SKUs have NO pricing block until promoted to GA",
     "",
     "This file is served at /catalog.json with Cache-Control: no-cache.",
     "Schema spec: product-catalog-schema-v1.md",
@@ -39,7 +32,23 @@
     "  - User-facing category label '10-Module' should be interpreted as Data Exposure Coverage.",
     "  - User-facing category label '20-Module Option Recurring' should be interpreted as Extended Coverage.",
     "  - User-facing section label 'Included Features' should be rendered as Risk Detections for category 10 coverage SKUs.",
-    "  - User-facing section label 'Optional Add-Ons' should be rendered as Extended Coverage."
+    "  - User-facing section label 'Optional Add-Ons' should be rendered as Extended Coverage.",
+    "Discover-card framing update:",
+    "  - Category 10 SKUs can be rendered as buyer-facing Data Exposure Coverage cards.",
+    "  - Card names are scenario-based and map back to existing SKU codes; no new field names required.",
+    "  - features.included should render as Included Detections.",
+    "  - features.optionalAddOns should render as Enhancements.",
+    "  - Some cards reference related SKUs in optionalAddOns to support cross-sell/discovery; pricing engines should continue to use selected SKU codes only.",
+    "",
+    "GA production update:",
+    "  - All Data Exposure Coverage cards are GA / production selectable.",
+    "  - No category 10 coverage SKU carries a BETA badge.",
+    "  - Former beta coverage cards remain active and selectable under the same schema.",
+    "",
+    "Category 20 content alignment update:",
+    "  - Category value remains '20-Extended Coverage Option' for schema and UI compatibility.",
+    "  - User-facing names/descriptions are aligned to the Enhancements concept.",
+    "  - UI may continue to render Category 20 as Enhancements while preserving the category string."
   ],
   "catalogVersion": "global-v6-draft",
   "updatedAt": "2026-04-20T00:00:00Z",
@@ -201,9 +210,9 @@
     },
     {
       "code": "SWA",
-      "name": "Workspace Exposure Coverage",
+      "name": "Workspace Exposure",
       "category": "10-Data Exposure Coverage",
-      "description": "Protects against physical and visual data exposure when sensitive information is visible in real-world workspaces. Detects unattended sessions, unauthorized observers, and non-compliant environments\u2014and applies immediate controls to reduce exposure risk.",
+      "description": "Protects sensitive data where it is physically visible in the workspace. Detects webcam-visible risk conditions such as phones, paper, unattended screens, observers, and non-compliant work areas—and applies real-time controls to reduce exposure.",
       "isActive": true,
       "displayOrder": 10,
       "pricing": {
@@ -220,23 +229,26 @@
       "bundleEligible": true,
       "features": {
         "included": [
-          "Sensitive data visible in unattended workstations",
-          "Workspace non-compliance and clear-desk violations",
-          "Physical or visual exposure in hybrid workspaces",
-          "Unauthorized observer risk conditions"
+          "Phone, camera, or recording device visible near sensitive work",
+          "Paper documents, handwritten notes, or exposed materials near the user",
+          "Sensitive screen visible while workstation is unattended",
+          "Unauthorized observer, shoulder-surfing, or unknown person present",
+          "Clear-desk or clean-screen policy violation",
+          "Sensitive work occurring in uncontrolled physical environments"
         ],
         "optionalAddOns": [
-          "ARCH",
+          "SIA",
+          "OBSRVR-DET",
           "PRIVSCR",
-          "OBSRVR-DET"
+          "ARCH"
         ]
       }
     },
     {
       "code": "SIA",
-      "name": "Identity & Presence Exposure Coverage",
+      "name": "Imposters & Identity Spoofing",
       "category": "10-Data Exposure Coverage",
-      "description": "Protects against identity uncertainty during sensitive sessions. Detects when the person present does not match the authorized user, when credentials are shared, or when session integrity is compromised\u2014and enforces real-time identity assurance.",
+      "description": "Protects sensitive sessions when login credentials alone are not enough. Uses continuous facial recognition, presence assurance, and liveness signals to detect imposters, proxy work, credential sharing, and identity uncertainty in real time.",
       "isActive": true,
       "displayOrder": 11,
       "pricing": {
@@ -253,21 +265,26 @@
       "bundleEligible": true,
       "features": {
         "included": [
-          "Identity uncertainty during sensitive sessions",
-          "Imposter or unauthorized person present",
-          "Credential sharing or session misuse indicators",
-          "Risk conditions requiring step-up verification"
+          "Logged-in user does not match the person present",
+          "Authorized user leaves and another person continues the session",
+          "Face, liveness, or presence signal conflicts with expected identity",
+          "Credential sharing, proxy work, or session handoff suspected",
+          "Imposter presence detected during sensitive activity",
+          "Step-up verification required due to identity uncertainty"
         ],
         "optionalAddOns": [
-          "PRIVSCR"
+          "PRIVSCR",
+          "OBSRVR-DET",
+          "ITM",
+          "ARCH"
         ]
       }
     },
     {
       "code": "eDLP",
-      "name": "On-Screen Data Exposure Coverage",
+      "name": "On-Screen Sensitive Data Exposure",
       "category": "10-Data Exposure Coverage",
-      "description": "Protects sensitive data at the moment it becomes visible on screen. Detects visual exposure, cross-display exfiltration, and unauthorized handling of sensitive information\u2014and applies real-time masking, restriction, or control.",
+      "description": "Protects sensitive data at the moment it appears on screen. Detects restricted, labeled, or high-risk content visibility across displays and applies real-time masking, watermarking, restriction, or control.",
       "isActive": true,
       "displayOrder": 12,
       "pricing": {
@@ -284,22 +301,25 @@
       "bundleEligible": true,
       "features": {
         "included": [
-          "Sensitive data visible on screen",
-          "Cross-display visual exposure and exfiltration risk",
-          "Unauthorized masking, watermark, or restriction conditions",
-          "Purview and MIP label exposure conditions (requires CONN-PURVIEW)"
+          "Sensitive information appears on screen",
+          "Labeled or restricted data becomes visible",
+          "Sensitive content appears on secondary displays",
+          "Unauthorized screenshot, screen capture, or recording condition detected",
+          "Data visibility requires mask, restrict, or watermark action",
+          "Screen exposure exceeds policy threshold"
         ],
         "optionalAddOns": [
-          "ARCH",
-          "CONN-PURVIEW"
+          "CONN-PURVIEW",
+          "MSR",
+          "ARCH"
         ]
       }
     },
     {
       "code": "ITM",
-      "name": "Behavioral Risk Coverage",
+      "name": "Insider Risk & Exfiltration Behavior",
       "category": "10-Data Exposure Coverage",
-      "description": "Protects against behavior-driven insider risk before it becomes data exposure. Detects high-risk patterns, staging activity, and exfiltration signals\u2014and initiates real-time containment and response.",
+      "description": "Protects against negligent, malicious, or collusive insider behavior before it becomes data loss. Detects staging, suspicious handling, external transfer indicators, and activity patterns requiring containment or SOC review.",
       "isActive": true,
       "displayOrder": 13,
       "pricing": {
@@ -316,22 +336,27 @@
       "bundleEligible": true,
       "features": {
         "included": [
-          "Insider risk escalation patterns",
-          "Staging or exfiltration behavior indicators",
-          "High-risk user activity requiring containment",
-          "Explainable incident and response conditions"
+          "User accesses sensitive data outside normal pattern",
+          "Sensitive files or screens staged before transfer",
+          "High-risk application sequence observed",
+          "Clipboard, screenshot, upload, or external app behavior indicates risk",
+          "User behavior crosses containment threshold",
+          "Insider activity requires case creation or SOC review"
         ],
         "optionalAddOns": [
-          "ARCH",
-          "CONN-PURVIEW"
+          "eDLP",
+          "EUBA",
+          "MSR",
+          "CONN-PURVIEW",
+          "INT-SPLUNK"
         ]
       }
     },
     {
       "code": "SVM",
-      "name": "Meeting Exposure Coverage",
+      "name": "Virtual Meeting & Screenshare Exposure",
       "category": "10-Data Exposure Coverage",
-      "description": "Protects against unintended data exposure during virtual meetings and screen sharing. Detects sensitive content visibility, unauthorized participants, and identity risks\u2014and enforces real-time controls to prevent leakage.",
+      "description": "Protects sensitive data during virtual meetings and screen sharing. Detects Microsoft Teams and other meeting exposure scenarios, including MIP/AIP-labeled content visibility, external participants, unauthorized observers, and recording governance risk.",
       "isActive": true,
       "displayOrder": 14,
       "pricing": {
@@ -349,23 +374,27 @@
       "features": {
         "included": [
           "Sensitive data exposed during screen sharing",
-          "External or unauthorized meeting participants",
-          "Participant identity assurance failures",
-          "Recording and evidence governance risk"
+          "MIP/AIP or Microsoft Purview-labeled content visible in meeting context",
+          "External or unauthorized participant present while restricted data is visible",
+          "Unknown participant, observer, or attendee identity risk",
+          "Screen sharing continues after sensitive content appears",
+          "Meeting recording or evidence governance risk"
         ],
         "optionalAddOns": [
           "CONN-TEAMS",
+          "CONN-PURVIEW",
           "CONN-ZOOM",
           "CONN-WEBEX",
-          "CONN-GMEET"
+          "CONN-GMEET",
+          "MSR"
         ]
       }
     },
     {
       "code": "MSR",
-      "name": "Exposure Evidence Coverage",
+      "name": "Evidence, Audit & Reconstruction",
       "category": "10-Data Exposure Coverage",
-      "description": "Captures defensible evidence of on-screen activity at the moment exposure occurs. Records and links events to provide accurate reconstruction, investigation, and compliance validation.",
+      "description": "Captures defensible evidence when exposure occurs. Records and links screen activity to events so teams can reconstruct incidents, support regulated review, and prove what happened.",
       "isActive": true,
       "displayOrder": 15,
       "pricing": {
@@ -382,24 +411,27 @@
       "bundleEligible": true,
       "features": {
         "included": [
-          "On-screen activity requiring defensible evidence",
-          "Multi-display exposure reconstruction",
-          "Event-linked investigation timeline conditions",
-          "Compliance-aligned evidence retention requirements"
+          "Exposure event requires defensible evidence",
+          "Screen activity must be reconstructed",
+          "Multi-display session requires capture",
+          "Alert-triggered event requires linked screen evidence",
+          "Compliance review requires retained proof",
+          "Investigation requires event-linked visual timeline"
         ],
         "optionalAddOns": [
-          "MSR-ALL",
           "MSR-ALERT",
+          "MSR-ALL",
           "ARCH",
-          "CONN-PURVIEW"
+          "SR-QAM",
+          "STT"
         ]
       }
     },
     {
       "code": "SR-QAM",
-      "name": "Quality & Compliance Evidence Coverage",
+      "name": "Quality & Compliance Review",
       "category": "10-Data Exposure Coverage",
-      "description": "Supports regulated review and quality assurance by capturing and preserving on-screen activity as defensible evidence. Enables accurate reconstruction of interactions for compliance and audit validation.",
+      "description": "Supports regulated review and QA/QM when interactions must be scored, audited, or reconstructed. Preserves on-screen and interaction evidence for compliance validation.",
       "isActive": true,
       "displayOrder": 16,
       "pricing": {
@@ -416,21 +448,24 @@
       "bundleEligible": true,
       "features": {
         "included": [
-          "Interactions requiring QA/QM scoring",
-          "Compliance review evidence requirements",
-          "On-screen activity requiring forensic reconstruction",
-          "Retention conditions for regulated review"
+          "Interactions require QA/QM scoring",
+          "Compliance review requires retained evidence",
+          "On-screen activity requires forensic reconstruction",
+          "Customer or agent interaction requires defensible review",
+          "Retention conditions apply to regulated workflows"
         ],
         "optionalAddOns": [
-          "STT"
+          "STT",
+          "ARCH",
+          "MSR"
         ]
       }
     },
     {
       "code": "ECS",
-      "name": "Location & Activity Exposure Coverage",
+      "name": "Location & Activity Exposure",
       "category": "10-Data Exposure Coverage",
-      "description": "Protects against location- and activity-based exposure risks. Detects anomalous geolocation, unmonitored work conditions, and suspicious activity patterns\u2014and flags conditions requiring immediate review.",
+      "description": "Detects location and activity conditions that increase exposure risk. Flags anomalous geolocation, policy-restricted work locations, unproductive periods, and unexplained activity gaps.",
       "isActive": true,
       "displayOrder": 17,
       "pricing": {
@@ -450,36 +485,46 @@
           "Unproductive or unexplained computer activity periods",
           "Geolocation anomalies and jurisdiction crossings",
           "Policy-restricted work location conditions",
-          "Activity gaps requiring exposure review"
+          "Activity gaps requiring exposure review",
+          "Work activity occurs outside expected time-place pattern"
         ],
         "optionalAddOns": [
-          "GEO-ALERT"
+          "GEO-ALERT",
+          "EUBA",
+          "ITM"
         ]
       }
     },
     {
       "code": "EUBA",
-      "name": "Behavior & Activity Analytics Coverage",
+      "name": "Time-Place-Application Anomalies",
       "category": "10-Data Exposure Coverage",
-      "description": "Detects insider risk through direct observation of human behavior, providing earlier visibility than log-only analytics.",
+      "description": "Detects behavioral risk by comparing user activity against expected time, place, and application patterns. Flags unusual access, abnormal application combinations, suspicious work patterns, and behavior that no longer matches the user baseline.",
       "isActive": true,
       "displayOrder": 20,
       "selection": {
         "mode": "partner",
         "parentCodes": null,
-        "displayBadges": [
-          "BETA"
-        ]
+        "displayBadges": []
       },
       "timing": "recurring",
       "bundleEligible": true,
       "features": {
         "included": [
-          "Behavioral anomalies",
-          "Activity pattern deviations",
-          "Behavior-enriched investigation timelines"
+          "Sensitive activity occurs at unusual time of day",
+          "User operates from unexpected, restricted, or anomalous location",
+          "Application usage deviates from normal baseline",
+          "Sensitive application opened with unusual supporting tools",
+          "Activity pattern suggests staging or exfiltration preparation",
+          "Work session includes unexplained idle, active, or location gaps"
         ],
-        "optionalAddOns": []
+        "optionalAddOns": [
+          "ECS",
+          "ITM",
+          "eDLP",
+          "CONN-PURVIEW",
+          "INT-SPLUNK"
+        ]
       }
     },
     {
@@ -492,9 +537,7 @@
       "selection": {
         "mode": "partner",
         "parentCodes": null,
-        "displayBadges": [
-          "BETA"
-        ]
+        "displayBadges": []
       },
       "timing": "recurring",
       "bundleEligible": true,
@@ -517,9 +560,7 @@
       "selection": {
         "mode": "partner",
         "parentCodes": null,
-        "displayBadges": [
-          "BETA"
-        ]
+        "displayBadges": []
       },
       "timing": "recurring",
       "bundleEligible": true,
@@ -542,9 +583,7 @@
       "selection": {
         "mode": "partner",
         "parentCodes": null,
-        "displayBadges": [
-          "BETA"
-        ]
+        "displayBadges": []
       },
       "timing": "recurring",
       "bundleEligible": true,
@@ -567,9 +606,7 @@
       "selection": {
         "mode": "partner",
         "parentCodes": null,
-        "displayBadges": [
-          "BETA"
-        ]
+        "displayBadges": []
       },
       "timing": "recurring",
       "bundleEligible": true,
@@ -592,9 +629,7 @@
       "selection": {
         "mode": "partner",
         "parentCodes": null,
-        "displayBadges": [
-          "BETA"
-        ]
+        "displayBadges": []
       },
       "timing": "recurring",
       "bundleEligible": true,
@@ -609,9 +644,9 @@
     },
     {
       "code": "ARCH",
-      "name": "Evidence Retention Extension",
+      "name": "Evidence Retention Enhancement",
       "category": "20-Extended Coverage Option",
-      "description": "Extends retention of exposure evidence captured at the moment risk occurs. Preserves screen, alert, and interaction records for investigation, audit, and compliance validation.",
+      "description": "Enhances exposure coverage by retaining screen, alert, and interaction evidence after risk occurs. Supports investigation, audit review, and compliance validation when proof must be preserved.",
       "isActive": true,
       "displayOrder": 30,
       "pricing": {
@@ -634,9 +669,9 @@
     },
     {
       "code": "MSR-ALL",
-      "name": "Continuous Capture Extension",
+      "name": "Continuous Capture Enhancement",
       "category": "20-Extended Coverage Option",
-      "description": "Captures continuous on-screen activity to ensure no exposure moment is missed. Enables full-session reconstruction for investigation and regulated review.",
+      "description": "Enhances evidence coverage by capturing full-session on-screen activity. Supports complete reconstruction when regulated review or high-risk operations require continuous proof.",
       "isActive": true,
       "displayOrder": 31,
       "pricing": {
@@ -656,9 +691,9 @@
     },
     {
       "code": "MSR-ALERT",
-      "name": "Alert-Triggered Capture Extension",
+      "name": "Alert-Triggered Capture Enhancement",
       "category": "20-Extended Coverage Option",
-      "description": "Captures on-screen evidence only when exposure risk is detected. Provides targeted, low-overhead recording aligned to real-time risk events.",
+      "description": "Enhances evidence coverage by capturing screen activity only when exposure risk is detected. Provides focused proof for real-time alerts without requiring continuous recording.",
       "isActive": true,
       "displayOrder": 32,
       "pricing": {
@@ -678,9 +713,9 @@
     },
     {
       "code": "STT",
-      "name": "Speech-to-Text Evidence Extension",
+      "name": "Speech-to-Text Evidence Enhancement",
       "category": "20-Extended Coverage Option",
-      "description": "Converts voice interactions into searchable records to support investigation and compliance review of exposure-related conversations.",
+      "description": "Enhances quality and compliance review by converting voice interactions into searchable records. Supports investigation of exposure-related conversations, QA scoring, and regulated review.",
       "isActive": true,
       "displayOrder": 33,
       "pricing": {
@@ -700,9 +735,9 @@
     },
     {
       "code": "GEO-ALERT",
-      "name": "Geolocation Anomaly Extension",
+      "name": "Geolocation Anomaly Enhancement",
       "category": "20-Extended Coverage Option",
-      "description": "Detects and alerts on geolocation conditions that increase exposure risk, including unusual locations, jurisdiction crossings, and policy-restricted regions.",
+      "description": "Enhances location and activity exposure coverage by alerting on unusual locations, jurisdiction crossings, and policy-restricted regions that increase exposure risk.",
       "isActive": true,
       "displayOrder": 34,
       "pricing": {
@@ -722,9 +757,9 @@
     },
     {
       "code": "PRIVSCR",
-      "name": "Privacy Screen Extension",
+      "name": "Privacy Screen Enhancement",
       "category": "20-Extended Coverage Option",
-      "description": "Reduces visual exposure risk by limiting screen visibility to unintended observers in real-world environments.",
+      "description": "Enhances workspace exposure coverage by reducing screen visibility to unintended observers. Helps limit visual exposure in shared, hybrid, and uncontrolled environments.",
       "isActive": true,
       "displayOrder": 35,
       "pricing": {
@@ -745,9 +780,9 @@
     },
     {
       "code": "OBSRVR-DET",
-      "name": "Observer Detection Extension",
+      "name": "Observer Detection Enhancement",
       "category": "20-Extended Coverage Option",
-      "description": "Detects the presence of unauthorized observers during sensitive activity and flags exposure risk in real time.",
+      "description": "Enhances workspace exposure coverage by detecting unauthorized observers near sensitive activity. Flags shoulder-surfing, unknown presence, and observer-driven exposure risk in real time.",
       "isActive": true,
       "displayOrder": 36,
       "pricing": {
@@ -771,7 +806,7 @@
       "code": "CONN-TEAMS",
       "name": "Microsoft Teams Coverage Connector",
       "category": "20-Extended Coverage Option",
-      "description": "Extends exposure coverage into Microsoft Teams by enabling real-time detection and control during meetings and screen sharing.",
+      "description": "Enhances virtual meeting exposure coverage by connecting Microsoft Teams context to real-time screen-share detection, participant awareness, and meeting-specific controls.",
       "isActive": true,
       "displayOrder": 40,
       "pricing": {
@@ -793,7 +828,7 @@
       "code": "CONN-ZOOM",
       "name": "Zoom Coverage Connector",
       "category": "20-Extended Coverage Option",
-      "description": "Extends exposure coverage into Zoom by enabling real-time detection and control during meetings and screen sharing.",
+      "description": "Enhances virtual meeting exposure coverage by connecting Zoom meeting context to real-time screen-share detection, participant awareness, and meeting-specific controls.",
       "isActive": true,
       "displayOrder": 41,
       "pricing": {
@@ -815,7 +850,7 @@
       "code": "CONN-WEBEX",
       "name": "Webex Coverage Connector",
       "category": "20-Extended Coverage Option",
-      "description": "Extends exposure coverage into Webex by enabling real-time detection and control during meetings and screen sharing.",
+      "description": "Enhances virtual meeting exposure coverage by connecting Webex meeting context to real-time screen-share detection, participant awareness, and meeting-specific controls.",
       "isActive": true,
       "displayOrder": 42,
       "pricing": {
@@ -837,7 +872,7 @@
       "code": "CONN-GMEET",
       "name": "Google Meet Coverage Connector",
       "category": "20-Extended Coverage Option",
-      "description": "Extends exposure coverage into Google Meet by enabling real-time detection and control during meetings and screen sharing.",
+      "description": "Enhances virtual meeting exposure coverage by connecting Google Meet context to real-time screen-share detection, participant awareness, and meeting-specific controls.",
       "isActive": true,
       "displayOrder": 43,
       "pricing": {
@@ -859,7 +894,7 @@
       "code": "CONN-PURVIEW",
       "name": "Microsoft Purview Coverage Connector",
       "category": "20-Extended Coverage Option",
-      "description": "Extends exposure awareness using Microsoft Purview labels to identify sensitive data at the moment it becomes visible and enforce real-time controls.",
+      "description": "Enhances on-screen and meeting exposure coverage with Microsoft Purview sensitivity labels. Enables labeled data to be recognized when visible and used for real-time masking, watermarking, restriction, or evidence controls.",
       "isActive": true,
       "displayOrder": 44,
       "pricing": {
