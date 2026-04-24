@@ -43,7 +43,7 @@ const resendApiKey = defineSecret('RESEND_API_KEY');
 const portalSecret = defineSecret('PORTAL_SHARED_SECRET');
 
 // Internal pipeline tracking — partner doesn't see this in the email
-const DEFAULT_BCC = ['partner-proposals@trendzact.com'];
+const DEFAULT_BCC = 'Partner Proposals <partner-proposals@trendzact.com>';
 
 // The "from" address must be on a domain you've verified in Resend
 const FROM = 'Trendzact Deal Desk <deal-desk@trendzact.com>';

@@ -914,6 +914,7 @@
       primaryUseCase: d.solutionChallenge,
       dealStage: 'Proposal',
       estimatedCloseDate: d.estDecisionDate,
+      sector: d.sector,
       companySegment: d.companySegment,
       userCount: parseInt(d.expectedLicenseCount, 10) || 0,
       contractYears: parseInt(d.termYears, 10) || 1,

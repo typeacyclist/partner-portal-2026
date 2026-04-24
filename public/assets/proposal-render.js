@@ -44,6 +44,18 @@
     doc.text(str || '', x, y, opts.align ? { align: opts.align } : undefined);
   }
 
+  function formatSectorLabel(sector) {
+    if (!sector) return '—';
+    if (sector === 'commercial') return 'Commercial';
+    if (sector === 'govt-public-works') return 'Govt / Public Works';
+    return String(sector)
+      .split('-')
+      .map(function (part) {
+        return part ? part.charAt(0).toUpperCase() + part.slice(1) : part;
+      })
+      .join(' ');
+  }
+
   function pageFooter(doc, pageNum, totalPages, proposalId, portalDomain) {
     var domainLabel = portalDomain || 'partner portal';
     text(doc, 'Trendzact GRC1 - Partner Proposal ' + proposalId + ' - Confidential. For ' + domainLabel + ' use only.',
@@ -169,9 +181,7 @@
     y += 8;
 
     // Context line
-    var ctx = (calc.input.companySegmentLabel || '') + '  |  ' +
-              (calc.input.userCount || 0).toLocaleString('en-US') + ' users  |  ' +
-              'Volume bracket: ' + (calc.input.bracket || '') + '  (\u00d7' + (calc.input.bracketMultiplier || 1).toFixed(2) + ')';
+    var ctx = formatSectorLabel(draft.sector) + '  |  ' + (calc.input.companySegmentLabel || '—');
     text(doc, ctx, MARGIN, y, { size: 9, color: C.medGray });
     y += 10;
 
