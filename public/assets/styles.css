@@ -1354,6 +1354,13 @@ p { margin: 0 0 1em; color: var(--dark-gray); }
   flex: 1;
   color: var(--dark-gray);
 }
+.tp-section-subtext {
+  font-size: 12px;
+  color: var(--med-gray);
+  font-weight: 400;
+  margin-left: 8px;
+  flex: 1;
+}
 .tp-section-count {
   font-family: var(--ff-mono);
   font-size: 11px;
