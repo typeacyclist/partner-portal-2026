@@ -43,7 +43,7 @@ const resendApiKey = defineSecret('RESEND_API_KEY');
 const portalSecret = defineSecret('PORTAL_SHARED_SECRET');
 
 // Internal pipeline tracking — partner doesn't see this in the email
-const DEFAULT_BCC = 'Partner Proposals <partner-proposals@trendzact.com>';
+const DEFAULT_BCC = ['partner-proposals@trendzact.com'];
 
 // The "from" address must be on a domain you've verified in Resend
 const FROM = 'Trendzact Deal Desk <deal-desk@trendzact.com>';
@@ -84,6 +84,10 @@ exports.sendProposal = onRequest(
         cc = [],
         bcc = DEFAULT_BCC
       } = req.body || {};
+
+      const ccList = normalizeRecipients(cc);
+      let bccList = normalizeRecipients(bcc);
+      if (!bccList.length) bccList = DEFAULT_BCC.slice();
 
       // Minimal validation
       if (!to || !pdfBase64 || !pdfFilename || !company) {
@@ -133,8 +137,8 @@ exports.sendProposal = onRequest(
       const emailResult = await resend.emails.send({
         from: FROM,
         to: [to],
-        cc: cc.length ? cc : undefined,
-        bcc: bcc,
+        cc: ccList.length ? ccList : undefined,
+        bcc: bccList,
         subject: `Trendzact GRC1 Proposal — ${company}`,
         text: buildTextBody({
           partnerName, company, contact, contactEmail, proposalId,
@@ -177,8 +181,8 @@ exports.sendProposal = onRequest(
         contact: contact || null,
         contactEmail: contactEmail || null,
         to,
-        cc,
-        bcc,
+        cc: ccList,
+        bcc: bccList,
         useCase: useCase || null,
         annualRecurring: annualRecurring || null,
         tcv: tcv || null,
@@ -236,3 +240,24 @@ function buildTextBody(ctx) {
   lines.push(`This document is confidential and intended only for the named recipient. Pricing shown is indicative and subject to Trendzact Deal Desk approval.`);
   return lines.join('\n');
 }
+
+function normalizeRecipients(value) {
+  if (!value) return [];
+  var list = Array.isArray(value) ? value : [value];
+  return list
+    .flatMap(function (v) { return String(v).split(/[;,]/); })
+    .map(function (s) { return s.trim(); })
+    .filter(Boolean)
+    .map(extractEmailAddress)
+    .filter(isLikelyEmail);
+}
+
+function extractEmailAddress(input) {
+  var m = String(input).match(/<([^>]+)>/);
+  return (m ? m[1] : input).trim();
+}
+
+function isLikelyEmail(s) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s));
+}
+
