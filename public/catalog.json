@@ -834,7 +834,7 @@
       "name": "Data Privacy Impact Assessment",
       "category": "30-Setup/Integration Option",
       "description": "One-time DPIA aligned to prospect jurisdiction. GDPR, CCPA, BDSG, LGPD, and territory-specific assessment.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 61,
       "pricing": {
         "model": "flat",
@@ -854,7 +854,7 @@
       "name": "Okta SSO Integration",
       "category": "30-Setup/Integration Option",
       "description": "One-time integration with Okta as identity provider.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 62,
       "pricing": {
         "model": "flat",
@@ -874,7 +874,7 @@
       "name": "Ping SSO Integration",
       "category": "30-Setup/Integration Option",
       "description": "One-time integration with Ping Identity as identity provider.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 63,
       "pricing": {
         "model": "flat",
@@ -894,7 +894,7 @@
       "name": "MS Graph API Integration",
       "category": "30-Setup/Integration Option",
       "description": "One-time integration with Microsoft Graph for Entra ID and M365 enrichment.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 64,
       "pricing": {
         "model": "flat",
@@ -914,7 +914,7 @@
       "name": "Splunk SIEM Integration",
       "category": "30-Setup/Integration Option",
       "description": "One-time integration pushing GRC1 alerts, cases, and events to Splunk.",
-      "isActive": true,
+      "isActive": false,
       "displayOrder": 65,
       "pricing": {
         "model": "flat",
