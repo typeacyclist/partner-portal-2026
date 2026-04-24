@@ -816,7 +816,7 @@
       "pricing": {
         "model": "tieredByCompanySize",
         "billableUnit": "one-time, tier by company size",
-        "baseAmountUsd": 25000,
+        "baseAmountUsd": 10000,
         "multiplierRef": "presaleMultiplier"
       },
       "selection": {
