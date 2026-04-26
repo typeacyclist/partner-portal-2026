@@ -28,6 +28,10 @@ import {
   getDownloadURL
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
+// Default visual guide icon for every Discover card. Individual cards can
+// override this with `iconImage`, `cardIcon`, or `iconUrl` in solution-content.js.
+const DEFAULT_CARD_ICON = 'gs://trendzact-partners-001.firebasestorage.app/Trendzact Favicon (green).png';
+
 // Inline SVG icons (kept tiny, brand-colored via currentColor)
 const ICON_REPORT = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>`;
 const ICON_INFOGRAPHIC = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
@@ -60,6 +64,51 @@ function escapeHtml(s) {
 
 function isHttpUrl(s) {
   return typeof s === 'string' && /^https?:\/\//i.test(s);
+}
+
+function getCardIconPath(card) {
+  return card.iconImage || card.cardIcon || card.iconUrl || DEFAULT_CARD_ICON;
+}
+
+function renderCardIcon(card) {
+  const iconPath = getCardIconPath(card);
+  const alt = card.iconAlt || `${card.title || 'Discover card'} icon`;
+
+  return `
+      <div class="card-icon-wrap" aria-hidden="false">
+        <div class="card-icon-placeholder" aria-hidden="true">TZ</div>
+        <img class="card-icon-img" alt="${escapeHtml(alt)}" data-card-icon-path="${escapeHtml(iconPath)}" loading="lazy" hidden />
+      </div>`;
+}
+
+async function resolveCardIcons() {
+  const images = Array.from(document.querySelectorAll('img[data-card-icon-path]'));
+  if (!images.length) return;
+
+  let storage = null;
+  if (window.TrendzactAuth && window.TrendzactAuth.app) {
+    storage = getStorage(window.TrendzactAuth.app);
+  }
+
+  await Promise.all(images.map(async img => {
+    const path = img.dataset.cardIconPath;
+    if (!path) return;
+
+    try {
+      let src = path;
+      if (!isHttpUrl(path)) {
+        if (!storage) return;
+        src = await getDownloadURL(storageRef(storage, path));
+      }
+
+      img.src = src;
+      img.hidden = false;
+      const wrapper = img.closest('.card-icon-wrap');
+      if (wrapper) wrapper.classList.add('has-image');
+    } catch (err) {
+      console.warn('[Discover] Card icon load failed:', path, err);
+    }
+  }));
 }
 
 /** Renders the asset icon row.
@@ -203,6 +252,7 @@ function renderProductStyleCard(card, typeKey) {
   return `
     <article class="card product-card sb-product-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}" data-category="${escapeHtml((card.category || '').toUpperCase())}">
       <div class="product-card-head">
+        ${renderCardIcon(card)}
         <span class="${meta.className}">${meta.tag}</span>
         <h3>${escapeHtml(card.title)}</h3>
         ${card.summary ? `<p class="product-summary">${escapeHtml(card.summary)}</p>` : ''}
@@ -240,6 +290,7 @@ function renderCompactCard(card, typeKey) {
 
   return `
     <div class="card sb-unified-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}">
+      ${renderCardIcon(card)}
       <span class="${meta.className}">${meta.tag}</span>
       <h3>${escapeHtml(card.title)}</h3>
       ${summaryText ? `<p class="card-summary">${escapeHtml(summaryText)}</p>` : ''}
@@ -323,6 +374,8 @@ async function handleAssetClick(e) {
 // ------------------------------------------------------------------
 function init() {
   renderAllCards();
+  resolveCardIcons();
+  setTimeout(resolveCardIcons, 300);
   document.addEventListener('click', handleAssetClick);
 
   // Re-apply filter state if app.js already loaded
