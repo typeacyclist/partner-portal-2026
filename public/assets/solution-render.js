@@ -5,21 +5,19 @@
 // renders cards into #cards-mount on the /discover page.
 //
 // For each card, renders available asset links plus a visual card icon:
-//   - Infographic  (image icon)     → Firebase Storage file
-//   - Explainer Video (play icon)   → Vimeo URL
-//   - Card icon     (image)          → Firebase Storage file / URL
+//   - Details       (file icon)      -> Firebase Storage file / URL
+//   - Report        (file icon)      -> Firebase Storage file / URL
+//   - Infographic   (image icon)     -> Firebase Storage file / URL
+//   - Explainer Video (play icon)    -> Vimeo URL
+//   - Card icon     (image)          -> Firebase Storage file / URL
 //
 // Firebase Storage paths get resolved to download URLs on click for assets
 // and lazily after render for card icons.
 
-import {
-  getStorage,
-  ref as storageRef,
-  getDownloadURL
-} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
-
 const DEFAULT_CARD_ICON = 'gs://trendzact-partners-001.firebasestorage.app/icons/Trendzact Favicon (green).png';
 
+const ICON_DETAILS = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>`;
+const ICON_REPORT = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v7a2 2 0 0 1-2 2h-2"/><path d="M14 3v5h5"/><path d="M12 12v9"/><path d="M8.5 17.5 12 21l3.5-3.5"/></svg>`;
 const ICON_INFOGRAPHIC = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
 const ICON_VIDEO = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
 
@@ -42,6 +40,17 @@ const TYPE_FILTER_KEY = {
   caseStudies: 'casestudy',
   buyers:      'buyer'
 };
+
+let storageModulePromise = null;
+const FIREBASE_VERSION = '10.14.1';
+const FIREBASE_STORAGE_MODULE_URL = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-storage.js`;
+
+function loadStorageModule() {
+  if (!storageModulePromise) {
+    storageModulePromise = import(FIREBASE_STORAGE_MODULE_URL);
+  }
+  return storageModulePromise;
+}
 
 function escapeHtml(s) {
   return String(s == null ? '' : s)
@@ -82,9 +91,15 @@ async function resolveCardIcons() {
   const images = Array.from(document.querySelectorAll('img[data-card-icon-path]'));
   if (!images.length) return;
 
+  const storageApi = await loadStorageModule().catch(err => {
+    console.warn('[Discover] Firebase Storage module failed to load:', err);
+    return null;
+  });
+  if (!storageApi) return;
+
   let storage = null;
   if (window.TrendzactAuth && window.TrendzactAuth.app) {
-    storage = getStorage(window.TrendzactAuth.app);
+    storage = storageApi.getStorage(window.TrendzactAuth.app);
   }
 
   await Promise.all(images.map(async img => {
@@ -95,7 +110,7 @@ async function resolveCardIcons() {
       let src = path;
       if (!isHttpUrl(path)) {
         if (!storage) return;
-        src = await getDownloadURL(storageRef(storage, path));
+        src = await storageApi.getDownloadURL(storageApi.ref(storage, path));
       }
 
       img.src = src;
@@ -110,6 +125,24 @@ async function resolveCardIcons() {
 
 function renderAssetRow(card) {
   const parts = [];
+
+  parts.push(renderAssetIcon({
+    value: card.moreInfoUrl,
+    title: 'Details',
+    label: 'Details',
+    icon: ICON_DETAILS,
+    kind: 'details',
+    isExternal: false
+  }));
+
+  parts.push(renderAssetIcon({
+    value: card.technicalReport,
+    title: 'Report',
+    label: 'Report',
+    icon: ICON_REPORT,
+    kind: 'report',
+    isExternal: false
+  }));
 
   parts.push(renderAssetIcon({
     value: card.infographic,
@@ -289,13 +322,28 @@ async function handleAssetClick(e) {
   link.style.pointerEvents = 'none';
   link.innerHTML = `<span class="asset-spinner"></span><span>Loading…</span>`;
 
+  if (!window.TrendzactAuth || !window.TrendzactAuth.app) {
+    alert(`Could not load ${kind || 'asset'}. Firebase is not initialized yet.`);
+    link.innerHTML = originalHtml;
+    link.style.pointerEvents = '';
+    return;
+  }
+
+  const storageApi = await loadStorageModule().catch(err => {
+    console.warn('[Discover] Firebase Storage module failed to load:', err);
+    return null;
+  });
+  if (!storageApi) {
+    alert(`Could not load ${kind || 'asset'}. Storage module failed to load.`);
+    link.innerHTML = originalHtml;
+    link.style.pointerEvents = '';
+    return;
+  }
+
   try {
-    if (!window.TrendzactAuth || !window.TrendzactAuth.app) {
-      throw new Error('Firebase not initialized');
-    }
-    const storage = getStorage(window.TrendzactAuth.app);
-    const fileRef = storageRef(storage, path);
-    const url = await getDownloadURL(fileRef);
+    const storage = storageApi.getStorage(window.TrendzactAuth.app);
+    const fileRef = storageApi.ref(storage, path);
+    const url = await storageApi.getDownloadURL(fileRef);
     window.open(url, '_blank', 'noopener');
   } catch (err) {
     console.error('[Discover] Asset load failed:', err);
