@@ -2,17 +2,33 @@
 
 This file is the single source prompt pack for creating Discover collateral for the Trendzact Partner Portal.
 
-Use it to create three collateral assets for each Discover card:
-
-1. Executive Summary report
-2. Infographic image
-3. Video explainer outline
-
 The content is written for non-technical decision makers. English may be their second language. Use short sentences, plain words, and clear business examples.
 
 ---
 
-# 1. Global Collateral Rules
+# 1. Collateral Scope
+
+Create collateral by Discover card type.
+
+| Card type | Executive Summary report | Infographic prompt | Video explainer outline | Audio podcast |
+|---|---:|---:|---:|---:|
+| Platform | Yes | Yes | Yes | Yes |
+| Solution | Yes | Yes | Yes | No |
+| Enhancement | Yes | No | No | No |
+| Use Case | Yes | Yes | No | No |
+| Case Study | Yes | No | No | No |
+
+Important:
+
+- Every card gets an Executive Summary report.
+- Only Platform, Solution, and Use Case cards get an Infographic prompt.
+- Infographic output is a prompt only, not the actual image.
+- Only Platform and Solution cards get a Video explainer outline.
+- Only Platform gets an Audio podcast asset.
+
+---
+
+# 2. Global Collateral Rules
 
 ## Audience
 
@@ -84,19 +100,19 @@ Use these substitutions for clarity:
 
 | Instead of | Use |
 |---|---|
-| endpoint telemetry | signals from the user’s computer |
+| endpoint telemetry | signals from the user's computer |
 | identity confidence | confidence that the right person is still present |
 | data exfiltration | sensitive data leaving control |
 | DLP | data loss prevention tools on first use |
 | SOC | security team on first use |
 | policy enforcement | applying company rules in real time |
 | evidence preservation | saving proof for review |
-| session context | what is happening during the user’s work session |
+| session context | what is happening during the user's work session |
 | behavioral anomaly | activity that looks unusual or risky |
 
 ---
 
-# 2. Storage and Naming Rules
+# 3. Storage and Naming Rules
 
 All generated collateral must be stored in Firebase Storage under:
 
@@ -119,35 +135,99 @@ Rules:
 - Put all collateral for that card in its folder.
 - Do not put collateral directly in the bucket root.
 
-Recommended file names inside each folder:
+## Required Files by Card Type
+
+### Platform folder
+
+Required:
 
 ```text
 exec_summary.md
-exec_summary.pdf
-infographic.png
+infographic_prompt.md
 video_outline.md
+audio_podcast.md
+```
+
+Optional:
+
+```text
+exec_summary.pdf
+video_script.md
+audio_podcast_script.md
+```
+
+### Solution folder
+
+Required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+video_outline.md
+```
+
+Optional:
+
+```text
+exec_summary.pdf
 video_script.md
 ```
 
-Minimum required files:
+### Enhancement folder
+
+Required:
 
 ```text
 exec_summary.md
-infographic.png
-video_outline.md
+```
+
+Optional:
+
+```text
+exec_summary.pdf
+```
+
+### Use Case folder
+
+Required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+```
+
+Optional:
+
+```text
+exec_summary.pdf
+```
+
+### Case Study folder
+
+Required:
+
+```text
+exec_summary.md
+```
+
+Optional:
+
+```text
+exec_summary.pdf
 ```
 
 Example full paths:
 
 ```text
 gs://trendzact-partners-001.firebasestorage.app/platform_sdec/exec_summary.md
-gs://trendzact-partners-001.firebasestorage.app/platform_sdec/infographic.png
+gs://trendzact-partners-001.firebasestorage.app/platform_sdec/infographic_prompt.md
 gs://trendzact-partners-001.firebasestorage.app/platform_sdec/video_outline.md
+gs://trendzact-partners-001.firebasestorage.app/platform_sdec/audio_podcast.md
 ```
 
 ---
 
-# 3. Discover Card Manifest and Storage Folders
+# 4. Discover Card Manifest and Storage Folders
 
 Use this manifest as the source list for collateral creation.
 
@@ -170,6 +250,15 @@ gs://trendzact-partners-001.firebasestorage.app/platform_sdec/
 ```
 
 Category: Platform
+
+Collateral required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+video_outline.md
+audio_podcast.md
+```
 
 Focus:
 Trendzact gives organizations a real-time data exposure control layer across the human edge. It controls sensitive data exposure after access is granted and the information becomes visible on screens, in workspaces, during collaboration, and across user workflows.
@@ -203,6 +292,14 @@ gs://trendzact-partners-001.firebasestorage.app/solution_secure_workspace/
 
 Category: Solution
 
+Collateral required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+video_outline.md
+```
+
 Focus:
 Protect sensitive data when it is visible in physical, remote, shared, public, or uncontrolled workspaces. Secure Workspace focuses on the environment around the data, including observers, mobile phones, unattended sessions, nearby documents, and multi-screen exposure.
 
@@ -231,6 +328,14 @@ gs://trendzact-partners-001.firebasestorage.app/solution_identity_assurance/
 ```
 
 Category: Solution
+
+Collateral required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+video_outline.md
+```
 
 Focus:
 Confirm the right person is present while sensitive information is visible. Identity Recognition Assurance separates login authentication from real-time identity confidence during an active exposure moment.
@@ -261,6 +366,14 @@ gs://trendzact-partners-001.firebasestorage.app/solution_secure_virtual_meeting/
 
 Category: Solution
 
+Collateral required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+video_outline.md
+```
+
 Focus:
 Control sensitive data exposure during virtual meetings, screen sharing, recordings, participant changes, and external collaboration. Secure Virtual Meeting helps prevent authorized meetings from becoming unauthorized exposure events.
 
@@ -289,6 +402,14 @@ gs://trendzact-partners-001.firebasestorage.app/solution_insider_threat_manageme
 
 Category: Solution
 
+Collateral required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+video_outline.md
+```
+
 Focus:
 Detect risky, privileged, negligent, stealth, or malicious behavior around visible sensitive data. Insider Threat Management focuses on repeated patterns, policy evasion, misuse, and escalating exposure behavior.
 
@@ -316,6 +437,14 @@ gs://trendzact-partners-001.firebasestorage.app/solution_exposure_dlp/
 ```
 
 Category: Solution
+
+Collateral required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+video_outline.md
+```
 
 Focus:
 Extend data loss prevention beyond files, transfers, and repositories to include visible data, user behavior, application activity, location, timing, workflow context, and governable evidence. Exposure Data Loss Prevention controls exposure even when no file leaves the system.
@@ -349,6 +478,12 @@ gs://trendzact-partners-001.firebasestorage.app/enhancement_ultrawide_webcam/
 
 Category: Enhancement
 
+Collateral required:
+
+```text
+exec_summary.md
+```
+
 Focus:
 For mission-critical sensitive data and top corporate secrets, the Trendzact Ultrawide Webcam expands workspace context with a 180-degree field of view. It is best suited for Secure Workspace deployments where narrow camera visibility is not enough.
 
@@ -377,6 +512,12 @@ gs://trendzact-partners-001.firebasestorage.app/enhancement_multi_display_record
 
 Category: Enhancement
 
+Collateral required:
+
+```text
+exec_summary.md
+```
+
 Focus:
 Multi-Display Screen Recording preserves governed proof across one or more screens when exposure risk requires replayable context. Recording can be always-on for mission-critical workflows or alert-triggered when company rules escalate.
 
@@ -404,6 +545,12 @@ gs://trendzact-partners-001.firebasestorage.app/enhancement_workstation_laptop_s
 ```
 
 Category: Enhancement
+
+Collateral required:
+
+```text
+exec_summary.md
+```
 
 Focus:
 Computer Workstation / Laptop Scan enriches exposure decisions with 100+ endpoint and work-session signals. These signals provide additional context and proof for why the platform allowed, warned, restricted, blocked, escalated, or saved an event for review.
@@ -437,6 +584,13 @@ gs://trendzact-partners-001.firebasestorage.app/usecase_secure_workspace_mission
 
 Category: Use Case
 
+Collateral required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+```
+
 Focus:
 Protect board materials, M&A work, legal strategy, PHI, financial records, source code, and other mission-critical data when it is visible in the user workspace.
 
@@ -464,6 +618,13 @@ gs://trendzact-partners-001.firebasestorage.app/usecase_identity_active_session_
 ```
 
 Category: Use Case
+
+Collateral required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+```
 
 Focus:
 Confirm the authorized user is still present and in control when sensitive information is visible.
@@ -493,6 +654,13 @@ gs://trendzact-partners-001.firebasestorage.app/usecase_virtual_meeting_screensh
 
 Category: Use Case
 
+Collateral required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+```
+
 Focus:
 Prevent authorized meetings from becoming unauthorized exposure events when sensitive data appears during screen share or collaboration.
 
@@ -521,6 +689,13 @@ gs://trendzact-partners-001.firebasestorage.app/usecase_insider_repeated_risky_b
 
 Category: Use Case
 
+Collateral required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+```
+
 Focus:
 Detect repeated, privileged, negligent, stealth, or malicious behavior around visible sensitive data before exposure becomes data loss.
 
@@ -548,6 +723,13 @@ gs://trendzact-partners-001.firebasestorage.app/usecase_visible_data_no_file_tra
 ```
 
 Category: Use Case
+
+Collateral required:
+
+```text
+exec_summary.md
+infographic_prompt.md
+```
 
 Focus:
 Extend data loss prevention to the moment sensitive data is visible, copied, captured, handled, or exposed in the wrong context, even when no file leaves the system.
@@ -581,6 +763,12 @@ gs://trendzact-partners-001.firebasestorage.app/casestudy_hospital_phi_remote_wo
 
 Category: Case Study
 
+Collateral required:
+
+```text
+exec_summary.md
+```
+
 Focus:
 A regional health system used Secure Workspace to reduce PHI visibility risk across remote billing, coding, claims, and telework environments where sensitive data was visible beyond the application boundary.
 
@@ -608,6 +796,12 @@ gs://trendzact-partners-001.firebasestorage.app/casestudy_insurance_identity_cla
 ```
 
 Category: Case Study
+
+Collateral required:
+
+```text
+exec_summary.md
+```
 
 Focus:
 An insurance carrier used Identity Recognition Assurance to verify user presence and reduce active-session misuse risk during high-value claim approvals and PII access.
@@ -637,6 +831,12 @@ gs://trendzact-partners-001.firebasestorage.app/casestudy_saas_ip_remote_collabo
 
 Category: Case Study
 
+Collateral required:
+
+```text
+exec_summary.md
+```
+
 Focus:
 A SaaS company used Secure Virtual Meeting to reduce IP leakage during distributed roadmap, product, engineering, customer, and partner collaboration sessions.
 
@@ -664,6 +864,12 @@ gs://trendzact-partners-001.firebasestorage.app/casestudy_global_bank_insider_ex
 ```
 
 Category: Case Study
+
+Collateral required:
+
+```text
+exec_summary.md
+```
 
 Focus:
 A tier-1 bank used Insider Threat Management to identify risky handling of visible sensitive data before screenshots, clipboard movement, staging, or shadow tools became data loss.
@@ -693,6 +899,12 @@ gs://trendzact-partners-001.firebasestorage.app/casestudy_utility_ot_visible_dat
 
 Category: Case Study
 
+Collateral required:
+
+```text
+exec_summary.md
+```
+
 Focus:
 A utility used Exposure Data Loss Prevention to reduce exposure of SCADA configuration, drawings, engineering data, and OT-adjacent information visible on office and engineering endpoints.
 
@@ -705,9 +917,9 @@ Key points:
 
 ---
 
-# 4. Executive Summary Report Prompt
+# 5. Executive Summary Report Prompt
 
-Copy this prompt once per card. Replace the placeholders with the item details from the manifest.
+Use this prompt for every card type: Platform, Solution, Enhancement, Use Case, and Case Study.
 
 ```text
 Create a partner-facing Executive Summary report for the following Trendzact Discover card.
@@ -816,12 +1028,14 @@ Sensitive data exposure begins when information is seen. Trendzact turns that mo
 
 ---
 
-# 5. Infographic Image Prompt
+# 6. Infographic Prompt Asset
 
-Copy this prompt once per card. Replace the placeholders with the item details from the manifest.
+Use this prompt only for Platform, Solution, and Use Case cards.
+
+This creates an infographic prompt file only. It does not create the actual image.
 
 ```text
-Create a professional executive infographic image for the following Trendzact Discover card.
+Create an infographic image-generation prompt for the following Trendzact Discover card.
 
 ITEM:
 [PASTE ITEM NAME]
@@ -847,21 +1061,14 @@ KEY POINTS:
 Audience:
 Non-technical business decision makers. English may be their second language.
 
-Image goal:
-Make the idea easy to understand in 5 seconds.
-
-Brand / theme:
-Trendzact Sensitive Data Exposure Control Platform.
-Real-time control of sensitive data exposure.
-Access permission does not grant exposure permission.
-Understand -> Decide -> Act.
-
 Output requirements:
-- Create file: infographic.png
+- Create file: infographic_prompt.md
 - Store under: [PASTE FULL STORAGE PATH]
-- Format: 16:9 landscape
+- Do not create the actual image.
+- The output must be a reusable image-generation prompt.
 
-Image requirements:
+Prompt requirements:
+- Format target: 16:9 landscape infographic image
 - Style: clean executive business infographic
 - Use simple labels
 - Use minimal text
@@ -874,43 +1081,27 @@ Image requirements:
 - Do not include GRC1
 - Do not include third-party logos
 
-Design direction:
-Show one simple business idea:
+The generated infographic prompt should direct the image model to show one simple business idea:
 Sensitive data may be allowed to open, but it still needs control when it becomes visible.
 
-Suggested layout:
-
-Top headline:
-[ITEM NAME]
-
-Subheadline:
-Control sensitive data exposure in real time
-
-Center visual:
-A simple scene related to the item.
-
-Use simple three-step flow:
-
-1. Understand
-Label: What is visible? Who is present? Where is it happening?
-
-2. Decide
-Label: Is this safe, risky, or against policy?
-
-3. Act
-Label: Warn, verify, mask, restrict, escalate, or save proof
+Required visual structure:
+- Top headline: [ITEM NAME]
+- Subheadline: Control sensitive data exposure in real time
+- Center visual: a simple scene related to the item
+- Three-step flow: Understand -> Decide -> Act
+- Simple labels: What is visible? Who is present? Where is it happening? Is this safe or risky? What action is needed?
 
 For this specific item, emphasize:
 [PASTE ITEM FOCUS]
 
-Keep all text short. The image should feel simple, calm, and boardroom-ready.
+Keep the final prompt practical, specific, and ready to paste into an image-generation tool.
 ```
 
 ---
 
-# 6. Video Explainer Prompt
+# 7. Video Explainer Outline Prompt
 
-Copy this prompt once per card. Replace the placeholders with the item details from the manifest.
+Use this prompt only for Platform and Solution cards.
 
 ```text
 Create a concise executive video explainer outline for the following Trendzact Discover card.
@@ -947,16 +1138,8 @@ Trendzact Sensitive Data Exposure Control Platform helps organizations control s
 Core message:
 Access permission does not grant exposure permission.
 
-Explain this simply:
-A person may be allowed to open sensitive data. But the situation may still be unsafe if the wrong person can see it, if it is shown in the wrong meeting, or if the user handles it in a risky way.
-
 Operating model:
 Understand -> Decide -> Act
-
-Explain this simply:
-- Understand what is happening
-- Decide if it is safe or risky
-- Act immediately when control is needed
 
 Output requirements:
 - Create file: video_outline.md
@@ -984,17 +1167,11 @@ Structure:
 ## 1. The Simple Problem
 Explain the issue in plain English.
 
-Start with:
-Sensitive data is often protected before it is opened. But once it appears on a screen, it can still be exposed.
-
 ## 2. Why Access Is Not Enough
 Explain that permission to open data does not always mean the situation is safe.
 
 ## 3. The Exposure Moment
 Describe the specific risk moment for this item.
-
-For this item, focus on:
-[PASTE ITEM FOCUS]
 
 ## 4. What Trendzact Understands
 Explain the context Trendzact checks. Use simple questions relevant to this item.
@@ -1015,36 +1192,148 @@ Sensitive data exposure begins when information is seen. Trendzact turns that mo
 
 ---
 
-# 7. Upload Checklist
+# 8. Audio Podcast Prompt
 
-For each card folder, confirm these files exist in Firebase Storage:
-
-```text
-exec_summary.md
-infographic.png
-video_outline.md
-```
-
-Optional files:
+Use this prompt only for the Platform card.
 
 ```text
-exec_summary.pdf
-video_script.md
-```
+Create an executive audio podcast outline and script for the Trendzact Sensitive Data Exposure Control Platform.
 
-Example completed folder:
+ITEM:
+Trendzact Sensitive Data Exposure Control Platform
 
-```text
-gs://trendzact-partners-001.firebasestorage.app/solution_identity_assurance/exec_summary.md
-gs://trendzact-partners-001.firebasestorage.app/solution_identity_assurance/exec_summary.pdf
-gs://trendzact-partners-001.firebasestorage.app/solution_identity_assurance/infographic.png
-gs://trendzact-partners-001.firebasestorage.app/solution_identity_assurance/video_outline.md
-gs://trendzact-partners-001.firebasestorage.app/solution_identity_assurance/video_script.md
+CATEGORY:
+Platform
+
+CHIP:
+platform
+
+COLLATERAL FOLDER:
+/platform_sdec
+
+STORAGE PATH:
+gs://trendzact-partners-001.firebasestorage.app/platform_sdec/
+
+Audience:
+Non-technical business decision makers. English may be their second language.
+
+Use simple, clear English. Keep sentences short. Use plain business examples. Avoid technical jargon.
+
+Podcast goal:
+Help executives understand why sensitive data needs control after access is granted and after information becomes visible.
+
+Core message:
+Access permission does not grant exposure permission.
+
+Operating model:
+Understand -> Decide -> Act
+
+Output requirements:
+- Create file: audio_podcast.md
+- Optional full script file: audio_podcast_script.md
+- Store under: gs://trendzact-partners-001.firebasestorage.app/platform_sdec/
+
+Requirements:
+- Format: podcast outline plus optional script
+- No timestamps required
+- No speaker names required unless using a simple host/interviewer format
+- Tone: calm, executive, clear, practical
+- Do not mention GRC1
+- Do not use fear-based language
+- Do not overstate capabilities
+
+Structure:
+
+# Trendzact Sensitive Data Exposure Control Platform - Audio Podcast
+
+## Podcast Summary
+Explain the episode in 3 to 5 short sentences.
+
+## Opening
+Introduce the problem: sensitive data is protected before it opens, but can still be exposed when it becomes visible.
+
+## Plain-English Explanation
+Explain:
+A person may be allowed to access data. But that does not always mean the situation is safe for the data to be seen.
+
+## Business Examples
+Include examples:
+- A screen visible to another person
+- A sensitive document shared in the wrong meeting
+- A user walks away while data is still open
+- A mobile phone near confidential information
+- A user copies or records sensitive information
+
+## Trendzact Approach
+Explain Understand -> Decide -> Act in simple terms.
+
+## Why Leaders Should Care
+Explain business value:
+- Less uncertainty
+- Better proof
+- Faster response
+- Stronger compliance
+- Better control of remote and hybrid work
+- Lower risk from mistakes or misuse
+
+## Closing Message
+End with:
+Sensitive data exposure begins when information is seen. Trendzact turns that moment into a real-time control point.
 ```
 
 ---
 
-# 8. Quality Checklist
+# 9. Upload Checklist
+
+For each card folder, confirm only the required files for that card type exist.
+
+## Platform
+
+```text
+exec_summary.md
+infographic_prompt.md
+video_outline.md
+audio_podcast.md
+```
+
+## Solution
+
+```text
+exec_summary.md
+infographic_prompt.md
+video_outline.md
+```
+
+## Enhancement
+
+```text
+exec_summary.md
+```
+
+## Use Case
+
+```text
+exec_summary.md
+infographic_prompt.md
+```
+
+## Case Study
+
+```text
+exec_summary.md
+```
+
+Optional files where useful:
+
+```text
+exec_summary.pdf
+video_script.md
+audio_podcast_script.md
+```
+
+---
+
+# 10. Quality Checklist
 
 Before finalizing each collateral asset, check:
 
@@ -1061,3 +1350,4 @@ Before finalizing each collateral asset, check:
 - Does it use proof for review instead of overly technical evidence language?
 - Does it use the correct folder pattern: /{chip}_{name}?
 - Is the asset stored under gs://trendzact-partners-001.firebasestorage.app?
+- Is the asset type allowed for that card type?
