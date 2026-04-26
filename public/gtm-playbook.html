@@ -9,7 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/assets/styles.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
-
 </head>
 <body>
 
@@ -20,83 +19,70 @@
 
   <header class="page-head">
     <h1>Sales Playbook</h1>
-    <p class="lede">Positioning, discovery questions, competitive battlecards, deal motion, and objection handling for the Trendzact GRC1 platform.</p>
-    
+    <p class="lede">How to position, diagnose exposure risk, map solutions, run demos, and close deals using the Trendzact Data Exposure Coverage model.</p>
   </header>
 
+  <section class="section">
+    <div class="card" style="background:var(--tint-light); border-color:var(--med-green);">
+      <span class="next-step">Use with Resources</span>
+      <h3 style="margin-top:8px;">Need decks, guides, or technical docs?</h3>
+      <p>The Resources page contains all downloadable assets. This playbook explains when and how to use them in a deal.</p>
+      <a href="/resources.html" class="btn btn-primary">Open Resources</a>
+    </div>
+  </section>
 
   <section class="section">
     <h2>Core Value Proposition</h2>
     <div class="card" style="background:var(--tint-light); border-color:var(--med-green);">
-        <p style="font-size:18px; font-family:var(--ff-display), serif; color:var(--dark-gray); margin:0;">
-        Trendzact GRC1 helps organizations prevent data exposure, verify identity at the moment of risk, and enforce policy directly at the endpoint — before exposure becomes an incident.
+      <p style="font-size:18px; font-family:var(--ff-display), serif; color:var(--dark-gray); margin:0;">
+        Trendzact helps organizations control sensitive data exposure the moment it becomes visible—across screens, people, workspaces, meetings, behavior, and evidence.
       </p>
     </div>
   </section>
 
   <section class="section">
-    <h2>Discovery Questions</h2>
-    <p class="section-sub">Use these to qualify and shape the opportunity in the first call.</p>
+    <h2>Sales Narrative</h2>
     <div class="card-grid two">
-      <div class="card">
-        <h3>Risk &amp; Exposure</h3>
-        <ul class="check-list">
-          <li>Where do you feel most exposed to insider-driven data loss today?</li>
-          <li>How do you currently validate workspace conditions for remote workers?</li>
-          <li>What happens when sensitive data is shown on screen during a meeting?</li>
-          <li>Can you prove who was actually at the keyboard during a sensitive transaction?</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Current Tooling</h3>
-        <ul class="check-list">
-          <li>What DLP, UEBA, or insider risk tools are in place today?</li>
-          <li>How are Purview sensitivity labels currently enforced at the endpoint?</li>
-          <li>How long from risky event to analyst action?</li>
-          <li>How defensible is your insider risk evidence trail in an audit?</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Compliance &amp; Audit</h3>
-        <ul class="check-list">
-          <li>Which regulatory regimes drive your audit cycle?</li>
-          <li>How do you demonstrate continuous clear desk / workspace compliance?</li>
-          <li>How is evidence minimization handled under your privacy program?</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Budget &amp; Timing</h3>
-        <ul class="check-list">
-          <li>Is this a consolidation play, a new capability, or an augmentation of existing tools?</li>
-          <li>What is driving the timing — audit finding, incident, board request?</li>
-          <li>Who signs off on endpoint-based controls? (CISO, CPO, CCO, HR?)</li>
-        </ul>
-      </div>
+      <div class="card"><h3>1. Data is protected in systems</h3><p>Security investments focus on storage, transmission, and classification.</p></div>
+      <div class="card"><h3>2. Exposure begins when data is visible</h3><p>The moment sensitive data appears on screen, it enters the human and physical world.</p></div>
+      <div class="card"><h3>3. Existing tools miss this moment</h3><p>DLP, UEBA, and logs do not fully control what is visible, who is present, or the surrounding context.</p></div>
+      <div class="card"><h3>4. Trendzact controls the moment</h3><p>Trendzact turns exposure into a real-time control point using visibility, presence, and context.</p></div>
     </div>
   </section>
 
   <section class="section">
-    <h2>Competitive Battlecards</h2>
+    <h2>Solution Mapping</h2>
+    <div class="card-grid two">
+      <div class="card"><h3>Workspace Exposure</h3><p>Remote work, phones, observers, and unattended screens create physical exposure risk.</p></div>
+      <div class="card"><h3>Virtual Meeting & Screenshare Exposure</h3><p>Sensitive data is shared in meetings with external participants and recordings.</p></div>
+      <div class="card"><h3>Imposters & Identity Spoofing</h3><p>Valid logins do not prove the correct person is present during sensitive work.</p></div>
+      <div class="card"><h3>On-Screen Sensitive Data Exposure</h3><p>DLP does not control what users actually see on screen.</p></div>
+      <div class="card"><h3>Insider Risk & Exfiltration Behavior</h3><p>Behavioral patterns indicate risk before data leaves the organization.</p></div>
+      <div class="card"><h3>Evidence, Audit & Reconstruction</h3><p>Organizations need proof of what was visible, who was present, and what happened.</p></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Discovery Questions</h2>
+    <p class="section-sub">Use these to identify which exposure coverage to lead with.</p>
     <div class="card-grid two">
       <div class="card">
-        <span class="tag tag-solid">VS MICROSOFT PURVIEW</span>
-        <h3>Microsoft governs data. Trendzact prevents exposure.</h3>
-        <p>Purview classifies and labels. Trendzact adds real-time edge enforcement, visual context, and behavioral intelligence — extending Purview rather than replacing it.</p>
+        <h3>Exposure Risk</h3>
+        <ul class="check-list">
+          <li>Where is sensitive data most exposed once it is visible?</li>
+          <li>What happens when sensitive data is shared in meetings?</li>
+          <li>Can you confirm who is present during sensitive work?</li>
+          <li>Do you have proof of what was visible during an incident?</li>
+        </ul>
       </div>
       <div class="card">
-        <span class="tag tag-solid">VS LEGACY DLP</span>
-        <h3>Legacy DLP detects after exposure. Trendzact acts in real time.</h3>
-        <p>Legacy DLP watches files in motion. Trendzact protects the full user environment — screens, clipboard, multi-display, meetings, and behavior.</p>
-      </div>
-      <div class="card">
-        <span class="tag tag-solid">VS UEBA POINT TOOLS</span>
-        <h3>Explainable beats black-box.</h3>
-        <p>Most UEBA tools are opaque. Trendzact uses deterministic, explainable signatures alongside analytics — giving compliance and HR a defensible narrative.</p>
-      </div>
-      <div class="card">
-        <span class="tag tag-solid">VS PLATFORM-NATIVE MEETING CONTROLS</span>
-        <h3>Meeting platforms are not security control planes.</h3>
-        <p>Teams, Zoom, and Meet ship basic controls. Trendzact secures sensitive sharing moments independently — across all platforms, with governed evidence.</p>
+        <h3>Current Controls</h3>
+        <ul class="check-list">
+          <li>What happens after a risky event is detected?</li>
+          <li>How are sensitivity labels enforced at the screen level?</li>
+          <li>How long does it take to investigate insider-related alerts?</li>
+          <li>How complete is your evidence for audit or incident review?</li>
+        </ul>
       </div>
     </div>
   </section>
@@ -104,20 +90,20 @@
   <section class="section">
     <h2>Deal Motion by Stage</h2>
     <div class="card-grid four">
-      <div class="card"><span class="tag-gray tag">STAGE 01</span><h3>Discovery</h3><p>Run the 3-plane risk map (physical, human, digital). Identify which plane has the sharpest pain today.</p></div>
-      <div class="card"><span class="tag-gray tag">STAGE 02</span><h3>Technical Eval</h3><p>Use Live Demo scenarios. Pull in SE for integration and architecture discussions.</p></div>
-      <div class="card"><span class="tag-gray tag">STAGE 03</span><h3>Business Case</h3><p>Tie outcomes to audit readiness, incident reduction, and operating cost consolidation.</p></div>
-      <div class="card"><span class="tag-gray tag">STAGE 04</span><h3>Proposal</h3><p>Use Proposal Builder. Scope GRC1 Core + modules mapped to the priority use case.</p></div>
+      <div class="card"><span class="tag-gray tag">STAGE 01</span><h3>Discovery</h3><p>Identify the highest-risk exposure moment across workspace, meetings, identity, screen, behavior, or evidence.</p></div>
+      <div class="card"><span class="tag-gray tag">STAGE 02</span><h3>Technical Eval</h3><p>Use Live Demo scenarios aligned to the selected exposure coverage.</p></div>
+      <div class="card"><span class="tag-gray tag">STAGE 03</span><h3>Business Case</h3><p>Align to audit readiness, reduced exposure risk, and operational efficiency.</p></div>
+      <div class="card"><span class="tag-gray tag">STAGE 04</span><h3>Proposal</h3><p>Select Data Exposure Coverage and Enhancements based on the buyer’s exposure profile.</p></div>
     </div>
   </section>
 
   <section class="section">
     <h2>Objection Handling</h2>
     <div class="card-grid two">
-      <div class="card"><h3>"This feels like surveillance."</h3><p>Trendzact is privacy-first. Evidence minimization, on-device transformations, and policy-bound capture mean raw telemetry doesn't leave the endpoint unless policy requires escalation. Evidence exists only when an alert exists.</p></div>
-      <div class="card"><h3>"We already have Purview / DLP."</h3><p>Trendzact complements classification and legacy DLP. It adds real-time edge enforcement, visual context, and behavior-linked analytics — extending the investment.</p></div>
-      <div class="card"><h3>"Too much noise, our SOC can't handle more."</h3><p>GRC1 is built to reduce noise: enrichment, risk scoring, and governed playbooks. Most deployments see a 40-60% reduction in analyst review time for insider-related signals.</p></div>
-      <div class="card"><h3>"Can't the meeting platform do this?"</h3><p>Teams, Zoom, and Meet provide basic controls. They cannot enforce sensitivity-aware masking, cross-platform watermarking, or identity-aware screenshare gating. Trendzact secures the sensitive sharing moment independently.</p></div>
+      <div class="card"><h3>"This feels like surveillance."</h3><p>Trendzact uses privacy-aware, policy-driven controls. Evidence is captured only when exposure risk triggers action.</p></div>
+      <div class="card"><h3>"We already have DLP or Purview."</h3><p>Trendzact extends those investments by controlling the moment data becomes visible—not just when it moves.</p></div>
+      <div class="card"><h3>"Our SOC cannot handle more alerts."</h3><p>Trendzact reduces noise by linking exposure, identity, and behavior into high-confidence events.</p></div>
+      <div class="card"><h3>"Can’t meeting platforms do this?"</h3><p>Collaboration tools provide basic controls. Trendzact enforces sensitivity-aware protection during exposure moments.</p></div>
     </div>
   </section>
 
