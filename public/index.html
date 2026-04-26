@@ -10,8 +10,100 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/assets/styles.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<style>
+  /* Home-only spacing overrides. Keeps global section spacing unchanged for inner pages. */
+  .home-page .hero {
+    padding-top: 12px;
+  }
+
+  .home-page .hero-inner {
+    display: block;
+    padding: 24px 0 16px;
+  }
+
+  .home-page .hero-h1 {
+    margin-bottom: 14px;
+  }
+
+  .home-page .hero-sub {
+    margin-bottom: 0;
+  }
+
+  .home-page .tiles {
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+
+  .home-page .platform-frame {
+    padding-top: 24px;
+    padding-bottom: 30px;
+  }
+
+  .home-page .section-head {
+    margin-bottom: 22px;
+  }
+
+  .home-page .platform-head {
+    margin-bottom: 26px;
+  }
+
+  .home-page .solution-module-head {
+    margin-bottom: 22px;
+  }
+
+  .home-page .section-head h2::after {
+    margin-top: 12px;
+  }
+
+  .home-page .section-head p {
+    margin-bottom: 0;
+  }
+
+  .home-page .tile {
+    min-height: 190px;
+    padding: 22px 20px;
+  }
+
+  .home-page .tile-num {
+    margin-bottom: 10px;
+  }
+
+  .home-page .tile p {
+    margin-bottom: 10px;
+  }
+
+  .home-page .strip {
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+
+  @media (max-width: 720px) {
+    .home-page .hero {
+      padding-top: 8px;
+    }
+
+    .home-page .hero-inner {
+      padding: 18px 0 18px;
+    }
+
+    .home-page .tiles,
+    .home-page .platform-frame {
+      padding-top: 24px;
+      padding-bottom: 24px;
+    }
+
+    .home-page .platform-head {
+      margin-bottom: 22px;
+    }
+
+    .home-page .strip {
+      padding-top: 24px;
+      padding-bottom: 24px;
+    }
+  }
+</style>
 </head>
-<body>
+<body class="home-page">
 <div id="site-header"></div>
 
 <!-- ============ HERO ============ -->
@@ -30,9 +122,9 @@
   </div>
 </section>
 
-<!-- ============ PLATFORM FRAME ============ -->
-<section class="tiles">
-  <div class="section-head">
+<!-- ============ PLATFORM + SOLUTION MODULES ============ -->
+<section class="tiles platform-frame">
+  <div class="section-head platform-head">
     <span class="section-kicker">PLATFORM</span>
     <h2>Control sensitive data exposure across the human edge.</h2>
     <p>
@@ -41,11 +133,8 @@
       to turn silent exposure uncertainty into proof, context, and governable action.
     </p>
   </div>
-</section>
 
-<!-- ============ SOLUTION MODULES ============ -->
-<section class="tiles">
-  <div class="section-head">
+  <div class="section-head solution-module-head">
     <span class="section-kicker">SOLUTION MODULES</span>
     <h2>Five ways buyers control sensitive data exposure.</h2>
     <p>
