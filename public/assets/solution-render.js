@@ -24,7 +24,9 @@ const ICON_INFOGRAPHIC = `<svg xmlns="http://www.w3.org/2000/svg" width="18" hei
 const ICON_VIDEO = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
 
 const TYPE_LABELS = {
+  platform:    { tag: 'PLATFORM',        className: 'tag tag-solid' },
   solutions:   { tag: 'SOLUTION',        className: 'tag tag-solid' },
+  enhancements:{ tag: 'ENHANCEMENT',     className: 'tag tag-solid' },
   useCases:    { tag: 'USE CASE',        className: 'tag' },
   vectors:     { tag: 'EXPOSURE VECTOR', className: 'tag' },
   caseStudies: { tag: 'CASE STUDY',      className: 'tag tag-solid' },
@@ -32,7 +34,9 @@ const TYPE_LABELS = {
 };
 
 const TYPE_FILTER_KEY = {
+  platform:    'platform',
   solutions:   'solution',
+  enhancements:'enhancement',
   useCases:    'usecase',
   vectors:     'vector',
   caseStudies: 'casestudy',
@@ -258,7 +262,7 @@ function renderAllCards() {
   }
 
   const html = [];
-  for (const typeKey of ['solutions', 'useCases', 'vectors', 'caseStudies', 'buyers']) {
+  for (const typeKey of ['platform', 'solutions', 'enhancements', 'useCases', 'vectors', 'caseStudies', 'buyers']) {
     const items = content[typeKey] || [];
     for (const card of items) {
       html.push(renderCard(card, typeKey));
