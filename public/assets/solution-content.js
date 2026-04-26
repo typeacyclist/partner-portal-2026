@@ -7,7 +7,7 @@
 // ========================================================================
 
 const ANCHOR_TAIL = 'This allows organizations to understand, decide, and act at the exact moment exposure occurs, rather than relying on delayed detection and response.';
-const ICON_BASE = 'gs://trendzact-partners-001.firebasestorage.app/icons/';
+const ICON_BASE = 'gs://trendzact-partners-001.firebasestorage.app/site_icons/';
 const REPORT_BASE = 'gs://trendzact-partners-001.firebasestorage.app/report-explainers/';
 
 window.SOLUTION_CONTENT = {
