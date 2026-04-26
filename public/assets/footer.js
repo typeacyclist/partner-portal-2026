@@ -5,26 +5,26 @@
     {
       heading: 'Primary Navigation',
       links: [
-        { href: '/discover.html',    label: 'Discover' },
-        { href: '/resources.html',   label: 'Resources' },
-        { href: '/live-demo.html',   label: 'Demos' },
-        { href: '/gtm-playbook.html',label: 'Playbook' },
-        { href: '/proposal',         label: 'Proposal Builder' },
+        { href: '/discover.html', label: 'Discover' },
+        { href: '/resources.html', label: 'Resources' },
+        { href: '/live-demo.html', label: 'Demos' },
+        { href: '/gtm-playbook.html', label: 'Playbook' },
+        { href: '/proposal', label: 'Proposal Builder' },
         { href: '/sales-order.html', label: 'Sales Order' },
-        { href: '/contact.html',     label: 'Contact' }
+        { href: '/contact.html', label: 'Contact' }
       ]
     },
     {
       heading: 'More to Explore',
       links: [
-        { href: '/grc-one.html',          label: 'GRC One' }
+        { href: '/grc-one.html', label: 'GRC One' }
       ]
     },
     {
       heading: 'Partner Ops',
       links: [
-        { href: '/contact.html',    label: 'Contact' },
-        { href: '/sales-order.html',label: 'Sales Order' }
+        { href: '/contact.html', label: 'Contact' },
+        { href: '/sales-order.html', label: 'Sales Order' }
       ]
     }
   ];
@@ -36,12 +36,22 @@
       <circle cx="28" cy="24" r="3" fill="#00A398" stroke="#fff" stroke-width="1.5"/>
     </svg>`;
 
-  function render() {
-    const colsHTML = COLUMNS.map(c => `
+  function renderLink(link) {
+    return `<a href="${link.href}">${link.label}</a>`;
+  }
+
+  function renderColumn(column) {
+    const linksHtml = column.links.map(renderLink).join('\n        ');
+
+    return `
       <div>
-        <h5>${c.heading}</h5>
-        ${c.links.map(l => `<a href="${l.href}">${l.label}</a>`).join('\n        ')}
-      </div>`).join('\n');
+        <h5>${column.heading}</h5>
+        ${linksHtml}
+      </div>`;
+  }
+
+  function render() {
+    const columnsHtml = COLUMNS.map(renderColumn).join('\n');
 
     const year = new Date().getFullYear();
 
@@ -58,7 +68,7 @@
       </div>
       <p class="footer-tag">Edge-first governance, risk &amp; security.<br/>Partner-only enablement portal.</p>
     </div>
-    <div class="footer-cols">${colsHTML}
+    <div class="footer-cols">${columnsHtml}
     </div>
   </div>
   <div class="footer-base">
