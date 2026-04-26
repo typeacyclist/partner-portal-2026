@@ -47,6 +47,13 @@
         }
       },
       {
+        "source": "/api/send-contact",
+        "function": {
+          "functionId": "sendContact",
+          "region": "us-central1"
+        }
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
