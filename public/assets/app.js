@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Cards are rendered async by solution-render.js, so we re-query on each filter
   const chips = document.querySelectorAll('[data-filter-chip]');
   const searchInput = document.querySelector('[data-solution-search]');
-  let activeType = 'all';
+  const activeChip = document.querySelector('[data-filter-chip].active');
+  let activeType = activeChip?.dataset.filterChip || 'platform';
   let activeQuery = '';
 
   const applyFilters = () => {
