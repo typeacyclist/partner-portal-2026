@@ -9,7 +9,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/assets/styles.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
-
+<style>
+  .form-status {
+    margin-top: 14px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .form-status.success { color: var(--dark-green); }
+  .form-status.error { color: #B42318; }
+</style>
 </head>
 <body>
 
@@ -62,19 +70,20 @@
 
   <section class="section">
     <h2>Send a Message</h2>
-    <p class="section-sub">Use this form for all partner requests. Include the prospect or customer name, urgency, deadline, and any links or context needed to route the request correctly.</p>
-    <form class="card" style="padding:28px;">
+    <p class="section-sub">Use this form for all partner requests. The email subject will be sent as <strong>Route To: Subject</strong> and delivered to deal-desk@trendzact.com.</p>
+    <form class="card" style="padding:28px;" id="contact-form">
       <div class="form-grid">
-          <div class="form-field"><label for="contact-name">Your Name</label><input id="contact-name" type="text" /></div>
-          <div class="form-field"><label for="contact-company">Your Company</label><input id="contact-company" type="text" /></div>
-          <div class="form-field"><label for="contact-email">Email</label><input id="contact-email" type="email" /></div>
-          <div class="form-field"><label for="contact-route">Route To</label><select id="contact-route"><option>Deal Desk</option><option>Sales Engineering</option><option>Partner Operations</option><option>Marketing</option><option>Support</option><option>Legal</option></select></div>
-          <div class="form-field full"><label for="contact-subject">Subject</label><input id="contact-subject" type="text" /></div>
-          <div class="form-field full"><label for="contact-message">Message</label><textarea id="contact-message"></textarea></div>
+          <div class="form-field"><label for="contact-name">Your Name</label><input id="contact-name" type="text" required /></div>
+          <div class="form-field"><label for="contact-company">Your Company</label><input id="contact-company" type="text" required /></div>
+          <div class="form-field"><label for="contact-email">Email</label><input id="contact-email" type="email" required /></div>
+          <div class="form-field"><label for="contact-route">Route To</label><select id="contact-route" required><option>Deal Desk</option><option>Sales Engineering</option><option>Partner Operations</option><option>Marketing</option><option>Support</option><option>Legal</option></select></div>
+          <div class="form-field full"><label for="contact-subject">Subject</label><input id="contact-subject" type="text" required /></div>
+          <div class="form-field full"><label for="contact-message">Message</label><textarea id="contact-message" required></textarea></div>
       </div>
       <div class="form-actions">
-        <button type="button" class="btn btn-primary">Send Message</button>
+        <button type="submit" class="btn btn-primary" id="contact-submit">Send Message</button>
       </div>
+      <div id="contact-status" class="form-status" role="status" aria-live="polite"></div>
     </form>
   </section>
 
@@ -83,9 +92,90 @@
 <div id="site-footer"></div>
 
 <script src="/assets/firebase-config.js"></script>
+<script src="/assets/portal-config.js"></script>
 <script type="module" src="/assets/auth.js"></script>
 <script src="/assets/header.js"></script>
 <script src="/assets/footer.js"></script>
 <script src="/assets/app.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var form = document.getElementById('contact-form');
+  var submit = document.getElementById('contact-submit');
+  var status = document.getElementById('contact-status');
+
+  function value(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+
+  function setStatus(message, type) {
+    status.textContent = message || '';
+    status.className = 'form-status' + (type ? ' ' + type : '');
+  }
+
+  async function sendContact(payload) {
+    var cfg = window.TrendzactConfig || {};
+    var endpoint = cfg.sendContactUrl || '/api/send-contact';
+    if (!cfg.portalSecret) throw new Error('Portal shared secret is not configured.');
+
+    var response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Portal-Secret': cfg.portalSecret
+      },
+      body: JSON.stringify(payload)
+    });
+
+    var body = null;
+    try { body = await response.json(); } catch (e) { /* non-JSON response */ }
+    if (!response.ok) {
+      throw new Error((body && (body.error || body.message)) || 'Message service returned ' + response.status);
+    }
+    return body || { ok: true };
+  }
+
+  if (!form) return;
+
+  form.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    setStatus('', '');
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    var payload = {
+      name: value('contact-name'),
+      company: value('contact-company'),
+      email: value('contact-email'),
+      routeTo: value('contact-route'),
+      subject: value('contact-subject'),
+      message: value('contact-message'),
+      pageUrl: window.location.href,
+      userAgent: navigator.userAgent
+    };
+
+    submit.disabled = true;
+    submit.textContent = 'Sending...';
+    setStatus('Sending message...', '');
+
+    try {
+      await sendContact(payload);
+      setStatus('Message sent. Trendzact Deal Desk received your request.', 'success');
+      form.reset();
+    } catch (err) {
+      console.error('[Contact] send failed:', err);
+      setStatus('Could not send message: ' + (err.message || String(err)), 'error');
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'Send Message';
+    }
+  });
+})();
+</script>
 </body>
 </html>
