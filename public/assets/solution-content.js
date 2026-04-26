@@ -126,7 +126,7 @@ window.SOLUTION_CONTENT = {
       id: 'on-screen-data-exposure',
       title: 'On-Screen Sensitive Data Exposure',
       summary: 'Detect and control sensitive data the instant it becomes visible on screen—before visual exposure becomes an incident. ' + ANCHOR_TAIL,
-      tags: ['primary:visibility', 'Edge DLP', 'eDLP', 'Purview', 'Screen Exposure'],
+      tags: ['primary:visibility', 'eDLP', 'Purview', 'Screen Exposure'],
       bullets: [
         'Sensitive information appears on screen',
         'Labeled or restricted data becomes visible',
