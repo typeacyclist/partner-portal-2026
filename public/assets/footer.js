@@ -59,7 +59,7 @@
   </div>
   <div class="footer-base">
     <span>© ${year} Trendzact. Partners Portal. Confidential.</span>
-    <span>v1.0 · Firebase Hosting</span>
+    <span>rev_${Math.floor(Date.now() / 60000)} · v1.0 · Firebase Hosting</span>
   </div>
 </footer>`;
   }

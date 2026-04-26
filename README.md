@@ -93,6 +93,19 @@ firebase deploy
 
 ## Deploy
 
+### Main branch sync helper
+
+```bash
+# Smart deploy cycle:
+# - Deploy local state ONLY if there are uncommitted changes
+# - Rebase from main
+# - Deploy again ONLY if rebase brought in new changes
+npm run deploy:main
+
+# Preview the process without executing
+npm run deploy:main:dry
+```
+
 ```bash
 # First time only
 npm install -g firebase-tools
