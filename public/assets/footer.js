@@ -6,25 +6,11 @@
       heading: 'Primary Navigation',
       links: [
         { href: '/discover.html', label: 'Discover' },
-        { href: '/resources.html', label: 'Resources' },
         { href: '/live-demo.html', label: 'Demos' },
-        { href: '/gtm-playbook.html', label: 'Playbook' },
+        { href: '/resources.html', label: 'Resources' },
+        { href: '/gtm-playbook.html', label: 'Sales Playbook' },
         { href: '/proposal', label: 'Proposal Builder' },
-        { href: '/sales-order.html', label: 'Sales Order' },
         { href: '/contact.html', label: 'Contact' }
-      ]
-    },
-    {
-      heading: 'More to Explore',
-      links: [
-        { href: '/grc-one.html', label: 'GRC One' }
-      ]
-    },
-    {
-      heading: 'Partner Ops',
-      links: [
-        { href: '/contact.html', label: 'Contact' },
-        { href: '/sales-order.html', label: 'Sales Order' }
       ]
     }
   ];
