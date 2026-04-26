@@ -81,6 +81,14 @@ function renderCardIcon(card) {
       </div>`;
 }
 
+function renderCardTypeRow(card, meta) {
+  return `
+      <div class="card-type-row">
+        ${renderCardIcon(card)}
+        <span class="${meta.className}">${meta.tag}</span>
+      </div>`;
+}
+
 async function resolveCardIcons() {
   const images = Array.from(document.querySelectorAll('img[data-card-icon-path]'));
   if (!images.length) return;
@@ -252,8 +260,7 @@ function renderProductStyleCard(card, typeKey) {
   return `
     <article class="card product-card sb-product-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}" data-category="${escapeHtml((card.category || '').toUpperCase())}">
       <div class="product-card-head">
-        ${renderCardIcon(card)}
-        <span class="${meta.className}">${meta.tag}</span>
+        ${renderCardTypeRow(card, meta)}
         <h3>${escapeHtml(card.title)}</h3>
         ${card.summary ? `<p class="product-summary">${escapeHtml(card.summary)}</p>` : ''}
       </div>
@@ -290,8 +297,7 @@ function renderCompactCard(card, typeKey) {
 
   return `
     <div class="card sb-unified-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}">
-      ${renderCardIcon(card)}
-      <span class="${meta.className}">${meta.tag}</span>
+      ${renderCardTypeRow(card, meta)}
       <h3>${escapeHtml(card.title)}</h3>
       ${summaryText ? `<p class="card-summary">${escapeHtml(summaryText)}</p>` : ''}
       ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
