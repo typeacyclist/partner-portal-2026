@@ -9,7 +9,49 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/assets/styles.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
-
+<style>
+  .demo-action-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .demo-action-row .demo-icon-wrap {
+    margin-left: auto;
+  }
+  .demo-icon-wrap {
+    position: relative;
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    border: 1px solid var(--border-soft);
+    background: var(--tint-light);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .demo-icon-placeholder {
+    font-family: var(--ff-mono), monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--med-green);
+    letter-spacing: 0.08em;
+  }
+  .demo-icon-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 7px;
+    background: var(--tint-light);
+  }
+  .demo-icon-wrap.has-image .demo-icon-placeholder {
+    display: none;
+  }
+</style>
 </head>
 <body>
 
@@ -32,42 +74,60 @@
         <h3>Workspace Exposure: Phone, Paper, Observer, Unattended Screen</h3>
         <p>Shows Trendzact detecting physical workspace exposure when sensitive data is visible near phones, paper, observers, or an unattended workstation.</p>
         <div><span class="tag">Workspace Exposure</span><span class="tag">SWA</span><span class="tag">SIA</span></div>
-        <div style="margin-top:16px;"><a href="#" class="btn btn-primary btn-sm">Launch Demo</a></div>
+        <div class="demo-action-row">
+          <a href="#" class="btn btn-primary btn-sm">Launch Demo</a>
+          <div class="demo-icon-wrap"><div class="demo-icon-placeholder">TZ</div><img class="demo-icon-img" alt="Workspace exposure demo icon" data-demo-icon-path="gs://trendzact-partners-001.firebasestorage.app/icons/workspace-exposure-no-text-tight.png" loading="lazy" hidden /></div>
+        </div>
       </div>
       <div class="card">
         <span class="tag tag-solid">SCENARIO 02</span>
         <h3>Screenshare Exposure: Teams + MIP/AIP Sensitive Data</h3>
         <p>Demonstrates sensitive data exposure during a Teams screen share, including external participants, Purview/MIP/AIP labels, and real-time meeting-aware controls.</p>
         <div><span class="tag">Virtual Meeting &amp; Screenshare Exposure</span><span class="tag">SVM</span><span class="tag">CONN-PURVIEW</span></div>
-        <div style="margin-top:16px;"><a href="#" class="btn btn-primary btn-sm">Launch Demo</a></div>
+        <div class="demo-action-row">
+          <a href="#" class="btn btn-primary btn-sm">Launch Demo</a>
+          <div class="demo-icon-wrap"><div class="demo-icon-placeholder">TZ</div><img class="demo-icon-img" alt="Virtual meeting and screenshare exposure demo icon" data-demo-icon-path="gs://trendzact-partners-001.firebasestorage.app/icons/virtual-meeting-screenshare-exposure-no-text-tight.png" loading="lazy" hidden /></div>
+        </div>
       </div>
       <div class="card">
         <span class="tag tag-solid">SCENARIO 03</span>
         <h3>Continuous Identity: Valid Login, Wrong Person Present</h3>
         <p>Shows how Trendzact verifies identity during sensitive work when the authorized user leaves, another person takes over, or presence confidence drops.</p>
         <div><span class="tag">Imposters &amp; Identity Spoofing</span><span class="tag">SIA</span><span class="tag">Presence</span></div>
-        <div style="margin-top:16px;"><a href="#" class="btn btn-primary btn-sm">Launch Demo</a></div>
+        <div class="demo-action-row">
+          <a href="#" class="btn btn-primary btn-sm">Launch Demo</a>
+          <div class="demo-icon-wrap"><div class="demo-icon-placeholder">TZ</div><img class="demo-icon-img" alt="Imposters and identity spoofing demo icon" data-demo-icon-path="gs://trendzact-partners-001.firebasestorage.app/icons/imposters-identity-spoofing-no-text-tight.png" loading="lazy" hidden /></div>
+        </div>
       </div>
       <div class="card">
         <span class="tag tag-solid">SCENARIO 04</span>
         <h3>Screen Exposure: Sensitive Data Becomes Visible</h3>
         <p>Shows Trendzact recognizing sensitive content the instant it appears on screen and triggering mask, watermark, restrict, alert, or evidence actions.</p>
         <div><span class="tag">On-Screen Sensitive Data Exposure</span><span class="tag">eDLP</span><span class="tag">Screen Exposure</span></div>
-        <div style="margin-top:16px;"><a href="#" class="btn btn-primary btn-sm">Launch Demo</a></div>
+        <div class="demo-action-row">
+          <a href="#" class="btn btn-primary btn-sm">Launch Demo</a>
+          <div class="demo-icon-wrap"><div class="demo-icon-placeholder">TZ</div><img class="demo-icon-img" alt="On-screen sensitive data exposure demo icon" data-demo-icon-path="gs://trendzact-partners-001.firebasestorage.app/icons/on-screen-sensitive-data-exposure-no-text-tight.png" loading="lazy" hidden /></div>
+        </div>
       </div>
       <div class="card">
         <span class="tag tag-solid">SCENARIO 05</span>
         <h3>Insider Risk: Staging, Clipboard, Screenshot, External App</h3>
         <p>Walks through a user accessing sensitive data outside expected patterns, staging content, using clipboard or screenshot actions, and triggering SOC review.</p>
         <div><span class="tag">Insider Risk &amp; Exfiltration Behavior</span><span class="tag">ITM</span><span class="tag">eDLP</span></div>
-        <div style="margin-top:16px;"><a href="#" class="btn btn-primary btn-sm">Launch Demo</a></div>
+        <div class="demo-action-row">
+          <a href="#" class="btn btn-primary btn-sm">Launch Demo</a>
+          <div class="demo-icon-wrap"><div class="demo-icon-placeholder">TZ</div><img class="demo-icon-img" alt="Insider risk and exfiltration behavior demo icon" data-demo-icon-path="gs://trendzact-partners-001.firebasestorage.app/icons/insider-risk-exfiltration-behavior-no-text-tight.png" loading="lazy" hidden /></div>
+        </div>
       </div>
       <div class="card">
         <span class="tag tag-solid">SCENARIO 06</span>
         <h3>Exposure Evidence: Reconstruct What Happened</h3>
         <p>Shows alert-triggered screen evidence, multi-display reconstruction, and an attributable timeline showing what was visible, who was present, and what action was taken.</p>
         <div><span class="tag">Evidence, Audit &amp; Reconstruction</span><span class="tag">MSR</span><span class="tag">ARCH</span></div>
-        <div style="margin-top:16px;"><a href="#" class="btn btn-primary btn-sm">Launch Demo</a></div>
+        <div class="demo-action-row">
+          <a href="#" class="btn btn-primary btn-sm">Launch Demo</a>
+          <div class="demo-icon-wrap"><div class="demo-icon-placeholder">TZ</div><img class="demo-icon-img" alt="Evidence audit and reconstruction demo icon" data-demo-icon-path="gs://trendzact-partners-001.firebasestorage.app/icons/evidence-audit-reconstruction-no-text-tight.png" loading="lazy" hidden /></div>
+        </div>
       </div>
     </div>
   </section>
@@ -110,5 +170,52 @@
 <script src="/assets/header.js"></script>
 <script src="/assets/footer.js"></script>
 <script src="/assets/app.js"></script>
+<script type="module">
+  import { getStorage, ref as storageRef, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+
+  function isHttpUrl(value) {
+    return typeof value === 'string' && /^https?:\/\//i.test(value);
+  }
+
+  async function resolveDemoIcons() {
+    const images = Array.from(document.querySelectorAll('img[data-demo-icon-path]'));
+    if (!images.length) return;
+
+    let storage = null;
+    if (window.TrendzactAuth && window.TrendzactAuth.app) {
+      storage = getStorage(window.TrendzactAuth.app);
+    }
+
+    await Promise.all(images.map(async img => {
+      const path = img.dataset.demoIconPath;
+      if (!path) return;
+
+      try {
+        let src = path;
+        if (!isHttpUrl(path)) {
+          if (!storage) return;
+          src = await getDownloadURL(storageRef(storage, path));
+        }
+
+        img.src = src;
+        img.hidden = false;
+        const wrapper = img.closest('.demo-icon-wrap');
+        if (wrapper) wrapper.classList.add('has-image');
+      } catch (err) {
+        console.warn('[Live Demo] Demo icon load failed:', path, err);
+      }
+    }));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      resolveDemoIcons();
+      setTimeout(resolveDemoIcons, 300);
+    });
+  } else {
+    resolveDemoIcons();
+    setTimeout(resolveDemoIcons, 300);
+  }
+</script>
 </body>
 </html>
