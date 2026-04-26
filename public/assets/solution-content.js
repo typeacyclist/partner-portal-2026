@@ -26,7 +26,7 @@ window.SOLUTION_CONTENT = {
         'Uses Understand → Decide → Act as the operating model for real-time exposure control',
         'Turns silent exposure uncertainty into proof, context, and governable action'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'platform_sdec.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'platform_sdec.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -47,7 +47,7 @@ window.SOLUTION_CONTENT = {
         'Use webcam-enabled visual context; strengthen mission-critical deployments with the Trendzact Ultrawide Webcam',
         'Apply warnings, masking, lockout, escalation, or evidence preservation when workspace exposure risk appears'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'solution_secure_workspace.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'solution_secure_workspace.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -65,7 +65,7 @@ window.SOLUTION_CONTENT = {
         'Identify unknown observers, multiple people, or identity confidence drops during regulated workflows',
         'Trigger step-up verification, session lock, escalation, or evidence preservation when identity assurance weakens'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'solution_identity_assurance.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'solution_identity_assurance.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -83,7 +83,7 @@ window.SOLUTION_CONTENT = {
         'Identify external participants, unauthorized attendees, participant changes, or recording conditions',
         'Warn, mask, restrict, stop sharing, escalate, or preserve evidence based on meeting context'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'solution_secure_virtual_meeting.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'solution_secure_virtual_meeting.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -101,7 +101,7 @@ window.SOLUTION_CONTENT = {
         'Identify suspicious activity by privileged users or users in high-risk employment periods',
         'Create evidence-backed signals for security, compliance, HR, legal, and SOC review'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'solution_insider_threat_management.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'solution_insider_threat_management.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -119,7 +119,7 @@ window.SOLUTION_CONTENT = {
         'Use endpoint and workstation context to support real-time control decisions',
         'Convert visible-data exposure into policy action and audit-ready proof'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'solution_exposure_dlp.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'solution_exposure_dlp.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -140,7 +140,7 @@ window.SOLUTION_CONTENT = {
         'Strengthens Secure Workspace and identity-aware exposure decisions for high-value workflows',
         'Helps prove what was around the sensitive data at the moment exposure occurred'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'enhancement_ultrawide_webcam.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'enhancement_ultrawide_webcam.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -158,7 +158,7 @@ window.SOLUTION_CONTENT = {
         'Optional obfuscation, masking, or redaction can reduce unnecessary sensitive image exposure',
         'Evidence access can be restricted to highest-admin roles with audit trails and role-based review controls'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'enhancement_multi_display_recording.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'enhancement_multi_display_recording.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -176,7 +176,7 @@ window.SOLUTION_CONTENT = {
         'Improves explainability for automated controls and SOC review',
         'Provides supporting evidence for enforcement, investigation, audit, and compliance workflows'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'enhancement_workstation_laptop_scan.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'enhancement_workstation_laptop_scan.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -197,7 +197,7 @@ window.SOLUTION_CONTENT = {
         'Trendzact Ultrawide Webcam improves coverage where top corporate secrets require broader workspace context',
         'Policy actions can warn, mask, restrict, escalate, or preserve evidence during exposure'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'usecase_secure_workspace_mission_critical.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'usecase_secure_workspace_mission_critical.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -215,7 +215,7 @@ window.SOLUTION_CONTENT = {
         'Presence confidence drops during privileged, regulated, or confidential workflows',
         'The platform can require re-verification, lock the session, escalate, or preserve evidence'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'usecase_identity_active_session_misuse.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'usecase_identity_active_session_misuse.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -233,7 +233,7 @@ window.SOLUTION_CONTENT = {
         'Meeting recording or screenshot activity creates governed evidence risk',
         'Trendzact can warn, mask, restrict exposure, stop sharing, escalate, or preserve evidence'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'usecase_virtual_meeting_screenshare_exposure.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'usecase_virtual_meeting_screenshare_exposure.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -251,7 +251,7 @@ window.SOLUTION_CONTENT = {
         'Activity escalates during resignation, layoff, dispute, privileged access, or high-risk workflow periods',
         'Workstation and laptop signals add context and evidence for investigative and control actions'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'usecase_insider_repeated_risky_behavior.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'usecase_insider_repeated_risky_behavior.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -269,7 +269,7 @@ window.SOLUTION_CONTENT = {
         'Location, time, role, policy, application, and workstation context determine whether exposure is appropriate',
         'The platform converts visible-data exposure into real-time control and governable evidence'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'usecase_visible_data_no_file_transfer.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'usecase_visible_data_no_file_transfer.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -365,7 +365,7 @@ window.SOLUTION_CONTENT = {
         'Workspace policy enforced continuously instead of relying on training alone',
         'Evidence preserved for compliance and investigation review'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'casestudy_hospital_phi_remote_workspace.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'casestudy_hospital_phi_remote_workspace.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -383,7 +383,7 @@ window.SOLUTION_CONTENT = {
         'Credential sharing and proxy-use risk reduced during claims workflows',
         'Identity evidence preserved for fraud and audit review'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'casestudy_insurance_identity_claims.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'casestudy_insurance_identity_claims.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -401,7 +401,7 @@ window.SOLUTION_CONTENT = {
         'Screen exposure controlled without blocking normal collaboration',
         'IP exposure visibility extended across distributed teams'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'casestudy_saas_ip_remote_collaboration.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'casestudy_saas_ip_remote_collaboration.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -419,7 +419,7 @@ window.SOLUTION_CONTENT = {
         'Workstation signals added context and evidence for action decisions',
         'SOC review focused on high-confidence exposure events'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'casestudy_global_bank_insider_exposure.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'casestudy_global_bank_insider_exposure.pdf',
       infographic: '#',
       vimeoUrl: '#'
@@ -437,7 +437,7 @@ window.SOLUTION_CONTENT = {
         'Behavioral and application context evaluated without disrupting operations',
         'Governable evidence captured for regulatory and incident review'
       ],
-      moreInfoUrl: REPORT_PDF_BASE + 'casestudy_utility_ot_visible_data.pdf',
+      moreInfoUrl: '#',
       technicalReport: REPORT_PDF_BASE + 'casestudy_utility_ot_visible_data.pdf',
       infographic: '#',
       vimeoUrl: '#'
