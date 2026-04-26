@@ -75,15 +75,15 @@ window.SOLUTION_CONTENT = {
   // ========================================================================
   solutions: [
     {
-      id: 'insider-risk',
-      title: 'Insider Risk & Data Protection',
-      summary: 'Control insider-driven data exposure at the moment it becomes visible across screens, behavior, and environment. ' + ANCHOR_TAIL,
-      tags: ['primary:behavior', 'Edge DLP', 'ITM', 'SIA'],
+      id: 'workspace-exposure',
+      title: 'Workspace Exposure',
+      summary: 'Protect sensitive data where it is physically visible in the workspace—across phones, paper, unattended screens, observers, and uncontrolled environments. ' + ANCHOR_TAIL,
+      tags: ['primary:environment', 'SWA', 'SIA', 'Workspace', 'Observer Risk'],
       bullets: [
-        'Sensitive data becomes exposed through screens, clipboard, and visual channels',
-        'Insider risk occurs during normal user behavior, not just malicious activity',
-        'No real-time control when exposure happens',
-        'Detection typically occurs after the fact'
+        'Phone, camera, or recording device visible near sensitive work',
+        'Paper documents, handwritten notes, or exposed materials near the user',
+        'Sensitive screen visible while workstation is unattended',
+        'Unauthorized observer, shoulder-surfing, or unknown person present'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -91,15 +91,15 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     },
     {
-      id: 'workforce-intelligence',
-      title: 'Workforce Intelligence & HR Analytics',
-      summary: 'Understand workforce behavior and exposure risk through real-time visibility into user activity and context. ' + ANCHOR_TAIL,
-      tags: ['primary:behavior', 'GRC1 Core', 'BI'],
+      id: 'meeting-screenshare-exposure',
+      title: 'Virtual Meeting & Screenshare Exposure',
+      summary: 'Control sensitive data exposure during meetings and screen sharing, including external participants, recordings, and MIP/AIP-labeled content. ' + ANCHOR_TAIL,
+      tags: ['primary:visibility', 'SVM', 'Teams', 'Purview', 'Screenshare'],
       bullets: [
-        'No visibility into how users interact with sensitive data',
-        'Exposure risk tied to behavior is not understood',
-        'Engagement and conduct risks emerge without early signals',
-        'Privacy concerns limit traditional monitoring approaches'
+        'Sensitive data exposed during screen sharing',
+        'MIP/AIP or Microsoft Purview-labeled content visible in meeting context',
+        'External or unauthorized participant present while restricted data is visible',
+        'Meeting recording or evidence governance risk'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -107,15 +107,15 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     },
     {
-      id: 'identity-access',
-      title: 'Identity, Access & Workspace Security',
-      summary: 'Ensure the right person is present and the environment is secure when sensitive data is visible—across sessions, workspaces, and collaboration. ' + ANCHOR_TAIL,
-      tags: ['primary:presence', 'SIA', 'SWA', 'SVM'],
+      id: 'imposters-identity-spoofing',
+      title: 'Imposters & Identity Spoofing',
+      summary: 'Verify that the right person is present during sensitive work—not just at login, but throughout the session. ' + ANCHOR_TAIL,
+      tags: ['primary:presence', 'SIA', 'Identity', 'Presence', 'Liveness'],
       bullets: [
-        'Identity assurance stops at login, not during exposure',
-        'Credential sharing goes undetected during active sessions',
-        'Workspace and observer risks are not controlled',
-        'Exposure occurs without validating presence or context'
+        'Logged-in user does not match the person present',
+        'Authorized user leaves and another person continues the session',
+        'Credential sharing, proxy work, or session handoff suspected',
+        'Step-up verification required due to identity uncertainty'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -123,15 +123,15 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     },
     {
-      id: 'audit-readiness',
-      title: 'Audit Readiness & Regulatory Adherence',
-      summary: 'Provide continuous, real-time evidence of how exposure is controlled and managed. ' + ANCHOR_TAIL,
-      tags: ['primary:evidence', 'GRC1 Core', 'MSR'],
+      id: 'on-screen-data-exposure',
+      title: 'On-Screen Sensitive Data Exposure',
+      summary: 'Detect and control sensitive data the instant it becomes visible on screen—before visual exposure becomes an incident. ' + ANCHOR_TAIL,
+      tags: ['primary:visibility', 'Edge DLP', 'eDLP', 'Purview', 'Screen Exposure'],
       bullets: [
-        'No proof of what happened at the moment of exposure',
-        'Evidence is collected after incidents occur',
-        'Controls cannot be validated in real time',
-        'Audit processes rely on incomplete or delayed data'
+        'Sensitive information appears on screen',
+        'Labeled or restricted data becomes visible',
+        'Sensitive content appears on secondary displays',
+        'Unauthorized screenshot, screen capture, or recording condition detected'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -139,15 +139,15 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     },
     {
-      id: 'enterprise-risk',
-      title: 'Enterprise Risk & Ecosystem Oversight',
-      summary: 'Extend exposure control across third parties, endpoints, and distributed environments. ' + ANCHOR_TAIL,
-      tags: ['primary:environment', 'ITM', 'Edge DLP'],
+      id: 'insider-exfiltration-behavior',
+      title: 'Insider Risk & Exfiltration Behavior',
+      summary: 'Detect negligent, malicious, or collusive behavior before it becomes data loss, using exposure-aware behavioral context. ' + ANCHOR_TAIL,
+      tags: ['primary:behavior', 'ITM', 'EUBA', 'Exfiltration', 'SOC'],
       bullets: [
-        'Third-party exposure occurs without visibility',
-        'Shadow IT introduces unmanaged exposure points',
-        'Behavioral risk is not captured across ecosystems',
-        'Exposure events surface only after damage occurs'
+        'User accesses sensitive data outside normal pattern',
+        'Sensitive files or screens staged before transfer',
+        'High-risk application sequence observed',
+        'Clipboard, screenshot, upload, or external app behavior indicates risk'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -155,15 +155,15 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     },
     {
-      id: 'executive-governance',
-      title: 'Executive Governance & Specialized Controls',
-      summary: 'Control high-risk exposure for privileged users and sensitive environments. ' + ANCHOR_TAIL,
-      tags: ['primary:control', 'MSR', 'ITM'],
+      id: 'evidence-audit-reconstruction',
+      title: 'Evidence, Audit & Reconstruction',
+      summary: 'Capture defensible evidence when exposure occurs so teams can prove what happened, who was present, and what action was taken. ' + ANCHOR_TAIL,
+      tags: ['primary:evidence', 'MSR', 'Audit', 'Compliance', 'Reconstruction'],
       bullets: [
-        'Executive and privileged exposure is not monitored in real time',
-        'High-value sessions lack visibility and control',
-        'Sensitive environments require stronger exposure controls',
-        'No attribution of who was present during critical exposure'
+        'Exposure event requires defensible evidence',
+        'Screen activity must be reconstructed across one or more displays',
+        'Alert-triggered event requires linked screen evidence',
+        'Compliance review requires retained proof and attributable timelines'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -171,22 +171,21 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     }
   ],
-
   // ========================================================================
   // USE CASES — specific scenarios partners sell into
   // ========================================================================
   // Vector chips are represented in tags for UI filtering / explanation.
   useCases: [
     {
-      id: 'clear-desk',
-      title: 'Clear Desk Compliance',
-      summary: 'Control exposure from physical workspace conditions in real time. ' + ANCHOR_TAIL,
-      tags: ['Secure Workspaces Anywhere', 'visibility', 'presence', 'environment', 'context', 'evidence', 'control'],
+      id: 'clear-desk-workspace-compliance',
+      title: 'Clear Desk & Workspace Compliance',
+      summary: 'Control physical exposure when sensitive data is visible in real-world workspaces. ' + ANCHOR_TAIL,
+      tags: ['solution:workspace-exposure', 'SWA', 'Workspace', 'Clear Desk', 'Physical Exposure'],
       bullets: [
-        'Sensitive data visible in uncontrolled environments',
-        'Observers present during exposure moments',
-        'Workspace conditions create compliance risk',
-        'Exposure occurs outside secure office settings'
+        'Sensitive screens left visible while users step away',
+        'Paper, notes, or documents exposed near sensitive work',
+        'Workspace conditions violate clean-screen or clear-desk policy',
+        'Exposure occurs in home, office, shared, or public environments'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -194,15 +193,15 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     },
     {
-      id: 'data-exfil',
-      title: 'Advanced Data Exfiltration Prevention',
-      summary: 'Prevent data exposure across visual, behavioral, and multi-screen activity. ' + ANCHOR_TAIL,
-      tags: ['Edge DLP', 'ITM', 'visibility', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
+      id: 'phone-camera-shadow-capture',
+      title: 'Phone Camera / Shadow Capture',
+      summary: 'Detect and reduce exposure from phones, cameras, and unmanaged devices capturing sensitive screens or documents. ' + ANCHOR_TAIL,
+      tags: ['solution:workspace-exposure', 'SWA', 'Phone Camera', 'Shadow Capture', 'Physical Exposure'],
       bullets: [
-        'Data becomes exposed during normal user actions',
-        'Clipboard, screenshot, and multi-screen activity create risk',
-        'Exposure occurs before any transfer or logging',
-        'No real-time control during the exposure moment'
+        'Phone cameras pointed at sensitive screens',
+        'Unmanaged devices present near confidential work',
+        'Screens or documents captured outside monitored systems',
+        'No traditional DLP control over off-device capture'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -210,15 +209,47 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     },
     {
-      id: 'identity-assurance',
+      id: 'screenshare-exposure-control',
+      title: 'Screenshare Exposure Control',
+      summary: 'Control sensitive data exposure during screen sharing before meetings become data leakage events. ' + ANCHOR_TAIL,
+      tags: ['solution:meeting-screenshare-exposure', 'SVM', 'Teams', 'Screenshare', 'Meeting Exposure'],
+      bullets: [
+        'Sensitive content appears during screen sharing',
+        'Screen sharing continues after restricted data becomes visible',
+        'Screenshots or recordings create uncontrolled exposure',
+        'Real-time masking, restriction, or alerting is required'
+      ],
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
+    },
+    {
+      id: 'external-participant-meeting-risk',
+      title: 'External Participant Meeting Risk',
+      summary: 'Protect sensitive information when external participants, guests, or unknown attendees are present during meetings. ' + ANCHOR_TAIL,
+      tags: ['solution:meeting-screenshare-exposure', 'SVM', 'Teams', 'External Participants', 'Purview'],
+      bullets: [
+        'External participants view confidential information',
+        'Unknown attendees are present while restricted content is shared',
+        'MIP/AIP or Purview-labeled data appears in meeting context',
+        'Meeting recordings create evidence and retention risk'
+      ],
+      moreInfoUrl: '#',
+      technicalReport: '#',
+      infographic: '#',
+      vimeoUrl: '#'
+    },
+    {
+      id: 'continuous-identity-assurance',
       title: 'Continuous Identity Assurance',
-      summary: 'Ensure identity is verified at the moment sensitive data is visible. ' + ANCHOR_TAIL,
-      tags: ['Session Identity Assurance', 'visibility', 'presence', 'behavior', 'context', 'continuity', 'evidence', 'control'],
+      summary: 'Verify that the authorized person is still present when sensitive data is visible. ' + ANCHOR_TAIL,
+      tags: ['solution:imposters-identity-spoofing', 'SIA', 'Identity', 'Presence', 'Liveness'],
       bullets: [
-        'Identity unknown during active sessions',
-        'Credential sharing during exposure events',
-        'No verification tied to sensitive actions',
-        'Lack of session-level identity proof'
+        'Identity assurance stops at login',
+        'The authorized user leaves while the session remains active',
+        'Sensitive activity occurs without confirmed user presence',
+        'Step-up verification is required when identity confidence drops'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -226,47 +257,15 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     },
     {
-      id: 'secure-meetings',
-      title: 'Secure Virtual Meetings',
-      summary: 'Control exposure during meetings by validating presence and visibility. ' + ANCHOR_TAIL,
-      tags: ['Secure Virtual Meetings', 'visibility', 'presence', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
+      id: 'proxy-work-credential-sharing',
+      title: 'Proxy Work & Credential Sharing',
+      summary: 'Detect when valid credentials are used by the wrong person during sensitive work. ' + ANCHOR_TAIL,
+      tags: ['solution:imposters-identity-spoofing', 'SIA', 'Credential Sharing', 'Proxy Work', 'Identity Risk'],
       bullets: [
-        'Sensitive data shared in meetings without control',
-        'External participants viewing confidential information',
-        'Screenshots and recordings create exposure risk',
-        'No awareness of who is present during sharing'
-      ],
-      moreInfoUrl: '#',
-      technicalReport: '#',
-      infographic: '#',
-      vimeoUrl: '#'
-    },
-    {
-      id: 'privileged-user',
-      title: 'Privileged User Monitoring',
-      summary: 'Control exposure for admin, engineering, and executive accounts with explainable, attributable oversight at the moment it occurs. ' + ANCHOR_TAIL,
-      tags: ['ITM', 'MSR', 'visibility', 'presence', 'behavior', 'context', 'continuity', 'evidence', 'control'],
-      bullets: [
-        'Privileged accounts operate without real-time exposure visibility',
-        'No attribution of exposure events to specific privileged users',
-        'Black-box analytics leave legal and HR without defensible evidence',
-        'Exposure during high-privilege actions surfaces only after the fact'
-      ],
-      moreInfoUrl: '#',
-      technicalReport: '#',
-      infographic: '#',
-      vimeoUrl: '#'
-    },
-    {
-      id: 'contact-center',
-      title: 'Contact Center Compliance',
-      summary: 'Control exposure of PII and regulated data during agent sessions across visual, identity, and screen dimensions. ' + ANCHOR_TAIL,
-      tags: ['MSR', 'SIA', 'Edge DLP', 'visibility', 'presence', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
-      bullets: [
-        'Sensitive customer data visible on agent screens across many workflows',
-        'No identity assurance during access to PII-bearing systems',
-        'Screen capture and clipboard activity create uncontrolled exposure paths',
-        'Multi-regulatory footprint requires unified evidence, not siloed recordings'
+        'Logged-in user does not match the person present',
+        'Credential sharing or session handoff is suspected',
+        'Proxy workers operate under another user’s identity',
+        'Imposter presence is detected during sensitive activity'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -276,13 +275,13 @@ window.SOLUTION_CONTENT = {
     {
       id: 'dlp-augmentation',
       title: 'DLP Augmentation',
-      summary: 'Add real-time exposure control at the endpoint to existing Purview or legacy DLP investments. ' + ANCHOR_TAIL,
-      tags: ['Edge DLP', 'visibility', 'behavior', 'context', 'continuity', 'evidence', 'control'],
+      summary: 'Extend existing DLP and Microsoft Purview investments into the moment sensitive data becomes visible on screen. ' + ANCHOR_TAIL,
+      tags: ['solution:on-screen-data-exposure', 'eDLP', 'Purview', 'MIP/AIP', 'Screen Exposure'],
       bullets: [
         'Classification labels exist but exposure still occurs on screen',
-        'Visual and clipboard channels uncovered by file-oriented DLP',
-        'Legacy DLP creates high false-positive noise, not enforcement',
-        'Existing investment needs real-time action, not just after-the-fact logs'
+        'Visual, clipboard, screenshot, and screen-capture channels remain exposed',
+        'Sensitive content appears on secondary displays or unmanaged contexts',
+        'Existing controls need real-time action, not only after-the-fact logs'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -290,111 +289,15 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     },
     {
-      id: 'audit-automation',
-      title: 'Audit Trail Automation',
-      summary: 'Generate continuous, policy-bound evidence tied to the exact moment of exposure. ' + ANCHOR_TAIL,
-      tags: ['GRC1 Core', 'visibility', 'context', 'continuity', 'evidence'],
+      id: 'audit-trail-exposure-reconstruction',
+      title: 'Audit Trail & Exposure Reconstruction',
+      summary: 'Capture defensible evidence tied to the exact moment sensitive data exposure occurs. ' + ANCHOR_TAIL,
+      tags: ['solution:evidence-audit-reconstruction', 'MSR', 'Audit', 'Evidence', 'Reconstruction'],
       bullets: [
-        'Audit evidence still collected manually across disconnected tools',
-        'No record of what was visible or who was present during exposure',
-        'Point-in-time snapshots do not satisfy continuous-evidence requirements',
-        'Controls cannot be proven effective without attributable timelines'
-      ],
-      moreInfoUrl: '#',
-      technicalReport: '#',
-      infographic: '#',
-      vimeoUrl: '#'
-    },
-    {
-      id: 'screenshare-exposure',
-      title: 'Screenshare Exposure Control',
-      summary: 'Control exposure when sensitive data is shared on screen during meetings. ' + ANCHOR_TAIL,
-      tags: ['SVM', 'Edge DLP', 'visibility', 'presence', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
-      bullets: [
-        'Sensitive content visible during screenshare sessions',
-        'External participants present in high-risk meetings',
-        'Screenshot/recording risk during sharing',
-        'Need for real-time masking or restriction'
-      ],
-      moreInfoUrl: '#',
-      technicalReport: '#',
-      infographic: '#',
-      vimeoUrl: '#'
-    },
-    {
-      id: 'observer-detection',
-      title: 'Unauthorized Observer Detection',
-      summary: 'Detect and respond when unauthorized individuals can view sensitive data. ' + ANCHOR_TAIL,
-      tags: ['SWA', 'visibility', 'presence', 'environment', 'context', 'continuity', 'evidence', 'control'],
-      bullets: [
-        'Additional people present near the workstation',
-        'Work conducted in shared or public spaces',
-        'Compliance requirement for observer controls',
-        'Lack of visibility into physical presence'
-      ],
-      moreInfoUrl: '#',
-      technicalReport: '#',
-      infographic: '#',
-      vimeoUrl: '#'
-    },
-    {
-      id: 'clipboard-screenshot',
-      title: 'Clipboard & Screenshot Control',
-      summary: 'Prevent exposure via clipboard, screenshots, and user-initiated capture actions. ' + ANCHOR_TAIL,
-      tags: ['Edge DLP', 'visibility', 'behavior', 'context', 'continuity', 'evidence', 'control'],
-      bullets: [
-        'Copy/paste of sensitive data to unmanaged apps',
-        'Frequent screenshot or recording behavior',
-        'Invisible channels not covered by legacy DLP',
-        'Need for real-time blocking or masking'
-      ],
-      moreInfoUrl: '#',
-      technicalReport: '#',
-      infographic: '#',
-      vimeoUrl: '#'
-    },
-    {
-      id: 'multi-display-exfil',
-      title: 'Multi-Display Exfiltration',
-      summary: 'Detect exposure across multiple monitors and correlated on-screen activity. ' + ANCHOR_TAIL,
-      tags: ['MSR', 'Edge DLP', 'visibility', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
-      bullets: [
-        'Sensitive data on one screen, transfer on another',
-        'Secondary monitors used to bypass controls',
-        'Lack of synchronized visibility across displays',
-        'Need for cross-display correlation and control'
-      ],
-      moreInfoUrl: '#',
-      technicalReport: '#',
-      infographic: '#',
-      vimeoUrl: '#'
-    },
-    {
-      id: 'shadow-capture',
-      title: 'External Device / Shadow Capture',
-      summary: 'Reduce exposure from external devices (phones/cameras) capturing on-screen data. ' + ANCHOR_TAIL,
-      tags: ['SWA', 'SVM', 'visibility', 'presence', 'environment', 'context', 'continuity', 'evidence', 'control'],
-      bullets: [
-        'Phone cameras capturing screens or documents',
-        'Unmanaged devices in proximity to sensitive data',
-        'No control over off-device capture methods',
-        'Need for detection and deterrence'
-      ],
-      moreInfoUrl: '#',
-      technicalReport: '#',
-      infographic: '#',
-      vimeoUrl: '#'
-    },
-    {
-      id: 'exec-session',
-      title: 'Executive Session Protection',
-      summary: 'Protect high-sensitivity sessions (board, M&A, legal) with presence and visibility controls. ' + ANCHOR_TAIL,
-      tags: ['SVM', 'SIA', 'visibility', 'presence', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control'],
-      bullets: [
-        'High-value discussions with sensitive content',
-        'Mixed internal/external participant lists',
-        'Need for identity assurance during sharing',
-        'Requirement for attributable evidence'
+        'No proof of what was visible during an exposure event',
+        'No clear record of who was present or what action was taken',
+        'Screen activity must be reconstructed across one or more displays',
+        'Compliance review requires retained, attributable evidence'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -402,7 +305,6 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     }
   ],
-
   // ========================================================================
   // EXPOSURE VECTORS — the lenses GRC1 uses to evaluate exposure
   // ========================================================================
@@ -586,14 +488,14 @@ window.SOLUTION_CONTENT = {
   caseStudies: [
     {
       id: 'cs-global-bank',
-      title: 'Global Bank Reduces Insider Exfiltration by 72%',
-      summary: 'Tier-1 bank deployed Edge DLP + ITM across 28,000 endpoints to close visual and clipboard exposure gaps in trading and research. ' + ANCHOR_TAIL,
-      tags: ['Financial Services', 'Edge DLP', 'ITM'],
+      title: 'Global Bank Reduces Insider Exfiltration Risk',
+      summary: 'A tier-1 bank used Insider Risk & Exfiltration Behavior coverage to identify risky data handling before sensitive information left controlled environments. ' + ANCHOR_TAIL,
+      tags: ['solution:insider-exfiltration-behavior', 'ITM', 'eDLP', 'MSR', 'Financial Services'],
       bullets: [
-        'Exposure risk reduced significantly across endpoints',
-        'Real-time controls replaced delayed detection',
-        'Improved audit outcomes with clear evidence',
-        'Consolidated multiple security tools'
+        'Sensitive data access and handling patterns evaluated in real time',
+        'Clipboard, screen, and external application behavior tied to exposure risk',
+        'Evidence captured before investigation ambiguity increased',
+        'SOC review focused on high-confidence exposure events'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -603,13 +505,13 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cs-hospital-phi',
       title: 'Hospital System Strengthens PHI Workspace Controls',
-      summary: 'Regional health system used Secure Workspaces Anywhere to enforce clear-desk and observer detection for remote billing and coding staff. ' + ANCHOR_TAIL,
-      tags: ['Healthcare', 'SWA'],
+      summary: 'A regional health system used Workspace Exposure coverage to reduce PHI visibility risk across remote billing and coding workspaces. ' + ANCHOR_TAIL,
+      tags: ['solution:workspace-exposure', 'SWA', 'SIA', 'MSR', 'Healthcare'],
       bullets: [
-        'Workspace exposure of PHI controlled in real time across remote staff',
-        'Observer-driven exposure events detected and deterred',
-        'Clear-desk policy enforced continuously, not via training alone',
-        'Defensible workspace evidence provided for HIPAA audit'
+        'PHI exposure detected in remote and hybrid workspaces',
+        'Observer, paper, and unattended-screen risks identified during sensitive work',
+        'Workspace policy enforced continuously instead of relying on training alone',
+        'Evidence preserved for compliance and investigation review'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -618,14 +520,14 @@ window.SOLUTION_CONTENT = {
     },
     {
       id: 'cs-bpo-regulatory',
-      title: 'Global BPO Compliant Across Six Regulatory Regimes',
-      summary: 'Multi-Screen Recording + SIA deployed to 12,000 agents, enabling PCI, HIPAA, and regional PII compliance without platform fragmentation. ' + ANCHOR_TAIL,
-      tags: ['BPO / Contact Center', 'MSR', 'SIA', 'Edge DLP'],
+      title: 'Global BPO Unifies Regulated Exposure Evidence',
+      summary: 'A global BPO used Evidence, Audit & Reconstruction coverage with identity assurance to support regulated customer-data workflows across distributed agents. ' + ANCHOR_TAIL,
+      tags: ['solution:evidence-audit-reconstruction', 'MSR', 'SIA', 'eDLP', 'BPO / Contact Center'],
       bullets: [
-        'PCI, HIPAA, and regional PII exposure controlled under one platform',
-        'Identity assurance verified presence during sensitive customer sessions',
-        'Multi-screen evidence captured the exact moment of any exposure event',
-        'Platform fragmentation eliminated across recording and DLP tooling'
+        'Sensitive customer data exposure reconstructed across agent workflows',
+        'Identity assurance linked user presence to regulated screen activity',
+        'Multi-screen evidence captured for review and compliance validation',
+        'Fragmented recording and DLP tooling consolidated into one exposure record'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -635,13 +537,13 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cs-public-sector-audit',
       title: 'Federal Agency Gains Continuous Audit Readiness',
-      summary: 'GRC1 Core and governed workflows replaced a patchwork of logging and spreadsheet evidence processes, improving audit cycle times by 65%. ' + ANCHOR_TAIL,
-      tags: ['Public Sector', 'GRC1 Core'],
+      summary: 'A public-sector organization used Evidence, Audit & Reconstruction coverage to replace delayed evidence collection with exposure-linked audit records. ' + ANCHOR_TAIL,
+      tags: ['solution:evidence-audit-reconstruction', 'MSR', 'CORE', 'Audit', 'Public Sector'],
       bullets: [
-        'Continuous evidence replaced point-in-time spreadsheet collection',
-        'Audit cycle times improved by 65%',
-        'Control execution proved continuously, not at audit time',
-        'Governed workflows tied evidence directly to policy'
+        'Audit evidence tied to the moment sensitive data became visible',
+        'Manual evidence collection reduced across disconnected tools',
+        'Control execution proved through continuous exposure records',
+        'Attributable timelines supported audit and incident review'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -651,12 +553,12 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cs-saas-ip',
       title: 'SaaS Company Protects IP During Remote Collaboration',
-      summary: 'Secure Virtual Meetings stopped sensitive screenshare exposure and screenshots during product and engineering reviews across distributed teams. ' + ANCHOR_TAIL,
-      tags: ['Technology', 'SVM', 'Edge DLP'],
+      summary: 'A SaaS company used Virtual Meeting & Screenshare Exposure coverage to reduce IP leakage during distributed product and engineering reviews. ' + ANCHOR_TAIL,
+      tags: ['solution:meeting-screenshare-exposure', 'SVM', 'eDLP', 'SIA', 'Technology'],
       bullets: [
-        'Screenshare exposure of sensitive product designs controlled at the moment',
-        'Screenshot capture during sensitive reviews prevented in real time',
-        'Engineering and product collaboration secured without blocking productivity',
+        'Sensitive product and engineering content detected during screen sharing',
+        'External participant and recording risks evaluated in meeting context',
+        'Screen exposure controlled without blocking normal collaboration',
         'IP exposure visibility extended across distributed teams'
       ],
       moreInfoUrl: '#',
@@ -667,13 +569,13 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cs-manufacturing-trade-secrets',
       title: 'Regulated Manufacturer Protects Trade Secrets',
-      summary: 'Privileged user monitoring with ITM and MSR identified anomalous engineering access patterns before IP exfiltration could occur. ' + ANCHOR_TAIL,
-      tags: ['Manufacturing', 'ITM', 'MSR'],
+      summary: 'A regulated manufacturer used Insider Risk & Exfiltration Behavior coverage to detect anomalous engineering activity before trade-secret exposure became data loss. ' + ANCHOR_TAIL,
+      tags: ['solution:insider-exfiltration-behavior', 'ITM', 'MSR', 'eDLP', 'Manufacturing'],
       bullets: [
-        'Anomalous engineering access patterns detected at the moment they occurred',
-        'IP exfiltration risk identified before any data left the environment',
-        'Privileged user behavior tied to attributable, defensible evidence',
-        'Trade-secret exposure contained without blocking legitimate engineering work'
+        'Engineering access patterns evaluated against expected behavior',
+        'Sensitive drawings and configuration exposure identified in session',
+        'Staging behavior detected before outbound transfer occurred',
+        'Evidence tied user behavior to exposure events for review'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -683,13 +585,13 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cs-insurance-sia',
       title: 'Carrier Strengthens Identity Assurance for Claims Adjusters',
-      summary: 'SIA deployed to 4,500 adjusters, adding risk-gated biometric step-up for high-value claim approvals and PII access. ' + ANCHOR_TAIL,
-      tags: ['Insurance', 'SIA'],
+      summary: 'An insurance carrier used Imposters & Identity Spoofing coverage to verify user presence during high-value claim approvals and PII access. ' + ANCHOR_TAIL,
+      tags: ['solution:imposters-identity-spoofing', 'SIA', 'eDLP', 'MSR', 'Insurance'],
       bullets: [
-        'Identity verified at the moment of high-value claim approvals',
-        'Risk-gated biometric step-up applied to PII access events',
-        'Credential sharing among adjusters detected and deterred',
-        'Defensible identity evidence captured for fraud and audit review'
+        'Identity verified when sensitive claim and PII data became visible',
+        'Step-up verification applied when presence confidence dropped',
+        'Credential sharing and proxy-use risk reduced during claims workflows',
+        'Identity evidence preserved for fraud and audit review'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -699,13 +601,13 @@ window.SOLUTION_CONTENT = {
     {
       id: 'cs-law-firm-workspace',
       title: 'Am Law 100 Firm Extends Workspace Controls to Remote Associates',
-      summary: 'Observer detection and clear desk enforcement added to hybrid working associates handling confidential client matters. ' + ANCHOR_TAIL,
-      tags: ['Legal', 'SWA', 'Edge DLP'],
+      summary: 'A global law firm used Workspace Exposure coverage to protect confidential client matters across hybrid associate workspaces. ' + ANCHOR_TAIL,
+      tags: ['solution:workspace-exposure', 'SWA', 'SIA', 'MSR', 'Legal'],
       bullets: [
-        'Observer-driven exposure of client matters detected in remote workspaces',
-        'Clear-desk policy enforced continuously across hybrid associates',
-        'Visual exposure of confidential documents prevented in real time',
-        'Workspace evidence captured for client-confidentiality compliance'
+        'Client-confidential information protected in remote workspaces',
+        'Observer-driven exposure and visible-paper risks detected',
+        'Clear-desk and clean-screen policies enforced continuously',
+        'Workspace evidence supported client-confidentiality compliance'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -714,14 +616,14 @@ window.SOLUTION_CONTENT = {
     },
     {
       id: 'cs-utility-ot-adjacent',
-      title: 'Utility Adds Edge Enforcement to Operational Technology Adjacent Systems',
-      summary: 'GRC1 deployed on office and engineering endpoints adjacent to OT networks, preventing exposure of SCADA configuration and drawings. ' + ANCHOR_TAIL,
-      tags: ['Energy / Utilities', 'Edge DLP', 'ITM'],
+      title: 'Utility Protects OT-Adjacent Sensitive Screens',
+      summary: 'A utility used On-Screen Sensitive Data Exposure coverage to reduce exposure of SCADA configuration, drawings, and engineering data on office and engineering endpoints. ' + ANCHOR_TAIL,
+      tags: ['solution:on-screen-data-exposure', 'eDLP', 'ITM', 'MSR', 'Energy / Utilities'],
       bullets: [
-        'SCADA configuration exposure controlled at the office endpoint',
-        'Engineering drawings prevented from leaving controlled environments',
-        'Behavior on OT-adjacent systems monitored without disrupting operations',
-        'Defensible evidence captured for regulatory and incident review'
+        'SCADA configuration and engineering drawings detected when visible',
+        'Sensitive screens controlled on OT-adjacent endpoints',
+        'Behavioral risk evaluated without disrupting operations',
+        'Evidence captured for regulatory and incident review'
       ],
       moreInfoUrl: '#',
       technicalReport: '#',
@@ -729,7 +631,6 @@ window.SOLUTION_CONTENT = {
       vimeoUrl: '#'
     }
   ],
-
   // ========================================================================
   // IDEAL BUYERS — personas partners pitch to
   // ========================================================================

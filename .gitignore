@@ -46,12 +46,12 @@ dist/
 build/
 .cache/
 
-# Delivery bundles from Claude — never commit
+# Delivery bundles from Claude ï¿½ never commit
 /files/
 /partner-portal-*.zip
 /files.zip
 
-# Delivery bundles from Claude — never commit
+# Delivery bundles from Claude ï¿½ never commit
 /files/
 /partner-portal-*.zip
 /files.zip
@@ -60,3 +60,4 @@ build/
 /public/email-body-preview.html
 /public/proposal-pdf-preview.*
 /CHANGELOG.md
+!/AUTH_SETUP.md
