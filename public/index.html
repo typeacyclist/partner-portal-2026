@@ -10,8 +10,96 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/assets/styles.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<style>
+  /* Home-only spacing overrides. Keeps global section spacing unchanged for inner pages. */
+  .home-page .hero {
+    padding-top: 32px;
+  }
+
+  .home-page .hero-inner {
+    padding: 32px 0 38px;
+    gap: 36px;
+  }
+
+  .home-page .hero-h1 {
+    margin-bottom: 16px;
+  }
+
+  .home-page .hero-sub {
+    margin-bottom: 0;
+  }
+
+  .home-page .tiles {
+    padding-top: 46px;
+    padding-bottom: 46px;
+  }
+
+  .home-page .platform-frame {
+    padding-top: 38px;
+    padding-bottom: 24px;
+  }
+
+  .home-page .platform-frame + .tiles {
+    padding-top: 30px;
+  }
+
+  .home-page .section-head {
+    margin-bottom: 28px;
+  }
+
+  .home-page .platform-frame .section-head {
+    margin-bottom: 0;
+  }
+
+  .home-page .section-head h2::after {
+    margin-top: 14px;
+  }
+
+  .home-page .tile {
+    min-height: 210px;
+    padding: 24px 22px;
+  }
+
+  .home-page .tile-num {
+    margin-bottom: 12px;
+  }
+
+  .home-page .tile p {
+    margin-bottom: 12px;
+  }
+
+  .home-page .strip {
+    padding-top: 38px;
+    padding-bottom: 38px;
+  }
+
+  @media (max-width: 720px) {
+    .home-page .hero {
+      padding-top: 24px;
+    }
+
+    .home-page .hero-inner {
+      padding: 20px 0 28px;
+    }
+
+    .home-page .tiles,
+    .home-page .platform-frame {
+      padding-top: 34px;
+      padding-bottom: 34px;
+    }
+
+    .home-page .platform-frame + .tiles {
+      padding-top: 20px;
+    }
+
+    .home-page .strip {
+      padding-top: 30px;
+      padding-bottom: 30px;
+    }
+  }
+</style>
 </head>
-<body>
+<body class="home-page">
 <div id="site-header"></div>
 
 <!-- ============ HERO ============ -->
@@ -31,7 +119,7 @@
 </section>
 
 <!-- ============ PLATFORM FRAME ============ -->
-<section class="tiles">
+<section class="tiles platform-frame">
   <div class="section-head">
     <span class="section-kicker">PLATFORM</span>
     <h2>Control sensitive data exposure across the human edge.</h2>
