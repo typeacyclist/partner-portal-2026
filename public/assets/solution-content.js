@@ -2,7 +2,7 @@
 // TRENDZACT PARTNERS — DISCOVER PAGE CONTENT
 // ========================================================================
 // Single source of truth for all cards rendered on /discover.
-// Card types: Platform, Solutions, Use Cases, Exposure Vectors, Case Studies, Ideal Buyers.
+// Card types: Platform, Solutions, Enhancements, Use Cases, Exposure Vectors, Case Studies, Ideal Buyers.
 // Optional icon fields supported by solution-render.js: iconImage, cardIcon, iconUrl, iconAlt.
 // ========================================================================
 
@@ -11,34 +11,37 @@ const ICON_BASE = 'gs://trendzact-partners-001.firebasestorage.app/icons/';
 const REPORT_BASE = 'gs://trendzact-partners-001.firebasestorage.app/report-explainers/';
 
 window.SOLUTION_CONTENT = {
-  solutions: [
+  platform: [
     {
       id: 'sdec-platform',
-      title: 'Sensitive Data Exposure Control Platform',
+      title: 'Trendzact Sensitive Data Exposure Control Platform',
       iconImage: ICON_BASE + 'Trendzact Favicon (green).png',
       iconAlt: 'Trendzact platform icon',
-      summary: 'Trendzact gives organizations a real-time control layer for sensitive data exposure across the human edge—after access is granted and data becomes visible. ' + ANCHOR_TAIL,
-      tags: ['Platform', 'SDEC', 'Human Edge', 'Real-Time Control', 'Governable Evidence'],
+      summary: 'Trendzact gives organizations a real-time data exposure control layer across the human edge. It controls sensitive data exposure after access is granted and the information becomes visible on screens, in workspaces, during collaboration, and across user workflows. ' + ANCHOR_TAIL,
+      tags: ['SDEC', 'Platform', 'Human Edge', 'Understand Decide Act', 'Real-Time Control'],
       bullets: [
-        'Controls exposure after sensitive data becomes visible on screens, in workspaces, and during collaboration',
-        'Combines visible-data, identity, workspace, meeting, behavior, application, timing, and policy context',
-        'Uses the operating model Understand → Decide → Act in real time',
+        'Controls sensitive data exposure after access is granted and data becomes visible',
+        'Combines visibility, presence, workspace, meeting, behavior, application, timing, location, policy, and evidence context',
+        'Uses Understand → Decide → Act as the operating model for real-time exposure control',
         'Turns silent exposure uncertainty into proof, context, and governable action'
       ],
       infographic: '#', vimeoUrl: '#'
-    },
+    }
+  ],
+
+  solutions: [
     {
       id: 'secure-workspace',
       title: 'Secure Workspace',
       iconImage: ICON_BASE + 'workspace-exposure-no-text-tight.png',
       iconAlt: 'Secure Workspace icon',
-      summary: 'Protect sensitive data when it is visible in a physical, remote, shared, or uncontrolled workspace. ' + ANCHOR_TAIL,
+      summary: 'Protect sensitive data when it is visible in physical, remote, shared, public, or uncontrolled workspaces. Secure Workspace focuses on the environment around the data, including observers, mobile phones, unattended sessions, nearby documents, and multi-screen exposure. ' + ANCHOR_TAIL,
       tags: ['SW', 'Workspace', 'Webcam Required', 'Ultrawide Recommended', 'Observer Risk'],
       bullets: [
-        'Detect screens, documents, mobile phones, observers, and unattended workstations near sensitive data',
-        'Reduce exposure in office, home, call center, public, travel, hotel, or shared-workspace environments',
-        'Strengthen controls for mission-critical data with the Trendzact Ultrawide Webcam and 180-degree field of view',
-        'Apply warning, masking, restriction, escalation, or evidence preservation when workspace risk appears'
+        'Detect workspace exposure from observers, phones, cameras, paper, secondary displays, or unattended workstations',
+        'Support home, office, call center, public, travel, hotel, and shared-workspace environments',
+        'Use webcam-enabled visual context; strengthen mission-critical deployments with the Trendzact Ultrawide Webcam',
+        'Apply warnings, masking, lockout, escalation, or evidence preservation when workspace exposure risk appears'
       ],
       infographic: '#', vimeoUrl: '#'
     },
@@ -47,13 +50,13 @@ window.SOLUTION_CONTENT = {
       title: 'Identity Recognition Assurance',
       iconImage: ICON_BASE + 'imposters-identity-spoofing-no-text-tight.png',
       iconAlt: 'Identity Recognition Assurance icon',
-      summary: 'Confirm that the right person is present while sensitive information is visible, not only that someone authenticated earlier. ' + ANCHOR_TAIL,
+      summary: 'Confirm the right person is present while sensitive information is visible. Identity Recognition Assurance separates login authentication from real-time identity confidence during an active exposure moment. ' + ANCHOR_TAIL,
       tags: ['IRA', 'Identity', 'Presence', 'Webcam Required', 'Active Session'],
       bullets: [
         'Verify user presence and identity confidence during sensitive work',
-        'Detect when an authorized user leaves and another person continues the active session',
-        'Identify unknown observers, multiple people, proxy work, or credential-sharing risk',
-        'Trigger re-verification, lockout, escalation, or evidence preservation when identity confidence drops'
+        'Detect user absence, proxy work, session handoff, credential sharing, or another person taking over an active session',
+        'Identify unknown observers, multiple people, or identity confidence drops during regulated workflows',
+        'Trigger step-up verification, session lock, escalation, or evidence preservation when identity assurance weakens'
       ],
       infographic: '#', vimeoUrl: '#'
     },
@@ -62,11 +65,11 @@ window.SOLUTION_CONTENT = {
       title: 'Secure Virtual Meeting',
       iconImage: ICON_BASE + 'virtual-meeting-screenshare-exposure-no-text-tight.png',
       iconAlt: 'Secure Virtual Meeting icon',
-      summary: 'Control sensitive data exposure during virtual meetings, screen sharing, recordings, participant changes, and external collaboration. ' + ANCHOR_TAIL,
+      summary: 'Control sensitive data exposure during virtual meetings, screen sharing, recordings, participant changes, and external collaboration. Secure Virtual Meeting helps prevent authorized meetings from becoming unauthorized exposure events. ' + ANCHOR_TAIL,
       tags: ['SVM', 'Screenshare', 'External Participants', 'Recording Risk', 'Collaboration'],
       bullets: [
-        'Detect sensitive information exposed during screen sharing or collaboration',
-        'Evaluate whether the meeting audience is appropriate for the visible data',
+        'Detect sensitive information visible during screen sharing or collaboration',
+        'Evaluate whether the meeting audience is appropriate for the data being exposed',
         'Identify external participants, unauthorized attendees, participant changes, or recording conditions',
         'Warn, mask, restrict, stop sharing, escalate, or preserve evidence based on meeting context'
       ],
@@ -77,10 +80,10 @@ window.SOLUTION_CONTENT = {
       title: 'Insider Threat Management',
       iconImage: ICON_BASE + 'insider-risk-exfiltration-behavior-no-text-tight.png',
       iconAlt: 'Insider Threat Management icon',
-      summary: 'Detect risky, privileged, negligent, stealth, or malicious exposure behaviors that may indicate misuse, policy evasion, or escalating risk. ' + ANCHOR_TAIL,
+      summary: 'Detect risky, privileged, negligent, stealth, or malicious behavior around visible sensitive data. Insider Threat Management focuses on repeated patterns, policy evasion, misuse, and escalating exposure behavior. ' + ANCHOR_TAIL,
       tags: ['ITM', 'Insider Risk', 'Behavior', 'Privileged Users', 'SOC'],
       bullets: [
-        'Detect risky behavior around screenshots, screen recordings, copy/paste, staging, or shadow tools',
+        'Detect risky behavior around screenshots, screen recordings, clipboard, staging, shadow tools, or unauthorized apps',
         'Evaluate repeated or escalating exposure patterns across sessions and workflows',
         'Identify suspicious activity by privileged users or users in high-risk employment periods',
         'Create evidence-backed signals for security, compliance, HR, legal, and SOC review'
@@ -92,13 +95,61 @@ window.SOLUTION_CONTENT = {
       title: 'Exposure Data Loss Prevention',
       iconImage: ICON_BASE + 'on-screen-sensitive-data-exposure-no-text-tight.png',
       iconAlt: 'Exposure Data Loss Prevention icon',
-      summary: 'Extend DLP beyond files and transfers to include visible data, user behavior, application activity, location, timing, workflow context, and governable evidence. ' + ANCHOR_TAIL,
+      summary: 'Extend DLP beyond files, transfers, and repositories to include visible data, user behavior, application activity, location, timing, workflow context, and governable evidence. EDLP controls exposure even when no file leaves the system. ' + ANCHOR_TAIL,
       tags: ['EDLP', 'Visible Data', 'DLP Extension', 'Application Context', 'Evidence'],
       bullets: [
-        'Detect sensitive data exposure even when no file is transferred',
+        'Detect sensitive data exposure when information is visible on screen, copied, captured, handled, or shown in the wrong context',
         'Evaluate visible content, clipboard movement, application usage, workflow, time, location, and policy context',
-        'Use workstation and laptop signals to provide additional context and evidence for control actions',
-        'Convert exposure signals into real-time controls and audit-ready proof'
+        'Use endpoint and workstation context to support real-time control decisions',
+        'Convert visible-data exposure into policy action and audit-ready proof'
+      ],
+      infographic: '#', vimeoUrl: '#'
+    }
+  ],
+
+  enhancements: [
+    {
+      id: 'enh-ultrawide-webcam',
+      title: 'Trendzact Ultrawide Webcam',
+      iconImage: ICON_BASE + 'workspace-exposure-no-text-tight.png',
+      iconAlt: 'Ultrawide webcam enhancement icon',
+      summary: 'For mission-critical sensitive data and top corporate secrets, the Trendzact Ultrawide Webcam expands workspace context with a 180-degree field of view. It is best suited for Secure Workspace deployments where narrow camera visibility is not enough. ' + ANCHOR_TAIL,
+      tags: ['Enhancement', 'Ultrawide Webcam', '180 Degree Field of View', 'Mission Critical', 'Workspace'],
+      bullets: [
+        'Recommended for board materials, M&A, legal strategy, source code, regulated records, and top corporate secrets',
+        'Improves detection of observers, mobile phones, secondary displays, nearby documents, and wider workspace conditions',
+        'Strengthens Secure Workspace and identity-aware exposure decisions for high-value workflows',
+        'Helps prove what was around the sensitive data at the moment exposure occurred'
+      ],
+      infographic: '#', vimeoUrl: '#'
+    },
+    {
+      id: 'enh-multi-display-screen-recording',
+      title: 'Multi-Display Screen Recording',
+      iconImage: ICON_BASE + 'evidence-what-can-be-proven.png',
+      iconAlt: 'Multi-display screen recording enhancement icon',
+      summary: 'Multi-Display Screen Recording preserves governed evidence across one or more screens when exposure risk requires replayable context. Recording can be always-on for mission-critical workflows or alert-triggered when policy conditions escalate. ' + ANCHOR_TAIL,
+      tags: ['Enhancement', 'Multi-Display', 'Screen Recording', 'Evidence', 'Governance'],
+      bullets: [
+        'Supports always-on or alert-triggered capture depending on policy and risk tier',
+        'Can preserve pre-alert and post-alert context where supported',
+        'Optional obfuscation, masking, or redaction can reduce unnecessary sensitive image exposure',
+        'Evidence access can be restricted to highest-admin roles with audit trails and role-based review controls'
+      ],
+      infographic: '#', vimeoUrl: '#'
+    },
+    {
+      id: 'enh-workstation-laptop-scan',
+      title: 'Computer Workstation / Laptop Scan',
+      iconImage: ICON_BASE + 'context-why-exposure-matters.png',
+      iconAlt: 'Workstation and laptop scan enhancement icon',
+      summary: 'Computer Workstation / Laptop Scan enriches exposure decisions with 100+ endpoint and session signals. These signals provide additional context and evidence for why the platform allowed, warned, restricted, blocked, escalated, or preserved an event. ' + ANCHOR_TAIL,
+      tags: ['Enhancement', '100+ Signals', 'Endpoint Context', 'Evidence', 'Explainable Action'],
+      bullets: [
+        'Adds context from applications, windows, clipboard, displays, devices, session state, foreground activity, location, timing, and policy conditions',
+        'Helps distinguish normal work from suspicious, negligent, policy-violating, or escalating behavior',
+        'Improves explainability for automated controls and SOC review',
+        'Provides supporting evidence for enforcement, investigation, audit, and compliance workflows'
       ],
       infographic: '#', vimeoUrl: '#'
     }
@@ -143,7 +194,7 @@ window.SOLUTION_CONTENT = {
       summary: 'Prevent authorized meetings from becoming unauthorized exposure events when sensitive data appears during screen share or collaboration. ' + ANCHOR_TAIL,
       tags: ['solution:secure-virtual-meeting', 'SVM', 'Screenshare', 'External Participants', 'Meeting Risk'],
       bullets: [
-        'A user shares the wrong window or exposes restricted data during a vendor or customer meeting',
+        'A user shares the wrong window or exposes restricted data during a vendor, customer, partner, or executive meeting',
         'External participants or unknown attendees are present while confidential information is visible',
         'Meeting recording or screenshot activity creates governed evidence risk',
         'Trendzact can warn, mask, restrict exposure, stop sharing, escalate, or preserve evidence'
@@ -263,7 +314,7 @@ window.SOLUTION_CONTENT = {
       title: 'Hospital System Protects PHI in Remote Workspaces',
       iconImage: ICON_BASE + 'hospital-system.png',
       iconAlt: 'Hospital system icon',
-      summary: 'A regional health system used Secure Workspace to reduce PHI visibility risk across remote billing, coding, and claims workspaces. ' + ANCHOR_TAIL,
+      summary: 'A regional health system used Secure Workspace to reduce PHI visibility risk across remote billing, coding, claims, and telework environments where sensitive data was visible beyond the application boundary. ' + ANCHOR_TAIL,
       tags: ['solution:secure-workspace', 'SW', 'Healthcare', 'PHI', 'Workspace'],
       bullets: [
         'PHI exposure detected in remote and hybrid workspaces',
@@ -278,7 +329,7 @@ window.SOLUTION_CONTENT = {
       title: 'Insurance Carrier Strengthens Identity Assurance for Claims Adjusters',
       iconImage: ICON_BASE + 'insurance-carrier.png',
       iconAlt: 'Insurance carrier icon',
-      summary: 'An insurance carrier used Identity Recognition Assurance to verify user presence during high-value claim approvals and PII access. ' + ANCHOR_TAIL,
+      summary: 'An insurance carrier used Identity Recognition Assurance to verify user presence and reduce active-session misuse risk during high-value claim approvals and PII access. ' + ANCHOR_TAIL,
       tags: ['solution:identity-recognition-assurance', 'IRA', 'Insurance', 'PII', 'Claims'],
       bullets: [
         'Identity verified when sensitive claim and PII data became visible',
@@ -293,7 +344,7 @@ window.SOLUTION_CONTENT = {
       title: 'SaaS Company Protects IP During Remote Collaboration',
       iconImage: ICON_BASE + 'saas-software-company.png',
       iconAlt: 'SaaS software company icon',
-      summary: 'A SaaS company used Secure Virtual Meeting to reduce IP leakage during distributed product, roadmap, and engineering reviews. ' + ANCHOR_TAIL,
+      summary: 'A SaaS company used Secure Virtual Meeting to reduce IP leakage during distributed roadmap, product, engineering, customer, and partner collaboration sessions. ' + ANCHOR_TAIL,
       tags: ['solution:secure-virtual-meeting', 'SVM', 'Technology', 'IP', 'Screenshare'],
       bullets: [
         'Sensitive product and engineering content detected during screen sharing',
@@ -308,7 +359,7 @@ window.SOLUTION_CONTENT = {
       title: 'Global Bank Reduces Insider Exposure Risk',
       iconImage: ICON_BASE + 'global-bank.png',
       iconAlt: 'Global bank icon',
-      summary: 'A tier-1 bank used Insider Threat Management to identify risky data handling before sensitive information left controlled environments. ' + ANCHOR_TAIL,
+      summary: 'A tier-1 bank used Insider Threat Management to identify risky handling of visible sensitive data before screenshots, clipboard movement, staging, or shadow tools became data loss. ' + ANCHOR_TAIL,
       tags: ['solution:insider-threat-management', 'ITM', 'Financial Services', 'Insider Risk', 'SOC'],
       bullets: [
         'Sensitive data access and handling patterns evaluated in real time',
@@ -323,7 +374,7 @@ window.SOLUTION_CONTENT = {
       title: 'Utility Controls Visible OT-Adjacent Sensitive Data',
       iconImage: ICON_BASE + 'public-utilities.png',
       iconAlt: 'Public utilities icon',
-      summary: 'A utility used Exposure Data Loss Prevention to reduce exposure of SCADA configuration, drawings, and engineering data on office and engineering endpoints. ' + ANCHOR_TAIL,
+      summary: 'A utility used Exposure Data Loss Prevention to reduce exposure of SCADA configuration, drawings, engineering data, and OT-adjacent information visible on office and engineering endpoints. ' + ANCHOR_TAIL,
       tags: ['solution:exposure-data-loss-prevention', 'EDLP', 'Energy / Utilities', 'Engineering Data', 'Visible Data'],
       bullets: [
         'SCADA configuration and engineering drawings detected when visible',
