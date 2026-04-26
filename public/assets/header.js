@@ -16,12 +16,12 @@
     { href: '/live-demo.html',      label: 'Demos' },
     { href: '/gtm-playbook.html',   label: 'Sales Playbook' },
     { href: '/resources.html',      label: 'Resources' },
+    { href: '/contact.html',        label: 'Contact' },
     { href: '/proposal',            label: 'Proposal Builder', cta: true }
   ];
 
   const DRAWER_ITEMS = [
     ...NAV_ITEMS,
-    { href: '/contact.html',        label: 'Contact' },
     { href: '/grc-one.html',        label: 'GRC One' }
   ];
 
