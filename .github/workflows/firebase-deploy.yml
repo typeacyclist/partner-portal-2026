@@ -1,5 +1,9 @@
 name: Deploy to Firebase Hosting
 
+env:
+  # Opt JavaScript actions into Node 24 runtime ahead of runner default migration.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches: [main]
@@ -12,39 +16,55 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: functions/package-lock.json
+      - name: Checkout repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach "${GITHUB_SHA}"
+      - name: Show Node/npm versions
+        run: node --version && npm --version
       - name: Install function dependencies
         run: cd functions && npm ci
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+      - name: Authenticate to Firebase
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          SA_PATH="${RUNNER_TEMP}/firebase-sa.json"
+          printf '%s' "${FIREBASE_SERVICE_ACCOUNT}" > "${SA_PATH}"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${SA_PATH}" >> "${GITHUB_ENV}"
       - name: Deploy preview
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
-          expires: 7d
+        run: firebase hosting:channel:deploy "pr-${{ github.event.pull_request.number }}" --expires 7d --project "${{ secrets.FIREBASE_PROJECT_ID }}"
 
   # Production deploy on merge to main
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: functions/package-lock.json
+      - name: Checkout repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach "${GITHUB_SHA}"
+      - name: Show Node/npm versions
+        run: node --version && npm --version
       - name: Install function dependencies
         run: cd functions && npm ci
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+      - name: Authenticate to Firebase
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          SA_PATH="${RUNNER_TEMP}/firebase-sa.json"
+          printf '%s' "${FIREBASE_SERVICE_ACCOUNT}" > "${SA_PATH}"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${SA_PATH}" >> "${GITHUB_ENV}"
       - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
-          channelId: live
+        run: firebase deploy --only hosting --project "${{ secrets.FIREBASE_PROJECT_ID }}"
