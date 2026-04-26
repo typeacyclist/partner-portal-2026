@@ -4,23 +4,14 @@
 // Reads window.SOLUTION_CONTENT (defined in solution-content.js) and
 // renders cards into #cards-mount on the /discover page.
 //
-// For each card, always renders three asset icons (consistent layout):
+// For each card, always renders three asset links plus a visual card icon:
 //   - Details      (document icon)  → Firebase Storage file
 //   - Infographic  (image icon)     → Firebase Storage file
 //   - Explainer Video (play icon)   → Vimeo URL
+//   - Card icon     (image)          → Firebase Storage file / URL
 //
-// When a card's value is '#' (placeholder), the icon renders disabled
-// instead of being hidden — keeps the asset row visually consistent
-// across all cards even before real assets are uploaded.
-//
-// Firebase Storage paths get resolved to download URLs on click. We could
-// resolve them up-front at render time, but that triggers N Storage lookups
-// per page load. Lazy resolution on click is faster and uses fewer requests.
-//
-// Exposure Vector cards (formerly Products) render the two-column layout
-// with Key Capabilities + Business Outcomes bullets. All other card
-// types (solutions, use cases, case studies, buyers) render the compact
-// unified shape: badge / title / summary / chips / bullets / asset row.
+// Firebase Storage paths get resolved to download URLs on click for assets
+// and lazily after render for card icons.
 
 import {
   getStorage,
@@ -28,11 +19,8 @@ import {
   getDownloadURL
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
-// Default visual guide icon for every Discover card. Individual cards can
-// override this with `iconImage`, `cardIcon`, or `iconUrl` in solution-content.js.
 const DEFAULT_CARD_ICON = 'gs://trendzact-partners-001.firebasestorage.app/icons/Trendzact Favicon (green).png';
 
-// Inline SVG icons (kept tiny, brand-colored via currentColor)
 const ICON_REPORT = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>`;
 const ICON_INFOGRAPHIC = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
 const ICON_VIDEO = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
@@ -81,10 +69,9 @@ function renderCardIcon(card) {
       </div>`;
 }
 
-function renderCardTypeRow(card, meta) {
+function renderCardTypeRow(meta) {
   return `
       <div class="card-type-row">
-        ${renderCardIcon(card)}
         <span class="${meta.className}">${meta.tag}</span>
       </div>`;
 }
@@ -119,15 +106,9 @@ async function resolveCardIcons() {
   }));
 }
 
-/** Renders the asset icon row.
- *  Always renders all three icons (Details / Infographic / Video).
- *  When a card's value is '#' (placeholder), the icon renders in a
- *  disabled state with no click handler — visually present so the card
- *  layout stays consistent, but obviously not actionable. */
 function renderAssetRow(card) {
   const parts = [];
 
-  // Details (formerly Report)
   parts.push(renderAssetIcon({
     value: card.technicalReport,
     title: 'Details',
@@ -137,7 +118,6 @@ function renderAssetRow(card) {
     isExternal: false
   }));
 
-  // Infographic
   parts.push(renderAssetIcon({
     value: card.infographic,
     title: 'Infographic',
@@ -147,7 +127,6 @@ function renderAssetRow(card) {
     isExternal: false
   }));
 
-  // Video (Vimeo URL — opens directly, no Storage lookup)
   parts.push(renderAssetIcon({
     value: card.vimeoUrl,
     title: 'Explainer Video',
@@ -157,28 +136,25 @@ function renderAssetRow(card) {
     isExternal: true
   }));
 
+  parts.push(renderCardIcon(card));
+
   return `<div class="asset-row">${parts.join('')}</div>`;
 }
 
-/** Renders one asset icon. Disabled state if value is missing or '#'. */
 function renderAssetIcon({ value, title, label, icon, kind, isExternal }) {
   const isPlaceholder = !value || value === '#';
 
   if (isPlaceholder) {
-    // Disabled — span instead of <a>, no click handler attached
     return `<span class="asset-icon asset-icon-disabled" title="${escapeHtml(title)} (coming soon)" aria-disabled="true">${icon}<span>${escapeHtml(label)}</span></span>`;
   }
 
   if (isExternal) {
-    // External URL (e.g. Vimeo) — open directly
     return `<a href="${escapeHtml(value)}" target="_blank" rel="noopener" class="asset-icon" title="${escapeHtml(title)}">${icon}<span>${escapeHtml(label)}</span></a>`;
   }
 
-  // Firebase Storage path — resolved on click
   return `<a href="#" class="asset-icon" title="${escapeHtml(title)}" data-asset-type="storage" data-asset-path="${escapeHtml(value)}" data-asset-kind="${escapeHtml(kind)}">${icon}<span>${escapeHtml(label)}</span></a>`;
 }
 
-/** Render a bulleted list. Returns empty string if list is empty/missing. */
 function renderBullets(items) {
   if (!items || !items.length) return '';
   return `<ul class="check-list">${
@@ -186,37 +162,16 @@ function renderBullets(items) {
   }</ul>`;
 }
 
-// ------------------------------------------------------------------
-// Tag classification
-// ------------------------------------------------------------------
-// The data file stores three kinds of strings inside each card's `tags` array:
-//
-//  1. Module/product tags  (e.g. 'Edge DLP', 'ITM', 'GRC1 Core')
-//     → render as the normal chip below the title
-//
-//  2. Vector tags  (lowercase canonical names like 'visibility', 'presence')
-//     → render in a separate, smaller, muted row underneath the module
-//       chips, so partners can see which vectors a use case combines
-//       without the row dominating the card visually
-//
-//  3. Structural metadata tags  (`primary:<vector>` on solutions)
-//     → never rendered. They're metadata for code (e.g. for the future
-//       "primary vector" badge or for the Compare table), not display
-//
-// VECTOR_TAG_SET defines the canonical lowercase vector tag values
-// recognized as belonging to category 2.
 const VECTOR_TAG_SET = new Set([
   'visibility', 'presence', 'environment', 'behavior',
   'context', 'continuity', 'evidence', 'control'
 ]);
 
-/** Split a card's tags into module tags vs vector tags, dropping metadata. */
 function splitTags(rawTags) {
   const moduleTags = [];
   const vectorTags = [];
   for (const t of (rawTags || [])) {
     if (typeof t !== 'string') continue;
-    // Drop structural metadata like 'primary:behavior'
     if (t.startsWith('primary:')) continue;
     if (VECTOR_TAG_SET.has(t.toLowerCase())) {
       vectorTags.push(t);
@@ -227,7 +182,6 @@ function splitTags(rawTags) {
   return { moduleTags, vectorTags };
 }
 
-/** Render the smaller, muted row of vector chips. Empty string if none. */
 function renderVectorTagRow(vectorTags) {
   if (!vectorTags.length) return '';
   const chips = vectorTags
@@ -241,13 +195,6 @@ function renderTag(tag, variant) {
   return `<span class="${cls}">${escapeHtml(tag)}</span>`;
 }
 
-/**
- * Two-column card with Key Capabilities + Business Outcomes bullets.
- * Originally built for the old Products page; now used for Exposure Vector
- * cards on Discover. CSS classes keep the `product-card` naming for
- * backward compatibility with styles.css; they describe layout, not
- * semantic card type.
- */
 function renderProductStyleCard(card, typeKey) {
   const meta = TYPE_LABELS[typeKey];
   const filterKey = TYPE_FILTER_KEY[typeKey];
@@ -260,7 +207,7 @@ function renderProductStyleCard(card, typeKey) {
   return `
     <article class="card product-card sb-product-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}" data-category="${escapeHtml((card.category || '').toUpperCase())}">
       <div class="product-card-head">
-        ${renderCardTypeRow(card, meta)}
+        ${renderCardTypeRow(meta)}
         <h3>${escapeHtml(card.title)}</h3>
         ${card.summary ? `<p class="product-summary">${escapeHtml(card.summary)}</p>` : ''}
       </div>
@@ -291,13 +238,11 @@ function renderCompactCard(card, typeKey) {
   const tagsHtml = moduleTags.map(t => renderTag(t, typeKey === 'useCases' ? 'gray' : null)).join('');
   const vectorTagsHtml = renderVectorTagRow(vectorTags);
   const assetRow = renderAssetRow(card);
-  // Accept `summary` as the unified field; fall back to `description` for
-  // backward compatibility with any card blocks that haven't been migrated.
   const summaryText = card.summary || card.description || '';
 
   return `
     <div class="card sb-unified-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}">
-      ${renderCardTypeRow(card, meta)}
+      ${renderCardTypeRow(meta)}
       <h3>${escapeHtml(card.title)}</h3>
       ${summaryText ? `<p class="card-summary">${escapeHtml(summaryText)}</p>` : ''}
       ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
@@ -308,8 +253,6 @@ function renderCompactCard(card, typeKey) {
 }
 
 function renderCard(card, typeKey) {
-  // Exposure Vector cards use the full two-column layout with Key Capabilities
-  // + Business Outcomes bullets. All other types use the compact layout.
   if (typeKey === 'vectors') {
     return renderProductStyleCard(card, typeKey);
   }
@@ -335,9 +278,6 @@ function renderAllCards() {
   mount.innerHTML = html.join('\n');
 }
 
-// ------------------------------------------------------------------
-// Asset click handler — resolves Firebase Storage path to download URL
-// ------------------------------------------------------------------
 async function handleAssetClick(e) {
   const link = e.target.closest('[data-asset-type="storage"]');
   if (!link) return;
@@ -347,13 +287,11 @@ async function handleAssetClick(e) {
   const kind = link.dataset.assetKind;
   if (!path) return;
 
-  // If it's already a full URL, just open it
   if (isHttpUrl(path)) {
     window.open(path, '_blank', 'noopener');
     return;
   }
 
-  // Show loading state on the link
   const originalHtml = link.innerHTML;
   link.style.pointerEvents = 'none';
   link.innerHTML = `<span class="asset-spinner"></span><span>Loading…</span>`;
@@ -375,17 +313,11 @@ async function handleAssetClick(e) {
   }
 }
 
-// ------------------------------------------------------------------
-// Init — wait for auth so Storage reads are authenticated
-// ------------------------------------------------------------------
 function init() {
   renderAllCards();
   resolveCardIcons();
   setTimeout(resolveCardIcons, 300);
   document.addEventListener('click', handleAssetClick);
-
-  // Re-apply filter state if app.js already loaded
-  // (app.js wires up the chips + search — it needs cards in the DOM to filter)
   document.dispatchEvent(new CustomEvent('solution-cards-rendered'));
 }
 
