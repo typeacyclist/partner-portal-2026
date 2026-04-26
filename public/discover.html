@@ -37,19 +37,25 @@
   }
 
   /* Visual card icon — helps multilingual / ESL users quickly distinguish
-     Discover card concepts. The icon is inline with the card type badge to
-     conserve vertical and horizontal space. */
+     Discover card concepts. The type badge stays far left while the icon sits
+     at the far right of the same row to conserve space. */
   .card-type-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
+    gap: 12px;
     margin: 0 0 10px;
+  }
+  .card-type-row .tag {
+    order: 1;
   }
   .card-icon-wrap {
     position: relative;
+    order: 2;
     flex: 0 0 auto;
     width: 26px;
     height: 26px;
+    margin-left: auto;
     border-radius: 8px;
     border: 1px solid var(--border-soft);
     background: var(--tint-light);
