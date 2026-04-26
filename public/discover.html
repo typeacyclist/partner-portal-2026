@@ -27,36 +27,34 @@
     border: 0;
   }
 
-  /* The shared .filter-chips rule adds a top border + padding designed for
-     when chips sit under a search input. On Discover, chips sit under the
-     lede and intro video, so we drop those ornaments. */
   .page-head .filter-chips {
     border-top: 0;
     padding-top: 0;
     margin-top: 20px;
   }
 
-  /* Visual card icon — helps multilingual / ESL users quickly distinguish
-     Discover card concepts. The type badge stays far left while the icon sits
-     at the far right of the same row to conserve space. */
   .card-type-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
     margin: 0 0 10px;
   }
-  .card-type-row .tag {
-    order: 1;
+
+  /* Visual card icon — sits at the far right of the asset/link row:
+     Details | Infographic | Video --> Icon. Size is 2x the prior 26px. */
+  .asset-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .asset-row .card-icon-wrap {
+    margin-left: auto;
   }
   .card-icon-wrap {
     position: relative;
-    order: 2;
     flex: 0 0 auto;
-    width: 26px;
-    height: 26px;
-    margin-left: auto;
-    border-radius: 8px;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
     border: 1px solid var(--border-soft);
     background: var(--tint-light);
     display: inline-flex;
@@ -66,10 +64,10 @@
   }
   .card-icon-placeholder {
     font-family: var(--ff-mono), monospace;
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--med-green);
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
   }
   .card-icon-img {
     position: absolute;
@@ -77,18 +75,13 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    padding: 4px;
+    padding: 7px;
     background: var(--tint-light);
   }
   .card-icon-wrap.has-image .card-icon-placeholder {
     display: none;
   }
 
-  /* Unified SB card layout —
-     badge / title / summary / chips / bullets / links row.
-     The summary sits tight under the h3; chips below summary;
-     bullets separated from chips by a thin top border to give
-     them a visual 'content block' feel. */
   .card.sb-unified-card { scroll-margin-top: 90px; }
   .card.sb-unified-card .card-summary {
     font-size: 14px;
@@ -114,9 +107,6 @@
   }
   .card.sb-unified-card .card-more { margin-top: 14px; }
 
-  /* Vector tag row — sits below the module/product chips on Use Case
-     and (optionally) Vector cards. Smaller, muted pills with a tinted
-     fill so they read as metadata, not primary content. */
   .card-vector-tags {
     display: flex;
     flex-wrap: wrap;
@@ -137,9 +127,6 @@
     font-weight: 500;
   }
 
-  /* Asset row — every card always renders 3 icons (Details, Infographic,
-     Video). When the card has no real value (placeholder '#'), the icon
-     renders as a non-clickable span with a muted grey appearance. */
   .asset-icon-disabled {
     color: var(--border);
     cursor: not-allowed;
@@ -183,15 +170,12 @@
     </div>
   </header>
 
-  <!-- Cards grid -->
   <section>
     <div class="card-grid" id="cards-mount">
-      <!-- Cards rendered by /assets/solution-render.js from /assets/solution-content.js -->
       <p style="color: var(--med-gray); font-size: 14px; padding: 20px 0;">Loading cards…</p>
     </div>
   </section>
 
-  <!-- Next step panel -->
   <section class="section" style="margin-top:56px;">
     <div class="card" style="background:var(--tint-light); border-color:var(--med-green);">
       <span class="next-step">Next Step</span>
