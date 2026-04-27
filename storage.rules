@@ -3,21 +3,49 @@ rules_version = '2';
 // Firebase Storage security rules
 // Deploy with: firebase deploy --only storage
 //
-// Rule: only authenticated users can read files. No one can write except
-// via the Firebase console (admins) or Cloud Functions using the Admin SDK.
+// Public read is allowed only for partner enablement media folders used by
+// the static Firebase-hosted portal. These are referenced by browser-native
+// image, audio, video, and PDF URLs.
 //
-// If you need some files to be publicly readable (e.g. a promo video
-// on the unauthenticated marketing page), add a separate `match` block
-// with `allow read;` for that specific path prefix.
+// All other files remain readable only by authenticated users.
+// Client-side writes are blocked globally.
 
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      // Any signed-in user can read any file
-      allow read: if request.auth != null;
+    // Public partner-portal media and document assets
+    match /site_icons/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
 
-      // No client-side writes. Admins upload via the Firebase console;
-      // programmatic uploads use the Admin SDK in Cloud Functions.
+    match /audio_podcast_explainer/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /exec_summary_reports_pdf/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /infographics/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /slide_decks/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /video_explainers/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Default: signed-in users can read other files; no client writes.
+    match /{allPaths=**} {
+      allow read: if request.auth != null;
       allow write: if false;
     }
   }
