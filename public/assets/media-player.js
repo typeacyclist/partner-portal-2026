@@ -54,6 +54,29 @@
     return 'unknown';
   }
 
+  function filenameFromSource(src) {
+    const raw = String(src || '').trim();
+    if (!raw) return 'Media Preview';
+
+    let path = raw;
+
+    try {
+      if (isAbsoluteUrl(raw)) {
+        const parsed = new URL(raw);
+        const objectParam = parsed.pathname.split('/o/')[1];
+        path = objectParam ? decodeURIComponent(objectParam) : parsed.pathname;
+      } else if (isGsUrl(raw)) {
+        path = objectPathFromGsUrl(raw);
+      }
+    } catch (err) {
+      path = raw;
+    }
+
+    const cleanPath = path.split('?')[0].split('#')[0];
+    const filename = cleanPath.substring(cleanPath.lastIndexOf('/') + 1);
+    return filename ? filename.replace(/\+/g, ' ') : 'Media Preview';
+  }
+
   function setPlayingState(isPlaying) {
     if (!playBtn || !pauseBtn) return;
     playBtn.disabled = isPlaying;
@@ -196,8 +219,9 @@
     const src = options.src || '';
     const mediaUrl = toFirebaseDownloadUrl(src);
     const type = inferType(src, options.type);
+    const filenameTitle = filenameFromSource(src || mediaUrl);
 
-    titleEl.textContent = options.title || 'Media Preview';
+    titleEl.textContent = filenameTitle;
     openLinkEl.href = mediaUrl;
     openLinkEl.style.display = mediaUrl ? '' : 'none';
     errorEl.classList.remove('open');
@@ -228,7 +252,7 @@
       const img = document.createElement('img');
       img.className = 'media-modal-image';
       img.src = mediaUrl;
-      img.alt = options.title || 'Media preview';
+      img.alt = filenameTitle;
       bodyEl.appendChild(img);
     } else {
       showError('Unsupported media type. Use .mp4 video, .m4a audio, or .jpg/.png image assets.');
@@ -253,7 +277,6 @@
 
       event.preventDefault();
       openMedia({
-        title: trigger.dataset.mediaTitle || trigger.textContent.trim() || 'Media Preview',
         src: trigger.dataset.mediaSrc || trigger.getAttribute('href') || '',
         type: trigger.dataset.mediaType || ''
       });
@@ -268,6 +291,7 @@
   window.TrendzactMediaPlayer = {
     open: openMedia,
     close: closeModal,
-    toFirebaseDownloadUrl: toFirebaseDownloadUrl
+    toFirebaseDownloadUrl: toFirebaseDownloadUrl,
+    filenameFromSource: filenameFromSource
   };
 })();
