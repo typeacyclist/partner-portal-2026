@@ -7,9 +7,19 @@
 // ========================================================================
 
 const ANCHOR_TAIL = 'This allows organizations to understand, decide, and act at the exact moment exposure occurs, rather than relying on delayed detection and response.';
-const ICON_BASE = 'gs://trendzact-partners-001.firebasestorage.app/site_icons/';
-const REPORT_BASE = 'gs://trendzact-partners-001.firebasestorage.app/report-explainers/';
-const REPORT_PDF_BASE = 'gs://trendzact-partners-001.firebasestorage.app/exec_summary_reports_pdf/';
+const STORAGE_BASE = 'gs://trendzact-partners-001.firebasestorage.app/';
+const ASSET_BASES = {
+  audioExplainer: STORAGE_BASE + 'audio_podcast_explainer/',
+  summaryReports: STORAGE_BASE + 'exec_summary_reports_pdf/',
+  infoGraphics: STORAGE_BASE + 'infographics/',
+  siteIcons: STORAGE_BASE + 'site_icons/',
+  slideDecks: STORAGE_BASE + 'slide_decks/',
+  videoExplainers: STORAGE_BASE + 'video_explainers/'
+};
+
+const ICON_BASE = ASSET_BASES.siteIcons;
+
+window.SOLUTION_ASSET_BASES = ASSET_BASES;
 
 window.SOLUTION_CONTENT = {
   platform: [
@@ -26,10 +36,12 @@ window.SOLUTION_CONTENT = {
         'Uses Understand → Decide → Act as the operating model for real-time exposure control',
         'Turns silent exposure uncertainty into proof, context, and governable action'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'platform_sdec.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     }
   ],
 
@@ -47,10 +59,12 @@ window.SOLUTION_CONTENT = {
         'Use webcam-enabled visual context; strengthen mission-critical deployments with the Trendzact Ultrawide Webcam',
         'Apply warnings, masking, lockout, escalation, or evidence preservation when workspace exposure risk appears'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'solution_secure_workspace.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'identity-recognition-assurance',
@@ -65,10 +79,12 @@ window.SOLUTION_CONTENT = {
         'Identify unknown observers, multiple people, or identity confidence drops during regulated workflows',
         'Trigger step-up verification, session lock, escalation, or evidence preservation when identity assurance weakens'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'solution_identity_assurance.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'secure-virtual-meeting',
@@ -83,10 +99,12 @@ window.SOLUTION_CONTENT = {
         'Identify external participants, unauthorized attendees, participant changes, or recording conditions',
         'Warn, mask, restrict, stop sharing, escalate, or preserve evidence based on meeting context'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'solution_secure_virtual_meeting.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'insider-threat-management',
@@ -101,10 +119,12 @@ window.SOLUTION_CONTENT = {
         'Identify suspicious activity by privileged users or users in high-risk employment periods',
         'Create evidence-backed signals for security, compliance, HR, legal, and SOC review'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'solution_insider_threat_management.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'exposure-data-loss-prevention',
@@ -119,10 +139,12 @@ window.SOLUTION_CONTENT = {
         'Use endpoint and workstation context to support real-time control decisions',
         'Convert visible-data exposure into policy action and audit-ready proof'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'solution_exposure_dlp.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     }
   ],
 
@@ -140,10 +162,12 @@ window.SOLUTION_CONTENT = {
         'Strengthens Secure Workspace and identity-aware exposure decisions for high-value workflows',
         'Helps prove what was around the sensitive data at the moment exposure occurred'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'enhancement_ultrawide_webcam.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'enh-multi-display-screen-recording',
@@ -158,10 +182,12 @@ window.SOLUTION_CONTENT = {
         'Optional obfuscation, masking, or redaction can reduce unnecessary sensitive image exposure',
         'Evidence access can be restricted to highest-admin roles with audit trails and role-based review controls'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'enhancement_multi_display_recording.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'enh-workstation-laptop-scan',
@@ -176,10 +202,12 @@ window.SOLUTION_CONTENT = {
         'Improves explainability for automated controls and SOC review',
         'Provides supporting evidence for enforcement, investigation, audit, and compliance workflows'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'enhancement_workstation_laptop_scan.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     }
   ],
 
@@ -197,10 +225,12 @@ window.SOLUTION_CONTENT = {
         'Trendzact Ultrawide Webcam improves coverage where top corporate secrets require broader workspace context',
         'Policy actions can warn, mask, restrict, escalate, or preserve evidence during exposure'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'usecase_secure_workspace_mission_critical.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'uc-identity-recognition-assurance',
@@ -215,10 +245,12 @@ window.SOLUTION_CONTENT = {
         'Presence confidence drops during privileged, regulated, or confidential workflows',
         'The platform can require re-verification, lock the session, escalate, or preserve evidence'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'usecase_identity_active_session_misuse.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'uc-secure-virtual-meeting',
@@ -233,10 +265,12 @@ window.SOLUTION_CONTENT = {
         'Meeting recording or screenshot activity creates governed evidence risk',
         'Trendzact can warn, mask, restrict exposure, stop sharing, escalate, or preserve evidence'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'usecase_virtual_meeting_screenshare_exposure.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'uc-insider-threat-management',
@@ -251,10 +285,12 @@ window.SOLUTION_CONTENT = {
         'Activity escalates during resignation, layoff, dispute, privileged access, or high-risk workflow periods',
         'Workstation and laptop signals add context and evidence for investigative and control actions'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'usecase_insider_repeated_risky_behavior.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'uc-exposure-data-loss-prevention',
@@ -269,10 +305,12 @@ window.SOLUTION_CONTENT = {
         'Location, time, role, policy, application, and workstation context determine whether exposure is appropriate',
         'The platform converts visible-data exposure into real-time control and governable evidence'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'usecase_visible_data_no_file_transfer.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     }
   ],
 
@@ -281,73 +319,105 @@ window.SOLUTION_CONTENT = {
       id: 'grc1-core', title: 'Visibility (What is visible)',
       iconImage: ICON_BASE + 'visibility-what-is-visible.png', iconAlt: 'Visibility icon',
       summary: 'Understand what sensitive data is visible at any moment. ' + ANCHOR_TAIL,
-      tags: [], moreInfoUrl: '#grc1-core',
+      tags: [], moreInfo: '#grc1-core',
       capabilities: ['Detect on-screen data visibility', 'Identify sensitive content exposure', 'Track screen and display context', 'Capture exposure events in real time'],
       outcomes: ['Know when and where data is exposed', 'Reduce blind spots in visibility', 'Improve exposure awareness across endpoints'],
-      technicalReport: REPORT_BASE + 'report-explainers-exposure-vector-grc1-core.pdf', infographic: '#', vimeoUrl: '#'
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'sia', title: 'Presence (Who is present)',
       iconImage: ICON_BASE + 'presence-who-is-present.png', iconAlt: 'Presence icon',
       summary: 'Understand who is present when data is exposed. ' + ANCHOR_TAIL,
-      tags: [], moreInfoUrl: '#sia',
+      tags: [], moreInfo: '#sia',
       capabilities: ['Verify user identity during sessions', 'Detect identity changes or absence', 'Track presence confidence over time', 'Link identity to exposure events'],
       outcomes: ['Confirm identity during exposure', 'Prevent unauthorized presence', 'Provide auditable identity assurance'],
-      technicalReport: REPORT_BASE + 'report-explainers-exposure-vector-sia.pdf', infographic: '#', vimeoUrl: '#'
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'swa', title: 'Environment (Where exposure occurs)',
       iconImage: ICON_BASE + 'environment-where-exposure-occurs.png', iconAlt: 'Environment icon',
       summary: 'Understand the environment where exposure occurs. ' + ANCHOR_TAIL,
-      tags: [], moreInfoUrl: '#swa',
+      tags: [], moreInfo: '#swa',
       capabilities: ['Detect observers and workspace conditions', 'Identify uncontrolled environments', 'Monitor physical exposure risks', 'Evaluate environmental context'],
       outcomes: ['Reduce exposure from physical conditions', 'Enforce workspace compliance', 'Improve environmental risk control'],
-      technicalReport: REPORT_BASE + 'report-explainers-exposure-vector-swa.pdf', infographic: '#', vimeoUrl: '#'
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'itm', title: 'Behavior (How exposure happens)',
       iconImage: ICON_BASE + 'behavior-how-exposure-happens.png', iconAlt: 'Behavior icon',
       summary: 'Understand how user behavior creates exposure risk. ' + ANCHOR_TAIL,
-      tags: [], moreInfoUrl: '#itm',
+      tags: [], moreInfo: '#itm',
       capabilities: ['Track user actions and interactions', 'Detect risky behavioral patterns', 'Link behavior to exposure events', 'Evaluate intent and context'],
       outcomes: ['Identify risky behavior early', 'Reduce insider-driven exposure', 'Improve behavioral risk understanding'],
-      technicalReport: REPORT_BASE + 'report-explainers-exposure-vector-itm.pdf', infographic: '#', vimeoUrl: '#'
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'edge-dlp', title: 'Control (Act in real time)',
       iconImage: ICON_BASE + 'control-act-in-real-time.png', iconAlt: 'Control icon',
       summary: 'Decide and act in real time to control exposure as it occurs—based on visibility, presence, and context. ' + ANCHOR_TAIL,
-      tags: [], moreInfoUrl: '#edge-dlp',
+      tags: [], moreInfo: '#edge-dlp',
       capabilities: ['Evaluate exposure using combined visibility, presence, and context signals', 'Apply masking and blocking controls', 'Trigger real-time interventions', 'Enforce policy at the endpoint', 'Automate response actions'],
       outcomes: ['Stop exposure in real time', 'Reduce reliance on delayed detection', 'Prevent data loss before it happens'],
-      technicalReport: REPORT_BASE + 'report-explainers-exposure-vector-edge-dlp.pdf', infographic: '#', vimeoUrl: '#'
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'vector-context', title: 'Context (Why exposure matters)',
       iconImage: ICON_BASE + 'context-why-exposure-matters.png', iconAlt: 'Context icon',
       summary: 'Evaluate why an exposure matters by incorporating data sensitivity, user role, and situational risk at the moment data is visible. ' + ANCHOR_TAIL,
-      tags: [], moreInfoUrl: '#vector-context',
+      tags: [], moreInfo: '#vector-context',
       capabilities: ['Sensitivity label integration (AIP / MIP / DG)', 'Role- and policy-based risk context', 'Time/session-aware conditions', 'Contextual risk scoring'],
       outcomes: ['Prioritize high-impact exposures', 'Reduce noise from low-risk events', 'Align controls to real business risk'],
-      technicalReport: REPORT_BASE + 'report-explainers-exposure-vector-vector-context.pdf', infographic: '#', vimeoUrl: '#'
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'vector-continuity', title: 'Continuity (Exposure over time)',
       iconImage: ICON_BASE + 'continuity-exposure-over-time.png', iconAlt: 'Continuity icon',
       summary: 'Track how exposure evolves across a session to detect persistence, escalation, and patterns—not just single events. ' + ANCHOR_TAIL,
-      tags: [], moreInfoUrl: '#vector-continuity',
+      tags: [], moreInfo: '#vector-continuity',
       capabilities: ['Session timelines and sequence tracking', 'Persistence and repetition detection', 'Cross-event correlation within session', 'Countdown/suppression logic'],
       outcomes: ['Catch slow or repeated exposure patterns', 'Improve detection accuracy over time', 'Reduce alert fatigue via session context'],
-      technicalReport: REPORT_BASE + 'report-explainers-exposure-vector-vector-continuity.pdf', infographic: '#', vimeoUrl: '#'
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'vector-evidence', title: 'Evidence (What can be proven)',
       iconImage: ICON_BASE + 'evidence-what-can-be-proven.png', iconAlt: 'Evidence icon',
       summary: 'Generate audit-ready evidence tied to the exact moment of exposure, including visibility, presence, and actions taken. ' + ANCHOR_TAIL,
-      tags: [], moreInfoUrl: '#vector-evidence',
+      tags: [], moreInfo: '#vector-evidence',
       capabilities: ['Event-tied evidence capture (policy-gated)', 'Attributable timelines and artifacts', 'Privacy-aware minimization and redaction', 'Chain-of-custody logging'],
       outcomes: ['Defensible audit and investigation records', 'Faster, higher-confidence case resolution', 'Reduced data retention risk'],
-      technicalReport: REPORT_BASE + 'report-explainers-exposure-vector-vector-evidence.pdf', infographic: '#', vimeoUrl: '#'
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     }
   ],
 
@@ -365,10 +435,12 @@ window.SOLUTION_CONTENT = {
         'Workspace policy enforced continuously instead of relying on training alone',
         'Evidence preserved for compliance and investigation review'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'casestudy_hospital_phi_remote_workspace.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'cs-identity-recognition-insurance',
@@ -383,10 +455,12 @@ window.SOLUTION_CONTENT = {
         'Credential sharing and proxy-use risk reduced during claims workflows',
         'Identity evidence preserved for fraud and audit review'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'casestudy_insurance_identity_claims.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'cs-secure-virtual-meeting-saas',
@@ -401,10 +475,12 @@ window.SOLUTION_CONTENT = {
         'Screen exposure controlled without blocking normal collaboration',
         'IP exposure visibility extended across distributed teams'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'casestudy_saas_ip_remote_collaboration.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'cs-insider-threat-bank',
@@ -419,10 +495,12 @@ window.SOLUTION_CONTENT = {
         'Workstation signals added context and evidence for action decisions',
         'SOC review focused on high-confidence exposure events'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'casestudy_global_bank_insider_exposure.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     },
     {
       id: 'cs-edlp-utility',
@@ -437,10 +515,12 @@ window.SOLUTION_CONTENT = {
         'Behavioral and application context evaluated without disrupting operations',
         'Governable evidence captured for regulatory and incident review'
       ],
-      moreInfoUrl: '#',
-      technicalReport: REPORT_PDF_BASE + 'casestudy_utility_ot_visible_data.pdf',
-      infographic: '#',
-      vimeoUrl: '#'
+      moreInfo: '#',
+      audioExplainer: '#',
+      summaryReports: '#',
+      infoGraphics: '#',
+      slideDecks: '#',
+      videoExplainers: '#'
     }
   ],
 
@@ -451,7 +531,7 @@ window.SOLUTION_CONTENT = {
       summary: 'Shift from system protection to real-time exposure control. ' + ANCHOR_TAIL,
       tags: ['Insider Risk', 'Data Protection'],
       bullets: ['Need to control risk at the moment it occurs', 'Reduce reliance on delayed detection', 'Improve visibility into real exposure', 'Align security with modern work environments'],
-      moreInfoUrl: '#', technicalReport: '#', infographic: '#', vimeoUrl: '#'
+      moreInfo: '#', audioExplainer: '#', summaryReports: '#', infoGraphics: '#', slideDecks: '#', videoExplainers: '#'
     },
     {
       id: 'cco',
@@ -459,7 +539,7 @@ window.SOLUTION_CONTENT = {
       summary: 'Prove exposure is controlled continuously—not just audited later. ' + ANCHOR_TAIL,
       tags: ['Audit Readiness'],
       bullets: ['Require real-time evidence of control', 'Eliminate manual audit preparation', 'Ensure compliance across environments', 'Provide defensible audit trails'],
-      moreInfoUrl: '#', technicalReport: '#', infographic: '#', vimeoUrl: '#'
+      moreInfo: '#', audioExplainer: '#', summaryReports: '#', infoGraphics: '#', slideDecks: '#', videoExplainers: '#'
     }
   ]
 };
