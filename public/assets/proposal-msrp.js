@@ -1,12 +1,11 @@
 // Proposal Builder MSRP labeling overlay
-// Adds prominent MSRP price language to Step 3/4 and patches the PDF label text
+// Adds MSRP price language inside Step 3/4 pricing sections and patches PDF labels
 // without changing the v1 pricing math engine.
 (function () {
   'use strict';
 
   var MSRP_LABEL = 'MSRP Price USD($)';
   var MSRP_SUMMARY_LABEL = 'MSRP PRICING SUMMARY USD($)';
-  var MSRP_TCV_LABEL = 'Total contract value based on MSRP Pricing US$.';
   var MSRP_NOTE = 'Actual price based on distributor negotiated terms';
 
   function installStyles() {
@@ -14,11 +13,9 @@
     var style = document.createElement('style');
     style.id = 'proposal-msrp-style';
     style.textContent = [
-      '.proposal-msrp-banner{border:2px solid #00827c;background:#eefaf8;border-radius:16px;padding:16px 18px;margin:0 0 18px;box-shadow:0 8px 24px rgba(0,130,124,.10)}',
-      '.proposal-msrp-banner strong{display:block;font-size:22px;line-height:1.15;color:#053f3b;margin-bottom:5px}',
-      '.proposal-msrp-banner span{display:block;font-size:13px;color:#353d4a;font-weight:700}',
-      '.proposal-msrp-subline{display:block;font-size:12px;line-height:1.35;color:#353d4a;font-weight:700;margin-top:3px}',
-      '.proposal-msrp-tcv{font-weight:800;color:#053f3b}'
+      '.proposal-msrp-inline{border:1px solid #00827c;background:#eefaf8;border-radius:12px;padding:10px 12px;margin:8px 0 12px;box-shadow:0 4px 14px rgba(0,130,124,.08)}',
+      '.proposal-msrp-inline strong{display:block;font-size:15px;line-height:1.2;color:#053f3b;margin-bottom:3px}',
+      '.proposal-msrp-inline span{display:block;font-size:12px;color:#353d4a;font-weight:700}'
     ].join('\n');
     document.head.appendChild(style);
   }
@@ -42,53 +39,47 @@
     return !!(panel && /Save\s*&\s*Submit|Submit/i.test(panel.textContent || ''));
   }
 
-  function enhanceReviewStep() {
-    var panel = document.getElementById('tp-panel');
-    if (!panel || !isReviewStep()) return;
-    if (panel.querySelector('.proposal-msrp-banner')) return;
-    var banner = document.createElement('div');
-    banner.className = 'proposal-msrp-banner';
-    banner.innerHTML = '<strong>' + MSRP_LABEL + '</strong><span>' + MSRP_NOTE + '</span>';
-    panel.insertBefore(banner, panel.firstChild);
+  function makeInlineBlock(id) {
+    var block = document.createElement('div');
+    block.className = 'proposal-msrp-inline';
+    block.setAttribute('data-msrp-slot', id);
+    block.innerHTML = '<strong>' + MSRP_LABEL + '</strong><span>' + MSRP_NOTE + '</span>';
+    return block;
   }
 
-  function rewriteTextNodes(root) {
-    if (!root) return;
+  function findTextParent(root, pattern) {
+    if (!root) return null;
     var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
     var node;
     while ((node = walker.nextNode())) {
-      var text = node.nodeValue || '';
-      var next = text
-        .replace(/Total Contract Value/g, MSRP_TCV_LABEL)
-        .replace(/MSRP Total Contract Value USD\(\$\)/g, MSRP_TCV_LABEL)
-        .replace(/TCV \(/g, 'MSRP TCV (')
-        .replace(/TCV:/g, 'MSRP TCV:');
-      if (next !== text) node.nodeValue = next;
+      if (pattern.test(node.nodeValue || '')) return node.parentElement;
     }
+    return null;
   }
 
-  function addTcvSubline(root) {
-    if (!root) return;
-    var candidates = root.querySelectorAll('div, p, span, td, th, li');
-    candidates.forEach(function (el) {
-      var text = (el.textContent || '').trim();
-      if (!/Total contract value based on MSRP Pricing US\$\.|MSRP TCV/i.test(text)) return;
-      if (el.querySelector && el.querySelector('.proposal-msrp-subline')) return;
-      if (el.closest && el.closest('.proposal-msrp-subline')) return;
-      var line = document.createElement('span');
-      line.className = 'proposal-msrp-subline';
-      line.textContent = MSRP_NOTE;
-      el.appendChild(line);
-      el.classList.add('proposal-msrp-tcv');
-    });
+  function insertAfter(target, node) {
+    if (!target || !target.parentNode || !node) return;
+    target.parentNode.insertBefore(node, target.nextSibling);
   }
 
-  function enhanceStep3And4Labels() {
+  function addMsrpInsideStep3() {
     var panel = document.getElementById('tp-panel');
-    if (!panel) return;
-    if (!isReviewStep() && !isSubmitStep()) return;
-    rewriteTextNodes(panel);
-    addTcvSubline(panel);
+    if (!panel || !isReviewStep()) return;
+    if (panel.querySelector('[data-msrp-slot="step3-recurring"]')) return;
+
+    var target = findTextParent(panel, /Recurring subtotal \(list\)|Annual recurring by year/i);
+    if (!target) return;
+    insertAfter(target, makeInlineBlock('step3-recurring'));
+  }
+
+  function addMsrpInsideStep4() {
+    var panel = document.getElementById('tp-panel');
+    if (!panel || !isSubmitStep()) return;
+    if (panel.querySelector('[data-msrp-slot="step4-tcv"]')) return;
+
+    var target = findTextParent(panel, /Total contract value|Total Contract Value|TCV/i);
+    if (!target) return;
+    insertAfter(target, makeInlineBlock('step4-tcv'));
   }
 
   function patchPdfText() {
@@ -104,11 +95,9 @@
         value = value
           .replace('INDICATIVE PRICING SUMMARY', MSRP_SUMMARY_LABEL)
           .replace('Scope & Indicative Pricing', 'Scope & MSRP Pricing USD($)')
-          .replace('Year 1 Total (recurring + one-time)', MSRP_LABEL + ' - Year 1')
-          .replace('Total Contract Value', MSRP_TCV_LABEL)
-          .replace('MSRP Total Contract Value USD($)', MSRP_TCV_LABEL)
-          .replace('Indicative pricing is included for planning purposes.', MSRP_LABEL + ' is included for planning purposes. ' + MSRP_NOTE + '.')
-          .replace('Pricing shown is indicative and based on information provided at the time of generation.', MSRP_LABEL + ' shown is based on information provided at the time of generation. ' + MSRP_NOTE + '.');
+          .replace('Year 1 Total (recurring + one-time)', 'Year 1 MSRP Price USD($)')
+          .replace('Pricing shown is indicative and based on information provided at the time of generation.', MSRP_LABEL + ' shown is based on information provided at the time of generation. ' + MSRP_NOTE + '.')
+          .replace('Indicative pricing is included for planning purposes.', MSRP_LABEL + ' is included for planning purposes. ' + MSRP_NOTE + '.');
       }
 
       var result = originalText.call(this, value, x, y, options, transform);
@@ -123,12 +112,14 @@
           // Non-critical visual enhancement only.
         }
       }
-      if (typeof originalValue === 'string' && /Total Contract Value|MSRP Total Contract Value/.test(originalValue)) {
+
+      if (typeof originalValue === 'string' && /Total Contract Value|Total contract value|TCV/.test(originalValue)) {
         try {
           this.setFont('helvetica', 'bold');
           this.setFontSize(7);
           this.setTextColor(122, 127, 136);
-          originalText.call(this, MSRP_NOTE, x, y + 4, options, transform);
+          originalText.call(this, MSRP_LABEL, x, y + 4, options, transform);
+          originalText.call(this, MSRP_NOTE, x, y + 8, options, transform);
         } catch (e2) {
           // Non-critical visual enhancement only.
         }
@@ -141,11 +132,11 @@
   function boot() {
     installStyles();
     patchPdfText();
-    enhanceReviewStep();
-    enhanceStep3And4Labels();
+    addMsrpInsideStep3();
+    addMsrpInsideStep4();
     var obs = new MutationObserver(function () {
-      enhanceReviewStep();
-      enhanceStep3And4Labels();
+      addMsrpInsideStep3();
+      addMsrpInsideStep4();
       patchPdfText();
     });
     obs.observe(document.body, { childList: true, subtree: true });
