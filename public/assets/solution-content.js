@@ -26,7 +26,7 @@ window.SOLUTION_CONTENT = {
     {
       id: 'sdec-platform',
       title: 'Trendzact Sensitive Data Exposure Control Platform',
-      iconImage: ICON_BASE + 'Trendzact Favicon (green).png',
+      iconImage: ICON_BASE + 'workspace-exposure-no-text-tight.png',
       iconAlt: 'Trendzact platform icon',
       summary: 'Trendzact gives organizations a real-time data exposure control layer across the human edge. It controls sensitive data exposure after access is granted and the information becomes visible on screens, in workspaces, during collaboration, and across user workflows. ' + ANCHOR_TAIL,
       tags: ['SDEC', 'Platform', 'Human Edge', 'Understand Decide Act', 'Real-Time Control'],
