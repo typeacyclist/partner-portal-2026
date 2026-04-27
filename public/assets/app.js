@@ -5,6 +5,13 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  // Resources page - temporarily hide the Demo Guide card.
+  if (window.location.pathname === '/resources' || window.location.pathname === '/resources.html') {
+    const demoGuideCard = Array.from(document.querySelectorAll('.card'))
+      .find(card => (card.textContent || '').includes('DEMO GUIDE'));
+    if (demoGuideCard) demoGuideCard.style.display = 'none';
+  }
+
   // Solution Builder filters (if present)
   // Cards are rendered async by solution-render.js, so we re-query on each filter
   const chips = document.querySelectorAll('[data-filter-chip]');
