@@ -13,7 +13,7 @@
   const NAV_ITEMS = [
     { href: '/',                    label: 'Home' },
     { href: '/discover.html',       label: 'Discover' },
-    { href: '/live-demo.html',      label: 'Demos' },
+    // { href: '/live-demo.html',      label: 'Demos' },
     { href: '/gtm-playbook.html',   label: 'Sales Playbook' },
     { href: '/resources.html',      label: 'Resources' },
     { href: '/contact.html',        label: 'Contact' },
