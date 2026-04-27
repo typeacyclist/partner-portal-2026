@@ -145,8 +145,7 @@
       ['Year 1 ' + MSRP_LABEL, fmt(totals.year1AnnualUsd)],
       ['Year 2 recurring', contractYears >= 2 ? fmt(totals.recurringYear2Usd) : '—'],
       ['Year 3 recurring', contractYears >= 3 ? fmt(totals.recurringYear3Usd) : '—'],
-      [MSRP_SUMMARY_LABEL + ': Total contract value (' + contractYears + 'yr)', fmt(totals.tcvUsd)],
-      MSRP_NOTE
+      [MSRP_SUMMARY_LABEL + ': Total contract value (' + contractYears + 'yr)', fmt(totals.tcvUsd)]
     ];
     pricingRows.forEach(function (row, idx) {
       var isLast = idx === pricingRows.length - 1;
