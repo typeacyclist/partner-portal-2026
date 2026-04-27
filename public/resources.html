@@ -10,6 +10,124 @@
 <link rel="stylesheet" href="/assets/styles.css" />
 <link rel="stylesheet" href="/assets/media-player.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<style>
+  .download-folder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+  }
+
+  .download-folder {
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .download-folder summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .download-folder summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .download-folder summary::after {
+    content: '⌄';
+    margin-left: auto;
+    color: var(--med-gray);
+    font-size: 18px;
+    transition: transform 0.18s ease;
+  }
+
+  .download-folder[open] summary::after {
+    transform: rotate(180deg);
+  }
+
+  .download-folder-icon {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 auto;
+    border: 1px solid var(--med-green);
+    border-radius: 14px;
+    color: var(--dark-green);
+    background: var(--tint-light);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .download-folder-title {
+    min-width: 0;
+  }
+
+  .download-folder-title h3 {
+    margin: 0 0 3px;
+    font-size: 17px;
+  }
+
+  .download-folder-title p {
+    margin: 0;
+    color: var(--med-gray);
+    font-size: 13px;
+  }
+
+  .download-file-list {
+    border-top: 1px solid var(--border-soft);
+    padding: 8px 14px 14px;
+  }
+
+  .download-file {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .download-file:last-child {
+    border-bottom: 0;
+  }
+
+  .download-file-name {
+    min-width: 0;
+    font-size: 13px;
+    color: var(--dark-gray);
+    overflow-wrap: anywhere;
+  }
+
+  .download-file-path {
+    display: block;
+    margin-top: 3px;
+    font-family: var(--ff-mono), monospace;
+    font-size: 10px;
+    color: var(--med-gray);
+  }
+
+  .download-file-actions {
+    display: inline-flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 720px) {
+    .download-file {
+      grid-template-columns: 1fr;
+    }
+
+    .download-file-actions {
+      justify-content: flex-start;
+    }
+  }
+</style>
 
 </head>
 <body>
@@ -77,6 +195,12 @@
     </div>
   </section>
 
+  <section class="section">
+    <h2>Downloads</h2>
+    <p class="section-sub">Browse Firebase Storage asset folders. Site icons are intentionally excluded. Use Open to preview supported media or PDFs, and Download to save a local copy.</p>
+    <div class="download-folder-grid" id="downloads-mount"></div>
+  </section>
+
 </main>
 
 <div id="site-footer"></div>
@@ -87,5 +211,175 @@
 <script src="/assets/footer.js"></script>
 <script src="/assets/app.js"></script>
 <script src="/assets/media-player.js"></script>
+<script>
+(function () {
+  const BUCKET = 'trendzact-partners-001.firebasestorage.app';
+
+  const ICONS = {
+    audio: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+    report: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>',
+    graphic: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+    slides: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 18v3"/><path d="M8 9h8"/><path d="M8 13h5"/></svg>',
+    video: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>'
+  };
+
+  const DOWNLOAD_FOLDERS = [
+    {
+      label: 'Audio Podcast Explainers',
+      folder: 'audio_podcast_explainer',
+      icon: ICONS.audio,
+      type: 'audio',
+      files: [
+        'AUDIO OVERVIEW for Platform-SDEC.m4a',
+        'AUDIO OVERVIEW for Solution-SW.m4a',
+        'AUDIO OVERVIEW for Solution-SW (deep dive).m4a',
+        'AUDIO OVERVIEW for Solution-IRA.m4a',
+        'AUDIO OVERVIEW for Solution-SVM.m4a',
+        'AUDIO OVERVIEW for Solution-ITM.m4a',
+        'AUDIO OVERVIEW for Solution-EDLP.m4a'
+      ]
+    },
+    {
+      label: 'Executive Summary Reports',
+      folder: 'exec_summary_reports_pdf',
+      icon: ICONS.report,
+      type: 'pdf',
+      files: [
+        'platform_sdec.pdf',
+        'solution_secure_workspace.pdf',
+        'solution_identity_assurance.pdf',
+        'solution_secure_virtual_meeting.pdf',
+        'solution_insider_threat_management.pdf',
+        'solution_exposure_dlp.pdf',
+        'enhancement_ultrawide_webcam.pdf',
+        'enhancement_multi_display_recording.pdf',
+        'enhancement_workstation_laptop_scan.pdf',
+        'usecase_secure_workspace_mission_critical.pdf',
+        'usecase_identity_active_session_misuse.pdf',
+        'usecase_virtual_meeting_screenshare_exposure.pdf',
+        'usecase_insider_repeated_risky_behavior.pdf',
+        'usecase_visible_data_no_file_transfer.pdf',
+        'casestudy_hospital_phi_remote_workspace.pdf',
+        'casestudy_insurance_identity_claims.pdf',
+        'casestudy_saas_ip_remote_collaboration.pdf',
+        'casestudy_global_bank_insider_exposure.pdf',
+        'casestudy_utility_ot_visible_data.pdf'
+      ]
+    },
+    {
+      label: 'Infographics',
+      folder: 'infographics',
+      icon: ICONS.graphic,
+      type: 'image',
+      files: [
+        'INFOGRAPHIC for Platform-SDEC.jpg',
+        'INFOGRAPHIC for Solution-SW.jpg',
+        'INFOGRAPHIC for Solution-IRA.jpg',
+        'INFOGRAPHIC for Solution-SVM.jpg',
+        'INFOGRAPHIC for Solution-ITM.jpg',
+        'INFOGRAPHIC for Solution-EDLP.jpg',
+        'INFOGRAPHIC for Solutions.jpeg',
+        'INFOGRAPHIC for Enhancements.jpeg',
+        'INFOGRAPHIC for Exposure Vectors.jpeg',
+        'INFOGRAPHIC for Case Study.jpeg'
+      ]
+    },
+    {
+      label: 'Slide Decks',
+      folder: 'slide_decks',
+      icon: ICONS.slides,
+      type: 'pdf',
+      files: [
+        'SLIDE DECK for Platform-SDEC (long form).pdf',
+        'SLIDE DECK for Platform-SDEC (short form).pdf',
+        'SLIDE DECK for Platform-SDEC (v1).pdf',
+        'SLIDE DECK for Solution-SW.pdf',
+        'SLIDE DECK for Solution-IRA.pdf',
+        'SLIDE DECK for Solution-SVM.pdf',
+        'SLIDE DECK for Solution-ITM.pdf',
+        'SLIDE DECK for Solution-EDLP.pdf'
+      ]
+    },
+    {
+      label: 'Video Explainers',
+      folder: 'video_explainers',
+      icon: ICONS.video,
+      type: 'video',
+      files: [
+        'VIDEO EXPLAINER for Platform-SDEC.mp4',
+        'VIDEO EXPLAINER for Platform-SDEC (v1).mp4',
+        'VIDEO EXPLAINER for Solution-SW.mp4',
+        'VIDEO EXPLAINER for Solution-IRA.mp4',
+        'VIDEO EXPLAINER for Solution-SVM.mp4',
+        'VIDEO EXPLAINER for Solution-ITM.mp4',
+        'VIDEO EXPLAINER for Solution-EDLP.mp4'
+      ]
+    }
+  ];
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function gsPath(folder, filename) {
+    return 'gs://' + BUCKET + '/' + folder + '/' + filename;
+  }
+
+  function downloadUrl(folder, filename, asAttachment) {
+    const objectPath = folder + '/' + filename;
+    let url = 'https://firebasestorage.googleapis.com/v0/b/' + encodeURIComponent(BUCKET) + '/o/' + encodeURIComponent(objectPath) + '?alt=media';
+    if (asAttachment) {
+      url += '&response-content-disposition=' + encodeURIComponent('attachment; filename="' + filename + '"');
+    }
+    return url;
+  }
+
+  function renderOpenAction(item, file) {
+    const path = gsPath(item.folder, file);
+    const url = downloadUrl(item.folder, file, false);
+    if (item.type === 'audio' || item.type === 'image' || item.type === 'video') {
+      return '<a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="' + escapeHtml(path) + '" data-media-type="' + escapeHtml(item.type) + '">Open</a>';
+    }
+    return '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary">Open</a>';
+  }
+
+  function renderFile(item, file) {
+    const path = gsPath(item.folder, file);
+    const localUrl = downloadUrl(item.folder, file, true);
+    return '<div class="download-file">' +
+      '<div class="download-file-name">' + escapeHtml(file) + '<span class="download-file-path">' + escapeHtml(path) + '</span></div>' +
+      '<div class="download-file-actions">' +
+        renderOpenAction(item, file) +
+        '<a href="' + escapeHtml(localUrl) + '" download="' + escapeHtml(file) + '" class="btn btn-sm btn-primary">Download</a>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderFolder(item) {
+    const filesHtml = item.files.map(function (file) { return renderFile(item, file); }).join('');
+    return '<details class="download-folder">' +
+      '<summary>' +
+        '<span class="download-folder-icon" aria-hidden="true">' + item.icon + '</span>' +
+        '<span class="download-folder-title"><h3>' + escapeHtml(item.label) + '</h3><p>' + escapeHtml(item.folder) + ' · ' + item.files.length + ' files</p></span>' +
+      '</summary>' +
+      '<div class="download-file-list">' + filesHtml + '</div>' +
+    '</details>';
+  }
+
+  function initDownloads() {
+    const mount = document.getElementById('downloads-mount');
+    if (!mount) return;
+    mount.innerHTML = DOWNLOAD_FOLDERS.map(renderFolder).join('');
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initDownloads);
+  else initDownloads();
+})();
+</script>
 </body>
 </html>
