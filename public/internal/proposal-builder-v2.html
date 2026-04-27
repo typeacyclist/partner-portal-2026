@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Proposal Builder V2 · Trendzact Partners</title>
+<meta name="description" content="Internal draft Trendzact SDEC proposal builder for monitored-user solution selection, regulated requirements, and per-user enablement services." />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/styles.css" />
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<style>
+  .pbv2-shell { max-width: 1180px; margin: 0 auto; padding: 32px 20px 56px; }
+  .pbv2-status { display: inline-flex; gap: 8px; align-items: center; border: 1px solid var(--line, #d9dee3); border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--green-deep, #006b65); background: #eefaf8; }
+  .pbv2-head { margin: 18px 0 28px; }
+  .pbv2-head h1 { margin-bottom: 10px; }
+  .pbv2-head p { max-width: 860px; color: var(--med-gray, #68717a); }
+  .pbv2-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, .65fr); gap: 22px; align-items: start; }
+  .pbv2-card { border: 1px solid var(--line, #d9dee3); border-radius: 18px; background: #fff; box-shadow: 0 10px 30px rgba(15, 23, 42, .04); overflow: hidden; }
+  .pbv2-card-h { padding: 18px 20px; border-bottom: 1px solid var(--line, #d9dee3); background: #f8fafb; }
+  .pbv2-card-h h2, .pbv2-card-h h3 { margin: 0 0 4px; }
+  .pbv2-card-h p { margin: 0; font-size: 13px; color: var(--med-gray, #68717a); }
+  .pbv2-card-b { padding: 18px 20px; }
+  .pbv2-section { margin-bottom: 24px; }
+  .pbv2-section:last-child { margin-bottom: 0; }
+  .pbv2-section-title { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 12px; }
+  .pbv2-section-title h3 { margin: 0; font-size: 17px; }
+  .pbv2-section-title span { font-size: 12px; color: var(--med-gray, #68717a); }
+  .pbv2-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .pbv2-field label { display: block; font-size: 12px; font-weight: 700; color: #39424e; margin-bottom: 6px; }
+  .pbv2-field input, .pbv2-field select, .pbv2-field textarea { width: 100%; border: 1px solid var(--line, #d9dee3); border-radius: 12px; padding: 10px 12px; font: inherit; background: #fff; color: #16202a; }
+  .pbv2-field textarea { resize: vertical; min-height: 88px; }
+  .pbv2-wide { grid-column: 1 / -1; }
+  .pbv2-options { display: grid; gap: 10px; }
+  .pbv2-option { display: grid; grid-template-columns: 22px minmax(0,1fr); gap: 10px; align-items: start; border: 1px solid var(--line, #d9dee3); border-radius: 14px; padding: 12px; background: #fff; }
+  .pbv2-option:hover { border-color: var(--green-primary, #00827c); }
+  .pbv2-option strong { display: block; font-size: 14px; }
+  .pbv2-option p { margin: 3px 0 0; font-size: 12px; color: var(--med-gray, #68717a); line-height: 1.45; }
+  .pbv2-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pbv2-chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line, #d9dee3); border-radius: 999px; padding: 8px 10px; font-size: 12px; background: #fff; }
+  .pbv2-chip input { margin: 0; }
+  .pbv2-summary { position: sticky; top: 16px; }
+  .pbv2-line { display: flex; justify-content: space-between; gap: 14px; border-bottom: 1px solid #eef1f3; padding: 10px 0; font-size: 13px; }
+  .pbv2-line strong { font-weight: 700; }
+  .pbv2-total { margin-top: 12px; padding: 14px; border-radius: 14px; background: #eefaf8; color: #053f3b; }
+  .pbv2-total .amt { display: block; font-size: 28px; font-weight: 800; margin-top: 4px; }
+  .pbv2-note { font-size: 12px; line-height: 1.5; color: var(--med-gray, #68717a); margin-top: 12px; }
+  .pbv2-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .pbv2-actions button { border: 1px solid var(--line, #d9dee3); background: #fff; border-radius: 12px; padding: 10px 12px; font-weight: 700; cursor: pointer; }
+  .pbv2-actions button.primary { background: var(--green-primary, #00827c); color: #fff; border-color: var(--green-primary, #00827c); }
+  .pbv2-output { white-space: pre-wrap; border: 1px solid var(--line, #d9dee3); border-radius: 14px; padding: 14px; background: #fbfcfd; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.55; margin-top: 16px; display: none; }
+  @media (max-width: 900px) { .pbv2-grid { grid-template-columns: 1fr; } .pbv2-summary { position: static; } .pbv2-form-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div id="site-header"></div>
+
+<main class="pbv2-shell">
+  <div class="pbv2-status">Draft · URL access only</div>
+  <header class="pbv2-head">
+    <h1>Proposal Builder V2</h1>
+    <p>Create a draft Trendzact SDEC proposal by selecting monitored-user scope, solution areas, package tier, regulated deployment requirements, and simple per-user enablement services.</p>
+  </header>
+
+  <div class="pbv2-grid">
+    <section class="pbv2-card">
+      <div class="pbv2-card-h">
+        <h2>Configuration</h2>
+        <p>Phase 1 hidden build. Not linked from public navigation, footer, sitemap, or proposal CTA.</p>
+      </div>
+      <div class="pbv2-card-b" id="pbv2-form"></div>
+    </section>
+
+    <aside class="pbv2-card pbv2-summary" aria-live="polite">
+      <div class="pbv2-card-h">
+        <h3>Pricing Summary</h3>
+        <p>Draft estimate. Pricing assumptions remain editable.</p>
+      </div>
+      <div class="pbv2-card-b">
+        <div id="pbv2-summary-lines"></div>
+        <div class="pbv2-total">
+          Estimated Annual Recurring
+          <span class="amt" id="pbv2-total">$0</span>
+        </div>
+        <p class="pbv2-note">Formula: Platform Base + selected solution modules + tier uplift + per-user add-ons + implementation + managed services + storage/retention minus term discount. No separate hardware line.</p>
+        <div class="pbv2-actions">
+          <button type="button" class="primary" id="pbv2-generate">Generate Summary</button>
+          <button type="button" id="pbv2-copy">Copy Summary</button>
+        </div>
+        <div class="pbv2-output" id="pbv2-output"></div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="/assets/firebase-config.js"></script>
+<script type="module" src="/assets/auth.js"></script>
+<script src="/assets/header.js"></script>
+<script src="/assets/footer.js"></script>
+<script src="/assets/app.js"></script>
+<script src="/assets/proposal-builder-v2.js"></script>
+</body>
+</html>
