@@ -11,21 +11,94 @@
 <link rel="stylesheet" href="/assets/media-player.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
 <style>
-  .video-embed-16x9 {
+  .discover-hero-media {
     position: relative;
-    padding-top: 56.25%;
+    aspect-ratio: 16 / 9;
     margin: 20px 0 0;
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: var(--shadow-sm);
     background: #000;
   }
-  .video-embed-16x9 iframe {
+  .discover-hero-poster,
+  .discover-hero-player {
     position: absolute;
-    top: 0; left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+  }
+  .discover-hero-poster {
+    display: block;
     border: 0;
+    padding: 0;
+    cursor: pointer;
+    background: #000;
+    z-index: 2;
+  }
+  .discover-hero-poster img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+  .discover-hero-play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 74px;
+    height: 74px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.78);
+    background: rgba(0, 130, 124, 0.9);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.28);
+  }
+  .discover-hero-play svg {
+    margin-left: 4px;
+  }
+  .discover-hero-poster:hover .discover-hero-play,
+  .discover-hero-poster:focus-visible .discover-hero-play {
+    background: var(--dark-green);
+  }
+  .discover-hero-player {
+    display: none;
+    z-index: 1;
+    background: #000;
+  }
+  .discover-hero-player video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    background: #000;
+  }
+  .discover-hero-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    border: 1px solid rgba(255,255,255,0.55);
+    background: rgba(0,0,0,0.62);
+    color: #fff;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .discover-hero-close:hover,
+  .discover-hero-close:focus-visible {
+    background: rgba(0,0,0,0.82);
+  }
+  .discover-hero-media.is-playing .discover-hero-poster {
+    display: none;
+  }
+  .discover-hero-media.is-playing .discover-hero-player {
+    display: block;
   }
 
   .discover-platform-brief {
@@ -173,14 +246,20 @@
   <header class="page-head">
     <h1>Discover</h1>
     <p class="lede">Explore how Trendzact controls sensitive data exposure after access is granted and data becomes visible — across workspace, identity, virtual meeting, insider threat, and Exposure Data Loss Prevention scenarios.</p>
-    <div class="video-embed-16x9">
-      <iframe
-        src="https://player.vimeo.com/video/1185752726?h=7d2bbd2b14&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
-        title="Trendzact Sensitive Data Exposure Control Platform Introduction"
-        loading="lazy"
-        allowfullscreen></iframe>
+    <div class="discover-hero-media" id="discoverHeroMedia">
+      <button class="discover-hero-poster" type="button" id="discoverHeroPoster" aria-label="Play Trendzact Sensitive Data Exposure Control Platform video">
+        <img src="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/video_explainers%2FDiscover%20Hero%20Media%20Player%20Image.jpg?alt=media" alt="Trendzact Sensitive Data Exposure Control Platform video preview" loading="eager" />
+        <span class="discover-hero-play" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </span>
+      </button>
+      <div class="discover-hero-player" id="discoverHeroPlayer" aria-hidden="true">
+        <video id="discoverHeroVideo" controls playsinline preload="metadata" poster="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/video_explainers%2FDiscover%20Hero%20Media%20Player%20Image.jpg?alt=media">
+          <source src="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/video_explainers%2FVIDEO%20EXPLAINER%20for%20Platform-SDEC.mp4?alt=media" type="video/mp4" />
+          Your browser does not support embedded video.
+        </video>
+        <button class="discover-hero-close" type="button" id="discoverHeroClose">Close Player</button>
+      </div>
     </div>
     <section class="card discover-platform-brief" aria-label="Platform framing">
       <span class="next-step">Platform Frame</span>
@@ -230,5 +309,37 @@
 <script src="/assets/solution-assets-auto.js"></script>
 <script src="/assets/solution-icons.js"></script>
 <script type="module" src="/assets/solution-render.js"></script>
+<script>
+(function () {
+  const shell = document.getElementById('discoverHeroMedia');
+  const poster = document.getElementById('discoverHeroPoster');
+  const player = document.getElementById('discoverHeroPlayer');
+  const video = document.getElementById('discoverHeroVideo');
+  const close = document.getElementById('discoverHeroClose');
+  if (!shell || !poster || !player || !video || !close) return;
+
+  function showPlayer() {
+    shell.classList.add('is-playing');
+    player.setAttribute('aria-hidden', 'false');
+    const playPromise = video.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(function () {
+        // Browser autoplay policy may require the user to press play on the native controls.
+      });
+    }
+  }
+
+  function showPoster() {
+    video.pause();
+    video.currentTime = 0;
+    shell.classList.remove('is-playing');
+    player.setAttribute('aria-hidden', 'true');
+    poster.focus({ preventScroll: true });
+  }
+
+  poster.addEventListener('click', showPlayer);
+  close.addEventListener('click', showPoster);
+})();
+</script>
 </body>
 </html>
