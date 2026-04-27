@@ -781,6 +781,14 @@
           d.selectedModules.push(code);
           // If 'None needed' was checked, uncheck it
           d.sectionNone.modules = false;
+
+          // Auto-open this module when it has nested selectable options.
+          var hasChildOptions = childOptionsFor(code).some(function (c) {
+            return !isBeta(c);
+          });
+          if (hasChildOptions && d.moduleExpanded.indexOf(code) === -1) {
+            d.moduleExpanded.push(code);
+          }
         } else if (!el.checked && i !== -1) {
           d.selectedModules.splice(i, 1);
           // Cascade: remove any child options that no longer have a parent
