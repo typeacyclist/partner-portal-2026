@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/assets/styles.css" />
+<link rel="stylesheet" href="/assets/media-player.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
 
 </head>
@@ -21,9 +22,7 @@
   <header class="page-head">
     <h1>Video Explainers</h1>
     <p class="lede">Short, buyer-ready videos mapped to product, persona, and objection. Share links directly with prospects.</p>
-    
   </header>
-
 
   <section class="section">
     <h2>Featured Explainers</h2>
@@ -31,51 +30,81 @@
     <div class="card-grid two">
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="What is Trendzact GRC1?" data-media-src="video-explainers/grc1-overview.mp4" data-media-type="video">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag">2 MIN · OVERVIEW</span>
         <h3>What is Trendzact GRC1?</h3>
         <p>The full platform in two minutes — edge-first governance, three risk planes, and governed response.</p>
-        <div style="display:flex; gap:8px; margin-top:12px;"><a href="#" class="btn btn-sm btn-primary">Watch</a><a href="#" class="btn btn-sm btn-ghost">Share Link</a></div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button type="button" class="btn btn-sm btn-primary" data-media-player data-media-title="What is Trendzact GRC1?" data-media-src="video-explainers/grc1-overview.mp4" data-media-type="video">Watch</button>
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/video-explainers%2Fgrc1-overview.mp4?alt=media" class="btn btn-sm btn-ghost" target="_blank" rel="noopener noreferrer">Share Link</a>
+        </div>
       </div>
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="Beyond Legacy DLP" data-media-src="video-explainers/beyond-legacy-dlp.mp4" data-media-type="video">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag">4 MIN · EDGE DLP</span>
         <h3>Beyond Legacy DLP</h3>
         <p>How Edge DLP stops visual, behavioral, and clipboard exposure that legacy tools miss.</p>
-        <div style="display:flex; gap:8px; margin-top:12px;"><a href="#" class="btn btn-sm btn-primary">Watch</a><a href="#" class="btn btn-sm btn-ghost">Share Link</a></div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button type="button" class="btn btn-sm btn-primary" data-media-player data-media-title="Beyond Legacy DLP" data-media-src="video-explainers/beyond-legacy-dlp.mp4" data-media-type="video">Watch</button>
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/video-explainers%2Fbeyond-legacy-dlp.mp4?alt=media" class="btn btn-sm btn-ghost" target="_blank" rel="noopener noreferrer">Share Link</a>
+        </div>
       </div>
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="Who is Really at the Keyboard?" data-media-src="video-explainers/session-identity-assurance.mp4" data-media-type="video">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag">3 MIN · IDENTITY</span>
         <h3>Who is Really at the Keyboard?</h3>
         <p>Session Identity Assurance using facial biometrics as a risk-gated MFA factor.</p>
-        <div style="display:flex; gap:8px; margin-top:12px;"><a href="#" class="btn btn-sm btn-primary">Watch</a><a href="#" class="btn btn-sm btn-ghost">Share Link</a></div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button type="button" class="btn btn-sm btn-primary" data-media-player data-media-title="Who is Really at the Keyboard?" data-media-src="video-explainers/session-identity-assurance.mp4" data-media-type="video">Watch</button>
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/video-explainers%2Fsession-identity-assurance.mp4?alt=media" class="btn btn-sm btn-ghost" target="_blank" rel="noopener noreferrer">Share Link</a>
+        </div>
       </div>
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="Clear Desk, Anywhere" data-media-src="video-explainers/clear-desk-anywhere.mp4" data-media-type="video">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag">5 MIN · WORKSPACE</span>
         <h3>Clear Desk, Anywhere</h3>
         <p>Secure Workspaces Anywhere for observer detection, unattended sessions, and physical-plane compliance.</p>
-        <div style="display:flex; gap:8px; margin-top:12px;"><a href="#" class="btn btn-sm btn-primary">Watch</a><a href="#" class="btn btn-sm btn-ghost">Share Link</a></div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button type="button" class="btn btn-sm btn-primary" data-media-player data-media-title="Clear Desk, Anywhere" data-media-src="video-explainers/clear-desk-anywhere.mp4" data-media-type="video">Watch</button>
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/video-explainers%2Fclear-desk-anywhere.mp4?alt=media" class="btn btn-sm btn-ghost" target="_blank" rel="noopener noreferrer">Share Link</a>
+        </div>
       </div>
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="Secure Virtual Meetings" data-media-src="video-explainers/secure-virtual-meetings.mp4" data-media-type="video">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag">4 MIN · MEETINGS</span>
         <h3>Secure Virtual Meetings</h3>
         <p>Meeting-aware masking, watermarking, and identity-aware controls for sensitive collaboration.</p>
-        <div style="display:flex; gap:8px; margin-top:12px;"><a href="#" class="btn btn-sm btn-primary">Watch</a><a href="#" class="btn btn-sm btn-ghost">Share Link</a></div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button type="button" class="btn btn-sm btn-primary" data-media-player data-media-title="Secure Virtual Meetings" data-media-src="video-explainers/secure-virtual-meetings.mp4" data-media-type="video">Watch</button>
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/video-explainers%2Fsecure-virtual-meetings.mp4?alt=media" class="btn btn-sm btn-ghost" target="_blank" rel="noopener noreferrer">Share Link</a>
+        </div>
       </div>
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="End-to-End Platform Demo" data-media-src="video-explainers/end-to-end-platform-demo.mp4" data-media-type="video">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag">6 MIN · DEMO</span>
         <h3>End-to-End Platform Demo</h3>
         <p>Walk through policy authoring, edge enforcement, case management, and audit-ready reporting.</p>
-        <div style="display:flex; gap:8px; margin-top:12px;"><a href="#" class="btn btn-sm btn-primary">Watch</a><a href="#" class="btn btn-sm btn-ghost">Share Link</a></div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button type="button" class="btn btn-sm btn-primary" data-media-player data-media-title="End-to-End Platform Demo" data-media-src="video-explainers/end-to-end-platform-demo.mp4" data-media-type="video">Watch</button>
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/video-explainers%2Fend-to-end-platform-demo.mp4?alt=media" class="btn btn-sm btn-ghost" target="_blank" rel="noopener noreferrer">Share Link</a>
+        </div>
       </div>
 
     </div>
@@ -87,37 +116,49 @@
     <div class="card-grid">
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="Isn't this just surveillance?" data-media-src="audio-overviews/privacy-surveillance-objection.m4a" data-media-type="audio">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag tag-gray">PRIVACY</span>
         <h3>"Isn't this just surveillance?"</h3>
       </div>
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="We already have Purview" data-media-src="audio-overviews/purview-overlap-objection.m4a" data-media-type="audio">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag tag-gray">OVERLAP</span>
         <h3>"We already have Purview"</h3>
       </div>
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="Our SOC is overloaded" data-media-src="audio-overviews/soc-overload-objection.m4a" data-media-type="audio">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag tag-gray">COMPLEXITY</span>
         <h3>"Our SOC is overloaded"</h3>
       </div>
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="Our current DLP is enough" data-media-src="audio-overviews/current-dlp-objection.m4a" data-media-type="audio">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag tag-gray">DLP</span>
         <h3>"Our current DLP is enough"</h3>
       </div>
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="Why now?" data-media-src="audio-overviews/why-now-objection.m4a" data-media-type="audio">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag tag-gray">BUDGET</span>
         <h3>"Why now?"</h3>
       </div>
 
       <div class="card">
-        <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        <button type="button" class="media-tile-button" data-media-player data-media-title="Can't Teams do this?" data-media-src="audio-overviews/teams-platform-objection.m4a" data-media-type="audio">
+          <div class="video-tile" style="margin-bottom:14px;"><div class="play-ico"></div></div>
+        </button>
         <span class="tag tag-gray">PLATFORM</span>
         <h3>"Can't Teams do this?"</h3>
       </div>
@@ -134,5 +175,6 @@
 <script src="/assets/header.js"></script>
 <script src="/assets/footer.js"></script>
 <script src="/assets/app.js"></script>
+<script src="/assets/media-player.js"></script>
 </body>
 </html>
