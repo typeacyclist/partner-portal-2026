@@ -100,13 +100,16 @@
   .question-list li {
     margin: 0;
   }
+  .question-list strong,
   .gap-example strong {
     display: block;
     color: var(--dark-green);
     margin-bottom: 4px;
   }
+  .question-list span,
   .gap-example span {
     display: block;
+    color: var(--dark-gray);
   }
 </style>
 </head>
@@ -149,11 +152,11 @@
           </a>
           <p>Use the exposure moment to determine whether the buyer’s primary risk is physical workspace exposure, virtual meeting exposure, user behavior, visible-data handling, or a combination of these conditions.</p>
           <ul class="question-list">
-            <li>Does your exposure risk come more from the physical environment around the user, the virtual audience in the meeting, or both?</li>
-            <li>Are your highest-risk users exposing sensitive information across both monitors and meetings?</li>
-            <li>Can you currently correlate workspace context, participant context, visible data, and user action in one investigation?</li>
-            <li>Are your current tools stronger at governing access than governing what happens after access is granted?</li>
-            <li>Would your first priority be to control exposure in workspaces, meetings, or high-risk user groups that do both?</li>
+            <li><strong>The exposure source may be physical, virtual, or both.</strong><span>Does your exposure risk come more from the physical environment around the user, the virtual audience in the meeting, or both?</span></li>
+            <li><strong>High-risk users often expose data across screens and meetings.</strong><span>Are your highest-risk users exposing sensitive information across both monitors and meetings?</span></li>
+            <li><strong>Exposure investigations need correlated context.</strong><span>Can you currently correlate workspace context, participant context, visible data, and user action in one investigation?</span></li>
+            <li><strong>Access controls do not always govern exposure.</strong><span>Are your current tools stronger at governing access than governing what happens after access is granted?</span></li>
+            <li><strong>The first priority should follow the dominant exposure moment.</strong><span>Would your first priority be to control exposure in workspaces, meetings, or high-risk user groups that do both?</span></li>
           </ul>
         </div>
       </div>
