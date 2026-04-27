@@ -145,7 +145,7 @@
       ['Year 1 ' + MSRP_LABEL, fmt(totals.year1AnnualUsd)],
       ['Year 2 recurring', contractYears >= 2 ? fmt(totals.recurringYear2Usd) : '—'],
       ['Year 3 recurring', contractYears >= 3 ? fmt(totals.recurringYear3Usd) : '—'],
-      ['Total contract value' + MSRP_SUMMARY_LABEL +' (' + contractYears + 'yr)', fmt(totals.tcvUsd)],
+      [MSRP_SUMMARY_LABEL + ': Total contract value (' + contractYears + 'yr)', fmt(totals.tcvUsd)],
       MSRP_NOTE
     ];
     pricingRows.forEach(function (row, idx) {
@@ -154,7 +154,6 @@
       text(doc, row[0], MARGIN + 8, rowY, { size: isLast ? 9 : 8.5, style: isLast ? 'bold' : 'normal', color: isLast ? C.tintDark : page1LabelColor });
       text(doc, row[1], PAGE_W - MARGIN - 8, rowY, { size: isLast ? 12 : 10, style: 'bold', color: isLast ? C.tintDark : page1ValueColor, align: 'right' });
       if (isLast) {
-        text(doc, MSRP_LABEL, MARGIN + 8, rowY + 5, { size: 7, style: 'bold', color: C.tintDark });
         text(doc, MSRP_NOTE, MARGIN + 8, rowY + 9, { size: 6.5, style: 'bold', color: page1LabelColor });
       }
     });
