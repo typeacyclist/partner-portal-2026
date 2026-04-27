@@ -62,6 +62,8 @@ exports.sendProposal = onRequest(
       expiresAt.setUTCDate(expiresAt.getUTCDate() + 90);
       const issuedStr = issuedAt.toISOString().slice(0, 10);
       const expiresStr = expiresAt.toISOString().slice(0, 10);
+      const priceLabel = 'MSRP Price USD($)';
+      const priceNote = 'Actual price based on distributor negotiated terms';
 
       const forwardLine = contact && contactEmail
         ? `Forward it to <strong>${escapeHtml(contact)}</strong> at <a href="mailto:${escapeHtml(contactEmail)}" style="color: #00827C;">${escapeHtml(contactEmail)}</a> when ready.`
@@ -92,22 +94,30 @@ exports.sendProposal = onRequest(
           termYears,
           forwardLineText,
           issuedStr,
-          expiresStr
+          expiresStr,
+          priceLabel,
+          priceNote
         }),
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #353D4A; max-width: 560px;">
             <p>${escapeHtml(partnerName)},</p>
             <p>Your Trendzact GRC1 proposal for <strong>${escapeHtml(company)}</strong> is attached. ${forwardLine}</p>
+            <div style="border: 2px solid #00827C; background: #F0FAF9; border-radius: 12px; padding: 14px 16px; margin: 18px 0;">
+              <div style="font-size: 12px; color: #7A7F88; text-transform: uppercase; letter-spacing: .04em; font-weight: 700;">${escapeHtml(priceLabel)}</div>
+              <div style="font-size: 26px; line-height: 1.2; color: #053F3B; font-weight: 800; margin-top: 4px;">${arr}</div>
+              <div style="font-size: 13px; color: #353D4A; margin-top: 6px; font-weight: 700;">${escapeHtml(priceNote)}</div>
+            </div>
             <table style="border-collapse: collapse; margin: 20px 0; font-size: 14px;">
               <tr><td style="color: #7A7F88; padding: 4px 12px 4px 0;">Prospect</td><td>${escapeHtml(company)}${contact ? ' · ' + escapeHtml(contact) : ''}</td></tr>
               <tr><td style="color: #7A7F88; padding: 4px 12px 4px 0;">Primary use case</td><td>${escapeHtml(useCase || '—')}</td></tr>
-              <tr><td style="color: #7A7F88; padding: 4px 12px 4px 0;">Year 1 recurring</td><td><strong>${arr}</strong></td></tr>
-              ${tcvStr && termYears ? `<tr><td style="color: #7A7F88; padding: 4px 12px 4px 0;">TCV (${termYears}yr)</td><td><strong>${tcvStr}</strong></td></tr>` : ''}
+              <tr><td style="color: #7A7F88; padding: 4px 12px 4px 0;">${escapeHtml(priceLabel)}</td><td><strong>${arr}</strong></td></tr>
+              <tr><td style="color: #7A7F88; padding: 4px 12px 4px 0;">Price note</td><td><strong>${escapeHtml(priceNote)}</strong></td></tr>
+              ${tcvStr && termYears ? `<tr><td style="color: #7A7F88; padding: 4px 12px 4px 0;">MSRP TCV (${termYears}yr)</td><td><strong>${tcvStr}</strong></td></tr>` : ''}
               <tr><td style="color: #7A7F88; padding: 4px 12px 4px 0;">Proposal ID</td><td style="font-family: monospace;">${escapeHtml(proposalId || '—')}</td></tr>
             </table>
             <p style="font-size: 13px; color: #353D4A;">Questions about the proposal? Reply to this email to reach <a href="mailto:deal-desk@trendzact.com" style="color: #00827C;">deal-desk@trendzact.com</a>.</p>
             <hr style="border: none; border-top: 1px solid #EEF1F3; margin: 24px 0;" />
-            <p style="font-size: 12px; color: #7A7F88; font-style: italic;">Pricing valid for 90 days from issue. Issued <span style="font-family: monospace; font-style: normal;">${issuedStr}</span>; expires <span style="font-family: monospace; font-style: normal;">${expiresStr}</span>.</p>
+            <p style="font-size: 12px; color: #7A7F88; font-style: italic;">Pricing valid for 90 days from issue. Issued <span style="font-family: monospace; font-style: normal;">${issuedStr}</span>; expires <span style="font-family: monospace; font-style: normal;">${expiresStr}</span>. ${escapeHtml(priceNote)}.</p>
           </div>
         `,
         attachments: [{ filename: pdfFilename, content: pdfBase64 }]
@@ -125,6 +135,8 @@ exports.sendProposal = onRequest(
         annualRecurring: annualRecurring || null,
         tcv: tcv || null,
         termYears: termYears || null,
+        priceLabel,
+        priceNote,
         resendId: emailResult.data?.id || null,
         sentAt: admin.firestore.FieldValue.serverTimestamp()
       });
@@ -212,7 +224,7 @@ function isAuthorized(req) {
 }
 
 function escapeHtml(s) {
-  return String(s == null ? '' : s)
+  return String(s == null ? '' : '') || String(s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -230,16 +242,18 @@ function buildProposalTextBody(ctx) {
   lines.push('');
   lines.push(`Your Trendzact GRC1 proposal for ${ctx.company} is attached. ${ctx.forwardLineText}`);
   lines.push('');
+  lines.push(`${ctx.priceLabel}: ${ctx.arr}`);
+  lines.push(`Price note: ${ctx.priceNote}`);
+  lines.push('');
   lines.push(`Prospect:           ${ctx.company}${ctx.contact ? ' · ' + ctx.contact : ''}`);
   lines.push(`Primary use case:   ${ctx.useCase || '—'}`);
-  lines.push(`Year 1 recurring:   ${ctx.arr}`);
-  if (ctx.tcvStr && ctx.termYears) lines.push(`TCV (${ctx.termYears}yr):          ${ctx.tcvStr}`);
+  if (ctx.tcvStr && ctx.termYears) lines.push(`MSRP TCV (${ctx.termYears}yr): ${ctx.tcvStr}`);
   lines.push(`Proposal ID:        ${ctx.proposalId || '—'}`);
   lines.push('');
   lines.push('Questions about the proposal? Reply to this email to reach deal-desk@trendzact.com.');
   lines.push('');
   lines.push('---');
-  lines.push(`Pricing valid for 90 days from issue. Issued ${ctx.issuedStr}; expires ${ctx.expiresStr}.`);
+  lines.push(`Pricing valid for 90 days from issue. Issued ${ctx.issuedStr}; expires ${ctx.expiresStr}. ${ctx.priceNote}.`);
   return lines.join('\n');
 }
 
