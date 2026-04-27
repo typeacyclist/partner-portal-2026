@@ -83,6 +83,15 @@
   border-radius: var(--radius);
 }
 
+.media-modal-image {
+  display: block;
+  width: 100%;
+  max-height: 72vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  background: var(--bg-soft);
+}
+
 .media-modal-error {
   display: none;
   margin: 0;
