@@ -1,44 +1,43 @@
 // ========================================================================
 // Discover Page Renderer
 // ========================================================================
-// Reads window.SOLUTION_CONTENT (defined in solution-content.js) and
-// renders cards into #cards-mount on the /discover page.
-//
-// For each card, renders available asset links plus a visual card icon:
-//   - Details       (file icon)      -> Firebase Storage file / URL
-//   - Report        (file icon)      -> Firebase Storage file / URL
-//   - Infographic   (image icon)     -> Firebase Storage file / URL
-//   - Explainer Video (play icon)    -> Vimeo URL
-//   - Card icon     (image)          -> Firebase Storage file / URL
-//
-// Firebase Storage paths get resolved to download URLs on click for assets
-// and lazily after render for card icons.
+// Reads window.SOLUTION_CONTENT and renders Solution Builder cards on /discover.
+// Asset fields supported per card:
+//   moreInfo, audioExplainer, summaryReports, infoGraphics, slideDecks, videoExplainers
+// Asset behavior:
+//   audio/video/image -> media player modal
+//   reports/slides/pdf -> new tab
+//   '#' or empty -> disabled gray icon
+//   any non-# value -> active green icon
+// ========================================================================
 
 const DEFAULT_CARD_ICON = 'gs://trendzact-partners-001.firebasestorage.app/icons/Trendzact Favicon (green).png';
 
-const ICON_DETAILS = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>`;
-const ICON_REPORT = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v7a2 2 0 0 1-2 2h-2"/><path d="M14 3v5h5"/><path d="M12 12v9"/><path d="M8.5 17.5 12 21l3.5-3.5"/></svg>`;
-const ICON_INFOGRAPHIC = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+const ICON_MORE = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
+const ICON_AUDIO = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
+const ICON_REPORT = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>`;
+const ICON_GRAPHIC = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+const ICON_SLIDES = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 18v3"/><path d="M8 9h8"/><path d="M8 13h5"/></svg>`;
 const ICON_VIDEO = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
 
 const TYPE_LABELS = {
-  platform:    { tag: 'PLATFORM',        className: 'tag tag-solid' },
-  solutions:   { tag: 'SOLUTION',        className: 'tag tag-solid' },
-  enhancements:{ tag: 'ENHANCEMENT',     className: 'tag tag-solid' },
-  useCases:    { tag: 'USE CASE',        className: 'tag' },
-  vectors:     { tag: 'EXPOSURE VECTOR', className: 'tag' },
-  caseStudies: { tag: 'CASE STUDY',      className: 'tag tag-solid' },
-  buyers:      { tag: 'IDEAL BUYER',     className: 'tag' }
+  platform: { tag: 'PLATFORM', className: 'tag tag-solid' },
+  solutions: { tag: 'SOLUTION', className: 'tag tag-solid' },
+  enhancements: { tag: 'ENHANCEMENT', className: 'tag tag-solid' },
+  useCases: { tag: 'USE CASE', className: 'tag' },
+  vectors: { tag: 'EXPOSURE VECTOR', className: 'tag' },
+  caseStudies: { tag: 'CASE STUDY', className: 'tag tag-solid' },
+  buyers: { tag: 'IDEAL BUYER', className: 'tag' }
 };
 
 const TYPE_FILTER_KEY = {
-  platform:    'platform',
-  solutions:   'solution',
-  enhancements:'enhancement',
-  useCases:    'usecase',
-  vectors:     'vector',
+  platform: 'platform',
+  solutions: 'solution',
+  enhancements: 'enhancement',
+  useCases: 'usecase',
+  vectors: 'vector',
   caseStudies: 'casestudy',
-  buyers:      'buyer'
+  buyers: 'buyer'
 };
 
 let storageModulePromise = null;
@@ -46,9 +45,7 @@ const FIREBASE_VERSION = '10.14.1';
 const FIREBASE_STORAGE_MODULE_URL = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-storage.js`;
 
 function loadStorageModule() {
-  if (!storageModulePromise) {
-    storageModulePromise = import(FIREBASE_STORAGE_MODULE_URL);
-  }
+  if (!storageModulePromise) storageModulePromise = import(FIREBASE_STORAGE_MODULE_URL);
   return storageModulePromise;
 }
 
@@ -65,6 +62,43 @@ function isHttpUrl(s) {
   return typeof s === 'string' && /^https?:\/\//i.test(s);
 }
 
+function isGsUrl(s) {
+  return typeof s === 'string' && /^gs:\/\//i.test(s);
+}
+
+function objectPathFromGsUrl(value) {
+  const clean = String(value || '').replace(/^gs:\/\//i, '');
+  const slashIndex = clean.indexOf('/');
+  return slashIndex >= 0 ? clean.slice(slashIndex + 1) : '';
+}
+
+function toFirebaseDownloadUrl(value) {
+  if (!value || value === '#') return '#';
+  if (isHttpUrl(value)) return value;
+
+  const bucket = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.storageBucket;
+  if (!bucket) return value;
+
+  const objectPath = isGsUrl(value) ? objectPathFromGsUrl(value) : String(value).replace(/^\/+/, '');
+  return 'https://firebasestorage.googleapis.com/v0/b/' + encodeURIComponent(bucket) + '/o/' + encodeURIComponent(objectPath) + '?alt=media';
+}
+
+function cleanExt(value) {
+  return String(value || '').split('?')[0].toLowerCase();
+}
+
+function mediaTypeForAsset(kind, value) {
+  const lower = cleanExt(value);
+  if (kind === 'audio' || lower.endsWith('.m4a') || lower.endsWith('.mp3') || lower.endsWith('.wav')) return 'audio';
+  if (kind === 'video' || lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov')) return 'video';
+  if (kind === 'graphic' || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.webp') || lower.endsWith('.gif')) return 'image';
+  return '';
+}
+
+function shouldOpenInMediaPlayer(kind, value) {
+  return Boolean(mediaTypeForAsset(kind, value));
+}
+
 function getCardIconPath(card) {
   return card.iconImage || card.cardIcon || card.iconUrl || DEFAULT_CARD_ICON;
 }
@@ -72,19 +106,11 @@ function getCardIconPath(card) {
 function renderCardIcon(card) {
   const iconPath = getCardIconPath(card);
   const alt = card.iconAlt || `${card.title || 'Discover card'} icon`;
-
-  return `
-      <div class="card-icon-wrap" aria-hidden="false">
-        <div class="card-icon-placeholder" aria-hidden="true">TZ</div>
-        <img class="card-icon-img" alt="${escapeHtml(alt)}" data-card-icon-path="${escapeHtml(iconPath)}" loading="lazy" hidden />
-      </div>`;
+  return `<div class="card-icon-wrap" aria-hidden="false"><div class="card-icon-placeholder" aria-hidden="true">TZ</div><img class="card-icon-img" alt="${escapeHtml(alt)}" data-card-icon-path="${escapeHtml(iconPath)}" loading="lazy" hidden /></div>`;
 }
 
 function renderCardTypeRow(meta) {
-  return `
-      <div class="card-type-row">
-        <span class="${meta.className}">${meta.tag}</span>
-      </div>`;
+  return `<div class="card-type-row"><span class="${meta.className}">${meta.tag}</span></div>`;
 }
 
 async function resolveCardIcons() {
@@ -109,10 +135,12 @@ async function resolveCardIcons() {
     try {
       let src = path;
       if (!isHttpUrl(path)) {
-        if (!storage) return;
-        src = await storageApi.getDownloadURL(storageApi.ref(storage, path));
+        if (isGsUrl(path) || path.indexOf('/') >= 0) {
+          src = toFirebaseDownloadUrl(path);
+        } else if (storage) {
+          src = await storageApi.getDownloadURL(storageApi.ref(storage, path));
+        }
       }
-
       img.src = src;
       img.hidden = false;
       const wrapper = img.closest('.card-icon-wrap');
@@ -124,74 +152,50 @@ async function resolveCardIcons() {
 }
 
 function renderAssetRow(card) {
-  const parts = [];
+  const assets = [
+    { field: 'moreInfo', title: 'More Info', label: 'More', icon: ICON_MORE, kind: 'more' },
+    { field: 'audioExplainer', title: 'Audio Explainer', label: 'Audio', icon: ICON_AUDIO, kind: 'audio' },
+    { field: 'summaryReports', title: 'Summary Report', label: 'Report', icon: ICON_REPORT, kind: 'report' },
+    { field: 'infoGraphics', title: 'Infographic', label: 'Graphic', icon: ICON_GRAPHIC, kind: 'graphic' },
+    { field: 'slideDecks', title: 'Slide Deck', label: 'Slides', icon: ICON_SLIDES, kind: 'slides' },
+    { field: 'videoExplainers', title: 'Video Explainer', label: 'Video', icon: ICON_VIDEO, kind: 'video' }
+  ];
 
-  parts.push(renderAssetIcon({
-    value: card.moreInfoUrl,
-    title: 'Details',
-    label: 'Details',
-    icon: ICON_DETAILS,
-    kind: 'details',
-    isExternal: false
-  }));
-
-  parts.push(renderAssetIcon({
-    value: card.technicalReport,
-    title: 'Report',
-    label: 'Report',
-    icon: ICON_REPORT,
-    kind: 'report',
-    isExternal: false
-  }));
-
-  parts.push(renderAssetIcon({
-    value: card.infographic,
-    title: 'Infographic',
-    label: 'Infographic',
-    icon: ICON_INFOGRAPHIC,
-    kind: 'infographic',
-    isExternal: false
-  }));
-
-  parts.push(renderAssetIcon({
-    value: card.vimeoUrl,
-    title: 'Explainer Video',
-    label: 'Video',
-    icon: ICON_VIDEO,
-    kind: 'video',
-    isExternal: true
+  const parts = assets.map(asset => renderAssetIcon({
+    value: card[asset.field],
+    title: asset.title,
+    label: asset.label,
+    icon: asset.icon,
+    kind: asset.kind,
+    mediaTitle: `${card.title || 'Asset'} - ${asset.label}`
   }));
 
   parts.push(renderCardIcon(card));
-
   return `<div class="asset-row">${parts.join('')}</div>`;
 }
 
-function renderAssetIcon({ value, title, label, icon, kind, isExternal }) {
+function renderAssetIcon({ value, title, label, icon, kind, mediaTitle }) {
   const isPlaceholder = !value || value === '#';
-
   if (isPlaceholder) {
     return `<span class="asset-icon asset-icon-disabled" title="${escapeHtml(title)} (coming soon)" aria-disabled="true">${icon}<span>${escapeHtml(label)}</span></span>`;
   }
 
-  if (isExternal) {
-    return `<a href="${escapeHtml(value)}" target="_blank" rel="noopener" class="asset-icon" title="${escapeHtml(title)}">${icon}<span>${escapeHtml(label)}</span></a>`;
+  const url = toFirebaseDownloadUrl(value);
+  const mediaType = mediaTypeForAsset(kind, value);
+
+  if (shouldOpenInMediaPlayer(kind, value)) {
+    return `<a href="${escapeHtml(url)}" class="asset-icon asset-icon-active" title="${escapeHtml(title)}" data-media-player data-media-title="${escapeHtml(mediaTitle)}" data-media-src="${escapeHtml(value)}" data-media-type="${escapeHtml(mediaType)}">${icon}<span>${escapeHtml(label)}</span></a>`;
   }
 
-  return `<a href="#" class="asset-icon" title="${escapeHtml(title)}" data-asset-type="storage" data-asset-path="${escapeHtml(value)}" data-asset-kind="${escapeHtml(kind)}">${icon}<span>${escapeHtml(label)}</span></a>`;
+  return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="asset-icon asset-icon-active" title="${escapeHtml(title)}">${icon}<span>${escapeHtml(label)}</span></a>`;
 }
 
 function renderBullets(items) {
   if (!items || !items.length) return '';
-  return `<ul class="check-list">${
-    items.map(it => `<li>${escapeHtml(it)}</li>`).join('')
-  }</ul>`;
+  return `<ul class="check-list">${items.map(it => `<li>${escapeHtml(it)}</li>`).join('')}</ul>`;
 }
 
-const VECTOR_TAG_SET = new Set([
-  'visibility', 'presence', 'environment', 'behavior',
-  'context', 'continuity', 'evidence', 'control'
-]);
+const VECTOR_TAG_SET = new Set(['visibility', 'presence', 'environment', 'behavior', 'context', 'continuity', 'evidence', 'control']);
 
 function splitTags(rawTags) {
   const moduleTags = [];
@@ -199,20 +203,15 @@ function splitTags(rawTags) {
   for (const t of (rawTags || [])) {
     if (typeof t !== 'string') continue;
     if (t.startsWith('primary:')) continue;
-    if (VECTOR_TAG_SET.has(t.toLowerCase())) {
-      vectorTags.push(t);
-    } else {
-      moduleTags.push(t);
-    }
+    if (VECTOR_TAG_SET.has(t.toLowerCase())) vectorTags.push(t);
+    else moduleTags.push(t);
   }
   return { moduleTags, vectorTags };
 }
 
 function renderVectorTagRow(vectorTags) {
   if (!vectorTags.length) return '';
-  const chips = vectorTags
-    .map(v => `<span class="vector-chip">${escapeHtml(v)}</span>`)
-    .join('');
+  const chips = vectorTags.map(v => `<span class="vector-chip">${escapeHtml(v)}</span>`).join('');
   return `<div class="card-vector-tags" aria-label="Exposure vectors">${chips}</div>`;
 }
 
@@ -227,32 +226,17 @@ function renderProductStyleCard(card, typeKey) {
   const { moduleTags, vectorTags } = splitTags(card.tags);
   const tagsHtml = moduleTags.map(t => renderTag(t)).join('');
   const vectorTagsHtml = renderVectorTagRow(vectorTags);
-  const hasBullets = (card.capabilities && card.capabilities.length) ||
-                     (card.outcomes && card.outcomes.length);
+  const hasBullets = (card.capabilities && card.capabilities.length) || (card.outcomes && card.outcomes.length);
 
-  return `
-    <article class="card product-card sb-product-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}" data-category="${escapeHtml((card.category || '').toUpperCase())}">
+  return `<article class="card product-card sb-product-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}" data-category="${escapeHtml((card.category || '').toUpperCase())}">
       <div class="product-card-head">
         ${renderCardTypeRow(meta)}
         <h3>${escapeHtml(card.title)}</h3>
         ${card.summary ? `<p class="product-summary">${escapeHtml(card.summary)}</p>` : ''}
       </div>
-
       ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
       ${vectorTagsHtml}
-
-      ${hasBullets ? `
-      <div class="product-card-body">
-        <div class="product-col">
-          <h4>Key Capabilities</h4>
-          ${renderBullets(card.capabilities)}
-        </div>
-        <div class="product-col">
-          <h4>Business Outcomes</h4>
-          ${renderBullets(card.outcomes)}
-        </div>
-      </div>` : ''}
-
+      ${hasBullets ? `<div class="product-card-body"><div class="product-col"><h4>Key Capabilities</h4>${renderBullets(card.capabilities)}</div><div class="product-col"><h4>Business Outcomes</h4>${renderBullets(card.outcomes)}</div></div>` : ''}
       ${renderAssetRow(card)}
     </article>`;
 }
@@ -263,25 +247,21 @@ function renderCompactCard(card, typeKey) {
   const { moduleTags, vectorTags } = splitTags(card.tags);
   const tagsHtml = moduleTags.map(t => renderTag(t, typeKey === 'useCases' ? 'gray' : null)).join('');
   const vectorTagsHtml = renderVectorTagRow(vectorTags);
-  const assetRow = renderAssetRow(card);
   const summaryText = card.summary || card.description || '';
 
-  return `
-    <div class="card sb-unified-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}">
+  return `<div class="card sb-unified-card" id="${escapeHtml(card.id || '')}" data-solution-card data-type="${filterKey}">
       ${renderCardTypeRow(meta)}
       <h3>${escapeHtml(card.title)}</h3>
       ${summaryText ? `<p class="card-summary">${escapeHtml(summaryText)}</p>` : ''}
       ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
       ${vectorTagsHtml}
       ${card.bullets && card.bullets.length ? `<div class="card-bullets">${renderBullets(card.bullets)}</div>` : ''}
-      ${assetRow}
+      ${renderAssetRow(card)}
     </div>`;
 }
 
 function renderCard(card, typeKey) {
-  if (typeKey === 'vectors') {
-    return renderProductStyleCard(card, typeKey);
-  }
+  if (typeKey === 'vectors') return renderProductStyleCard(card, typeKey);
   return renderCompactCard(card, typeKey);
 }
 
@@ -297,73 +277,17 @@ function renderAllCards() {
   const html = [];
   for (const typeKey of ['platform', 'solutions', 'enhancements', 'useCases', 'vectors', 'caseStudies', 'buyers']) {
     const items = content[typeKey] || [];
-    for (const card of items) {
-      html.push(renderCard(card, typeKey));
-    }
+    for (const card of items) html.push(renderCard(card, typeKey));
   }
   mount.innerHTML = html.join('\n');
-}
-
-async function handleAssetClick(e) {
-  const link = e.target.closest('[data-asset-type="storage"]');
-  if (!link) return;
-  e.preventDefault();
-
-  const path = link.dataset.assetPath;
-  const kind = link.dataset.assetKind;
-  if (!path) return;
-
-  if (isHttpUrl(path)) {
-    window.open(path, '_blank', 'noopener');
-    return;
-  }
-
-  const originalHtml = link.innerHTML;
-  link.style.pointerEvents = 'none';
-  link.innerHTML = `<span class="asset-spinner"></span><span>Loading…</span>`;
-
-  if (!window.TrendzactAuth || !window.TrendzactAuth.app) {
-    alert(`Could not load ${kind || 'asset'}. Firebase is not initialized yet.`);
-    link.innerHTML = originalHtml;
-    link.style.pointerEvents = '';
-    return;
-  }
-
-  const storageApi = await loadStorageModule().catch(err => {
-    console.warn('[Discover] Firebase Storage module failed to load:', err);
-    return null;
-  });
-  if (!storageApi) {
-    alert(`Could not load ${kind || 'asset'}. Storage module failed to load.`);
-    link.innerHTML = originalHtml;
-    link.style.pointerEvents = '';
-    return;
-  }
-
-  try {
-    const storage = storageApi.getStorage(window.TrendzactAuth.app);
-    const fileRef = storageApi.ref(storage, path);
-    const url = await storageApi.getDownloadURL(fileRef);
-    window.open(url, '_blank', 'noopener');
-  } catch (err) {
-    console.error('[Discover] Asset load failed:', err);
-    alert(`Could not load ${kind || 'asset'}. The file may not be available yet.`);
-  } finally {
-    link.innerHTML = originalHtml;
-    link.style.pointerEvents = '';
-  }
 }
 
 function init() {
   renderAllCards();
   resolveCardIcons();
   setTimeout(resolveCardIcons, 300);
-  document.addEventListener('click', handleAssetClick);
   document.dispatchEvent(new CustomEvent('solution-cards-rendered'));
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
