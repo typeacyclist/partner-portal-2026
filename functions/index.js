@@ -224,7 +224,7 @@ function isAuthorized(req) {
 }
 
 function escapeHtml(s) {
-  return String(s == null ? '' : '') || String(s)
+  return String(s == null ? '' : s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
