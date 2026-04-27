@@ -4,6 +4,7 @@
 //
 // This file intentionally uses explicit exact-match mappings from the current
 // Firebase Storage asset inventory. It does not generate guessed filenames.
+// If an exact infographic is not mapped, generic group-level infographics are used.
 
 (function () {
   const content = window.SOLUTION_CONTENT;
@@ -12,6 +13,13 @@
 
   const iconMap = {
     'sdec-platform': bases.siteIcons + 'workspace-exposure-no-text-tight.png'
+  };
+
+  const genericInfographics = {
+    solutions: bases.infoGraphics + 'INFOGRAPHIC for Solutions.jpeg',
+    enhancements: bases.infoGraphics + 'INFOGRAPHIC for Enhancements.jpeg',
+    vectors: bases.infoGraphics + 'INFOGRAPHIC for Exposure Vectors.jpeg',
+    caseStudies: bases.infoGraphics + 'INFOGRAPHIC for Case Study.jpeg'
   };
 
   const assetMap = {
@@ -115,11 +123,19 @@
     Object.keys(content).forEach(function (groupKey) {
       const group = content[groupKey];
       if (!Array.isArray(group)) return;
-      group.forEach(callback);
+      group.forEach(function (card) {
+        callback(card, groupKey);
+      });
     });
   }
 
-  eachCard(function (card) {
+  function resolveFieldValue(field, mappedAssets, groupKey) {
+    if (mappedAssets[field]) return mappedAssets[field];
+    if (field === 'infoGraphics' && genericInfographics[groupKey]) return genericInfographics[groupKey];
+    return '#';
+  }
+
+  eachCard(function (card, groupKey) {
     if (!card || !card.id) return;
 
     if (iconMap[card.id]) {
@@ -128,7 +144,7 @@
 
     const mappedAssets = assetMap[card.id] || {};
     assetFields.forEach(function (field) {
-      card[field] = mappedAssets[field] || '#';
+      card[field] = resolveFieldValue(field, mappedAssets, groupKey);
     });
   });
 })();
