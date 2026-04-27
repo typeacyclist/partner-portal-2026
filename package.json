@@ -1,5 +1,10 @@
 {
   "name": "partner-portal-2026",
-  "private": true
+  "private": true,
+  "scripts": {
+    "deploy:hosting": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 -Target hosting",
+    "deploy:functions": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 -Target functions",
+    "deploy:all": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 -Target all",
+    "deploy:hosting:dry": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 -Target hosting -DryRun"
+  }
 }
-
