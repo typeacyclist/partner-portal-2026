@@ -11,7 +11,7 @@
 //   any non-# value -> active green icon
 // ========================================================================
 
-const DEFAULT_CARD_ICON = 'gs://trendzact-partners-001.firebasestorage.app/icons/Trendzact Favicon (green).png';
+const DEFAULT_CARD_ICON = 'gs://trendzact-partners-001.firebasestorage.app/site_icons/Trendzact ai_shield icon 2026.jpg';
 
 const ICON_MORE = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
 const ICON_AUDIO = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
