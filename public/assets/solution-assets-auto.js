@@ -10,6 +10,10 @@
   const bases = window.SOLUTION_ASSET_BASES;
   if (!content || !bases) return;
 
+  const iconMap = {
+    'sdec-platform': bases.siteIcons + 'workspace-exposure-no-text-tight.png'
+  };
+
   const assetMap = {
     'sdec-platform': {
       audioExplainer: bases.audioExplainer + 'AUDIO OVERVIEW for Platform-SDEC.m4a',
@@ -117,6 +121,10 @@
 
   eachCard(function (card) {
     if (!card || !card.id) return;
+
+    if (iconMap[card.id]) {
+      card.iconImage = iconMap[card.id];
+    }
 
     const mappedAssets = assetMap[card.id] || {};
     assetFields.forEach(function (field) {
