@@ -66,7 +66,7 @@
 
   function pageFooter(doc, pageNum, totalPages, proposalId, portalDomain) {
     var domainLabel = portalDomain || 'partner portal';
-    text(doc, 'Trendzact GRC1 - Partner Proposal ' + proposalId + ' - Confidential. For ' + domainLabel + ' use only.', MARGIN, PAGE_H - 8, { size: 8, color: C.medGray });
+    text(doc, 'Trendzact Partner Proposal ' + proposalId + ' - Confidential. For ' + domainLabel + ' use only.', MARGIN, PAGE_H - 8, { size: 8, color: C.medGray });
     text(doc, 'Page ' + pageNum + ' of ' + totalPages, PAGE_W - MARGIN, PAGE_H - 8, { size: 8, color: C.medGray, align: 'right' });
   }
 
@@ -126,8 +126,9 @@
       text(doc, String(row[1]), cx, cy + 6, { size: 11, style: 'bold', color: C.darkGray });
     });
 
-    var intro = 'This proposal outlines a Trendzact GRC1 deployment scoped to ' + (draft.companyName || 'the prospect') +
-      "'s priority use case and risk profile. MSRP pricing is included for planning purposes. " +
+
+    var intro = 'This proposal outlines a Trendzact deployment scoped to ' + (draft.companyName || 'the prospect') +
+      "'s priority use case and risk profile. MSRP price USD($) is included for planning purposes. " +
       MSRP_NOTE + '. Final pricing, terms, and deployment scope are subject to Trendzact Deal Desk approval.';
     lines(doc, intro, MARGIN, 168, CONTENT_W, { size: 10, color: C.darkGray });
 
@@ -144,7 +145,8 @@
       ['Year 1 ' + MSRP_LABEL, fmt(totals.year1AnnualUsd)],
       ['Year 2 recurring', contractYears >= 2 ? fmt(totals.recurringYear2Usd) : '—'],
       ['Year 3 recurring', contractYears >= 3 ? fmt(totals.recurringYear3Usd) : '—'],
-      ['Total contract value (' + contractYears + 'yr)', fmt(totals.tcvUsd)]
+      ['Total contract value' + MSRP_SUMMARY_LABEL +' (' + contractYears + 'yr)', fmt(totals.tcvUsd)],
+      MSRP_NOTE
     ];
     pricingRows.forEach(function (row, idx) {
       var isLast = idx === pricingRows.length - 1;
