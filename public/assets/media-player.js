@@ -1,5 +1,5 @@
 // Trendzact Partners Portal - reusable media modal
-// Supports MP4 video and M4A audio from direct URLs or Firebase Storage object paths.
+// Supports MP4 video, M4A audio, and image previews from direct URLs or Firebase Storage object paths.
 
 (function () {
   const MODAL_ID = 'mediaPlayerModal';
@@ -8,6 +8,7 @@
   let bodyEl;
   let errorEl;
   let openLinkEl;
+  let controlsEl;
   let playBtn;
   let pauseBtn;
   let restartBtn;
@@ -44,11 +45,12 @@
 
   function inferType(src, explicitType) {
     const normalizedType = (explicitType || '').toLowerCase();
-    if (normalizedType === 'video' || normalizedType === 'audio') return normalizedType;
+    if (['video', 'audio', 'image'].includes(normalizedType)) return normalizedType;
 
     const cleanSrc = (src || '').split('?')[0].toLowerCase();
-    if (cleanSrc.endsWith('.mp4')) return 'video';
+    if (cleanSrc.endsWith('.mp4') || cleanSrc.endsWith('.webm') || cleanSrc.endsWith('.mov')) return 'video';
     if (cleanSrc.endsWith('.m4a') || cleanSrc.endsWith('.mp3') || cleanSrc.endsWith('.wav')) return 'audio';
+    if (cleanSrc.endsWith('.jpg') || cleanSrc.endsWith('.jpeg') || cleanSrc.endsWith('.png') || cleanSrc.endsWith('.webp') || cleanSrc.endsWith('.gif')) return 'image';
     return 'unknown';
   }
 
@@ -56,6 +58,11 @@
     if (!playBtn || !pauseBtn) return;
     playBtn.disabled = isPlaying;
     pauseBtn.disabled = !isPlaying;
+  }
+
+  function setMediaControlVisibility(show) {
+    if (!controlsEl) return;
+    controlsEl.style.display = show ? '' : 'none';
   }
 
   function stopAndReset() {
@@ -88,6 +95,7 @@
     errorEl.textContent = message;
     errorEl.classList.add('open');
     openLinkEl.style.display = 'none';
+    setMediaControlVisibility(false);
     setPlayingState(false);
   }
 
@@ -137,15 +145,15 @@
     const foot = document.createElement('div');
     foot.className = 'media-modal-foot';
 
-    const controls = document.createElement('div');
-    controls.className = 'media-controls';
-    controls.setAttribute('aria-label', 'Media controls');
+    controlsEl = document.createElement('div');
+    controlsEl.className = 'media-controls';
+    controlsEl.setAttribute('aria-label', 'Media controls');
 
     playBtn = makeButton('Play', 'btn btn-sm btn-primary', 'mediaPlay');
     pauseBtn = makeButton('Pause', 'btn btn-sm btn-ghost', 'mediaPause');
     pauseBtn.disabled = true;
     restartBtn = makeButton('Restart', 'btn btn-sm btn-secondary', 'mediaRestart');
-    controls.append(playBtn, pauseBtn, restartBtn);
+    controlsEl.append(playBtn, pauseBtn, restartBtn);
 
     openLinkEl = document.createElement('a');
     openLinkEl.className = 'btn btn-sm btn-ghost';
@@ -153,7 +161,7 @@
     openLinkEl.rel = 'noopener noreferrer';
     openLinkEl.textContent = 'Open in New Tab';
 
-    foot.append(controls, openLinkEl);
+    foot.append(controlsEl, openLinkEl);
     dialog.append(head, bodyEl, errorEl, foot);
     modal.appendChild(dialog);
     document.body.appendChild(modal);
@@ -196,6 +204,7 @@
     errorEl.textContent = '';
     bodyEl.replaceChildren();
     activeMedia = null;
+    setMediaControlVisibility(type === 'video' || type === 'audio');
 
     if (!src) {
       showError('No media source was provided. Add data-media-src to the button or link.');
@@ -215,8 +224,14 @@
       addSource(activeMedia, mediaUrl, 'audio/m4a');
       activeMedia.appendChild(document.createTextNode('Your browser does not support embedded audio.'));
       bodyEl.appendChild(activeMedia);
+    } else if (type === 'image') {
+      const img = document.createElement('img');
+      img.className = 'media-modal-image';
+      img.src = mediaUrl;
+      img.alt = options.title || 'Media preview';
+      bodyEl.appendChild(img);
     } else {
-      showError('Unsupported media type. Use .mp4 for video or .m4a for audio, or set data-media-type.');
+      showError('Unsupported media type. Use .mp4 video, .m4a audio, or .jpg/.png image assets.');
     }
 
     if (activeMedia) {
@@ -252,6 +267,7 @@
 
   window.TrendzactMediaPlayer = {
     open: openMedia,
-    close: closeModal
+    close: closeModal,
+    toFirebaseDownloadUrl: toFirebaseDownloadUrl
   };
 })();
