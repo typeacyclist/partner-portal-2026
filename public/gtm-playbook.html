@@ -45,6 +45,36 @@
     font-weight: 700;
     margin-bottom: 10px;
   }
+  .card-media {
+    width: 100%;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    margin: 14px 0;
+    display: block;
+  }
+  .question-list {
+    margin: 14px 0 0;
+    padding-left: 20px;
+  }
+  .question-list li {
+    margin: 8px 0;
+  }
+  .example-stack {
+    display: grid;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .gap-example {
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.58);
+  }
+  .gap-example strong {
+    display: block;
+    color: var(--dark-green);
+    margin-bottom: 4px;
+  }
 </style>
 </head>
 <body>
@@ -76,8 +106,34 @@
   <section class="section">
     <h2>Solution-Forward Narrative</h2>
     <div class="card-grid two">
-      <div class="card"><span class="mini-step">1</span><h3>Start with the exposure moment</h3><p>Sensitive data risk begins when information becomes visible on a screen, in a workspace, or during collaboration. Start the conversation there—not with tools, telemetry, or features.</p></div>
-      <div class="card"><span class="mini-step">2</span><h3>Frame the buyer’s control gap</h3><p>Most controls govern access, storage, classification, or transfer. They rarely prove what was visible, who was present, where it happened, and whether the exposure was acceptable.</p></div>
+      <div class="card">
+        <span class="mini-step">1</span>
+        <h3>Start with the exposure moment</h3>
+        <p>Sensitive data risk begins when information becomes visible on a screen, in a workspace, across multiple monitors, or during collaboration. Start the conversation there—not with tools, telemetry, or features.</p>
+        <img class="card-media" src="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/infographics%2FINFOGRAPHIC%20-%20Sales%20Playbook%20-%20Exposure%20Scenarios.jpg?alt=media" alt="Trendzact exposure scenarios showing sensitive data exposure across workspaces, screens, meetings, and collaboration environments." loading="lazy" />
+        <p>Use the exposure moment to determine whether the buyer’s primary risk is physical workspace exposure, virtual meeting exposure, user behavior, visible-data handling, or a combination of these conditions.</p>
+        <ul class="question-list">
+          <li>Does your exposure risk come more from the physical environment around the user, the virtual audience in the meeting, or both?</li>
+          <li>Are your highest-risk users exposing sensitive information across both monitors and meetings?</li>
+          <li>Can you currently correlate workspace context, participant context, visible data, and user action in one investigation?</li>
+          <li>Are your current tools stronger at governing access than governing what happens after access is granted?</li>
+          <li>Would your first priority be to control exposure in workspaces, meetings, or high-risk user groups that do both?</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="mini-step">2</span>
+        <h3>Frame the buyer’s control gap</h3>
+        <p>Most controls govern access, storage, classification, sharing, or transfer. The control gap appears after access is granted, when sensitive data becomes visible and the buyer cannot prove whether the exposure context was acceptable.</p>
+        <p>Frame the gap around what the buyer cannot currently see, correlate, prove, or act on in real time.</p>
+        <div class="example-stack">
+          <div class="gap-example"><strong>Access was allowed, but exposure was unsafe.</strong><span>The user was authorized to open the file, but sensitive information became visible in a public, shared, remote, or uncontrolled workspace.</span></div>
+          <div class="gap-example"><strong>The file was protected, but the screen was not.</strong><span>Classification and DLP controls protected the document, but did not evaluate who or what could see the rendered content on the monitor.</span></div>
+          <div class="gap-example"><strong>The meeting was authorized, but the audience was wrong.</strong><span>Sensitive information was shared while external participants, recording tools, guests, or unverified attendees were present.</span></div>
+          <div class="gap-example"><strong>The user was authenticated, but presence changed.</strong><span>The user logged in correctly, but another person, observer, phone, or unattended-session condition appeared while sensitive data was visible.</span></div>
+          <div class="gap-example"><strong>The SOC saw an alert, but not the exposure context.</strong><span>Security teams received activity data but could not reconstruct what was visible, who was present, where it happened, and what response occurred.</span></div>
+          <div class="gap-example"><strong>The organization had policy, but no real-time control point.</strong><span>The buyer had rules for sensitive data handling, but no way to warn, mask, restrict, lock, escalate, or preserve evidence at the moment exposure occurred.</span></div>
+        </div>
+      </div>
       <div class="card"><span class="mini-step">3</span><h3>Map to one lead solution</h3><p>Use the buyer’s most urgent exposure condition to lead with one solution area, then expand to adjacent modules as the risk picture becomes clearer.</p></div>
       <div class="card"><span class="mini-step">4</span><h3>Close on real-time action</h3><p>Trendzact turns silent exposure uncertainty into proof, context, and governable action: warn, mask, restrict, lock, escalate, preserve evidence, or trigger a workflow.</p></div>
     </div>
