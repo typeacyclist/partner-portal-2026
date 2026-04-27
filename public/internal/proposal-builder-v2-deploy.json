@@ -1,0 +1,8 @@
+{
+  "page": "Proposal Builder V2",
+  "phase": "Phase 1 - Hidden URL",
+  "route": "/internal/proposal-builder-v2",
+  "visibility": "URL access only; no public navigation",
+  "deployTrigger": "GitHub push to main triggers Firebase Hosting workflow",
+  "timestampUtc": "2026-04-26T00:00:00Z"
+}
