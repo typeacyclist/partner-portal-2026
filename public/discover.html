@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/assets/styles.css" />
+<link rel="stylesheet" href="/assets/media-player.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
 <style>
   .video-embed-16x9 {
@@ -52,8 +53,6 @@
     margin: 0 0 10px;
   }
 
-  /* Visual card icon — sits at the far right of the asset/link row:
-     Details | Infographic | Video --> Icon. Size is 2x the prior 26px. */
   .asset-row {
     display: flex;
     align-items: center;
@@ -140,6 +139,16 @@
     font-weight: 500;
   }
 
+  .asset-icon.asset-icon-active {
+    color: var(--dark-green);
+    border-color: var(--med-green);
+    background: var(--tint-light);
+  }
+  .asset-icon.asset-icon-active:hover {
+    color: #fff;
+    background: var(--dark-green);
+    border-color: var(--dark-green);
+  }
   .asset-icon-disabled {
     color: var(--border);
     cursor: not-allowed;
@@ -216,7 +225,9 @@
 <script src="/assets/header.js"></script>
 <script src="/assets/footer.js"></script>
 <script src="/assets/app.js"></script>
+<script src="/assets/media-player.js"></script>
 <script src="/assets/solution-content.js"></script>
+<script src="/assets/solution-assets-auto.js"></script>
 <script type="module" src="/assets/solution-render.js"></script>
 </body>
 </html>
