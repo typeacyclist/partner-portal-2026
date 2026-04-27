@@ -22,6 +22,9 @@
   // --------------------------------------------------------------
   // Constants
   // --------------------------------------------------------------
+
+  var MSRP_SUMMARY_LABEL = 'MSRP PRICING SUMMARY USD($)';
+
   var STEPS = [
     { id: 'fields',    num: '01', name: 'Proposal Fields' },
     { id: 'selectors', num: '02', name: 'Solution Selectors' },
@@ -981,8 +984,8 @@
     }
     summaryRows.push('<div class="tp-summary-row subgroup">One-time setup</div>');
     summaryRows.push('<div class="tp-summary-row onetime"><span class="tp-pricing-label">Total one-time setup</span><span>' + fmt(calc.totals.oneTimeUsd) + '</span></div>');
-    summaryRows.push('<div class="tp-summary-row total"><span>Total contract value (' + calc.totals.contractYears + 'yr)</span><span>' + fmt(calc.totals.tcvUsd) + '</span></div>');
-
+    summaryRows.push('<div class="tp-summary-row total"><span>' + MSRP_SUMMARY_LABEL + ': Total contract value (' + calc.totals.contractYears + 'yr)</span><span>' + fmt(calc.totals.tcvUsd) + '</span></div>');
+    
     var itemList = function (codes, emptyText) {
       if (!codes.length) return '<li style="color:var(--med-gray);">' + esc(emptyText) + '</li>';
       return codes.map(function (c) {
