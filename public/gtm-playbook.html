@@ -62,6 +62,15 @@
     display: grid;
     gap: 14px;
   }
+  .card-media-link {
+    display: block;
+    border-radius: 18px;
+    cursor: zoom-in;
+  }
+  .card-media-link:focus-visible {
+    outline: 3px solid var(--med-green);
+    outline-offset: 3px;
+  }
   .card-media {
     width: 100%;
     aspect-ratio: 16 / 9;
@@ -135,7 +144,9 @@
         <h3>Start with the exposure moment</h3>
         <div class="narrative-card-body">
           <p>Sensitive data risk begins when information becomes visible on a screen, in a workspace, across multiple monitors, or during collaboration. Start the conversation there—not with tools, telemetry, or features.</p>
-          <img class="card-media" src="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/infographics%2FINFOGRAPHIC%20-%20Sales%20Playbook%20-%20Exposure%20Scenarios.jpg?alt=media" alt="Trendzact exposure scenarios showing sensitive data exposure across workspaces, screens, meetings, and collaboration environments." loading="lazy" />
+          <a class="card-media-link" href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/infographics%2FINFOGRAPHIC%20-%20Sales%20Playbook%20-%20Exposure%20Scenarios.jpg?alt=media" target="_blank" rel="noopener noreferrer" aria-label="Open Trendzact exposure scenarios infographic in a new tab">
+            <img class="card-media" src="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/infographics%2FINFOGRAPHIC%20-%20Sales%20Playbook%20-%20Exposure%20Scenarios.jpg?alt=media" alt="Trendzact exposure scenarios showing sensitive data exposure across workspaces, screens, meetings, and collaboration environments." loading="lazy" />
+          </a>
           <p>Use the exposure moment to determine whether the buyer’s primary risk is physical workspace exposure, virtual meeting exposure, user behavior, visible-data handling, or a combination of these conditions.</p>
           <ul class="question-list">
             <li>Does your exposure risk come more from the physical environment around the user, the virtual audience in the meeting, or both?</li>
