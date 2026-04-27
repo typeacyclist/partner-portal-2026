@@ -8,7 +8,44 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/assets/styles.css" />
+<link rel="stylesheet" href="/assets/media-player.css" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<style>
+  .playbook-callout {
+    background: var(--tint-light);
+    border-color: var(--med-green);
+  }
+  .playbook-callout p {
+    margin-bottom: 0;
+  }
+  .asset-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .talk-track {
+    font-size: 18px;
+    font-family: var(--ff-display), serif;
+    color: var(--dark-gray);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .mini-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: var(--dark-green);
+    color: #fff;
+    font-family: var(--ff-mono), monospace;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+</style>
 </head>
 <body>
 
@@ -19,69 +56,130 @@
 
   <header class="page-head">
     <h1>Sales Playbook</h1>
-    <p class="lede">How to position, diagnose exposure risk, map solutions, run demos, and close deals using the Trendzact Data Exposure Coverage model.</p>
+    <p class="lede">A solution-forward field guide for positioning Trendzact Sensitive Data Exposure Control around the five buyer-facing solution areas: Secure Workspace, Identity Recognition Assurance, Secure Virtual Meeting, Insider Threat Management, and Exposure Data Loss Prevention.</p>
   </header>
 
   <section class="section">
-    <div class="card" style="background:var(--tint-light); border-color:var(--med-green);">
-      <span class="next-step">Use with Resources</span>
-      <h3 style="margin-top:8px;">Need decks, guides, or technical docs?</h3>
-      <p>The Resources page contains all downloadable assets. This playbook explains when and how to use them in a deal.</p>
-      <a href="/resources.html" class="btn btn-primary">Open Resources</a>
+    <div class="card playbook-callout">
+      <span class="next-step">Core message</span>
+      <h3 style="margin-top:8px;">Access permission does not grant exposure permission.</h3>
+      <p>Trendzact controls sensitive data exposure after access is granted and data becomes visible. The platform helps buyers understand, decide, and act in real time across the human edge.</p>
+      <div class="asset-actions">
+        <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/slide_decks%2FSLIDE%20DECK%20for%20Platform-SDEC%20(long%20form).pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Open Platform Deck</a>
+        <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/exec_summary_reports_pdf%2Fplatform_sdec.pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Open Platform Brief</a>
+        <a href="#" class="btn btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/video_explainers/VIDEO EXPLAINER for Platform-SDEC.mp4" data-media-type="video">Watch Platform Video</a>
+        <a href="#" class="btn btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/audio_podcast_explainer/AUDIO OVERVIEW for Platform-SDEC.m4a" data-media-type="audio">Play Audio Overview</a>
+      </div>
     </div>
   </section>
 
   <section class="section">
-    <h2>Core Value Proposition</h2>
-    <div class="card" style="background:var(--tint-light); border-color:var(--med-green);">
-      <p style="font-size:18px; font-family:var(--ff-display), serif; color:var(--dark-gray); margin:0;">
-        Trendzact helps organizations control sensitive data exposure the moment it becomes visible—across screens, people, workspaces, meetings, behavior, and evidence.
-      </p>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>Sales Narrative</h2>
+    <h2>Solution-Forward Narrative</h2>
     <div class="card-grid two">
-      <div class="card"><h3>1. Data is protected in systems</h3><p>Security investments focus on storage, transmission, and classification.</p></div>
-      <div class="card"><h3>2. Exposure begins when data is visible</h3><p>The moment sensitive data appears on screen, it enters the human and physical world.</p></div>
-      <div class="card"><h3>3. Existing tools miss this moment</h3><p>DLP, UEBA, and logs do not fully control what is visible, who is present, or the surrounding context.</p></div>
-      <div class="card"><h3>4. Trendzact controls the moment</h3><p>Trendzact turns exposure into a real-time control point using visibility, presence, and context.</p></div>
+      <div class="card"><span class="mini-step">1</span><h3>Start with the exposure moment</h3><p>Sensitive data risk begins when information becomes visible on a screen, in a workspace, or during collaboration. Start the conversation there—not with tools, telemetry, or features.</p></div>
+      <div class="card"><span class="mini-step">2</span><h3>Frame the buyer’s control gap</h3><p>Most controls govern access, storage, classification, or transfer. They rarely prove what was visible, who was present, where it happened, and whether the exposure was acceptable.</p></div>
+      <div class="card"><span class="mini-step">3</span><h3>Map to one lead solution</h3><p>Use the buyer’s most urgent exposure condition to lead with one solution area, then expand to adjacent modules as the risk picture becomes clearer.</p></div>
+      <div class="card"><span class="mini-step">4</span><h3>Close on real-time action</h3><p>Trendzact turns silent exposure uncertainty into proof, context, and governable action: warn, mask, restrict, lock, escalate, preserve evidence, or trigger a workflow.</p></div>
     </div>
   </section>
 
   <section class="section">
-    <h2>Solution Mapping</h2>
+    <h2>Five Solution Areas</h2>
+    <p class="section-sub">Lead with the solution area that best matches the buyer’s visible-data exposure problem.</p>
     <div class="card-grid two">
-      <div class="card"><h3>Workspace Exposure</h3><p>Remote work, phones, observers, and unattended screens create physical exposure risk.</p></div>
-      <div class="card"><h3>Virtual Meeting & Screenshare Exposure</h3><p>Sensitive data is shared in meetings with external participants and recordings.</p></div>
-      <div class="card"><h3>Imposters & Identity Spoofing</h3><p>Valid logins do not prove the correct person is present during sensitive work.</p></div>
-      <div class="card"><h3>On-Screen Sensitive Data Exposure</h3><p>DLP does not control what users actually see on screen.</p></div>
-      <div class="card"><h3>Insider Risk & Exfiltration Behavior</h3><p>Behavioral patterns indicate risk before data leaves the organization.</p></div>
-      <div class="card"><h3>Evidence, Audit & Reconstruction</h3><p>Organizations need proof of what was visible, who was present, and what happened.</p></div>
+      <div class="card">
+        <span class="tag tag-solid">SECURE WORKSPACE</span>
+        <h3>Control exposure in physical and remote workspaces</h3>
+        <p>Use when buyers worry about observers, phones, cameras, paper, unattended screens, public workspaces, home offices, or high-value confidential work. Webcam-enabled endpoints are required; the Trendzact Ultrawide Webcam is recommended for mission-critical workspace deployments.</p>
+        <div class="asset-actions">
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/exec_summary_reports_pdf%2Fsolution_secure_workspace.pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Report</a>
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/slide_decks%2FSLIDE%20DECK%20for%20Solution-SW.pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary">Slides</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/infographics/INFOGRAPHIC for Solution-SW.jpg" data-media-type="image">Infographic</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/video_explainers/VIDEO EXPLAINER for Solution-SW.mp4" data-media-type="video">Video</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/audio_podcast_explainer/AUDIO OVERVIEW for Solution-SW.m4a" data-media-type="audio">Audio</a>
+        </div>
+      </div>
+      <div class="card">
+        <span class="tag tag-solid">IDENTITY RECOGNITION ASSURANCE</span>
+        <h3>Prove who is present during sensitive exposure</h3>
+        <p>Use when buyers need more than login authentication. The question is whether the right person is present now, while sensitive data is visible. Webcam-enabled endpoints are required.</p>
+        <div class="asset-actions">
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/exec_summary_reports_pdf%2Fsolution_identity_assurance.pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Report</a>
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/slide_decks%2FSLIDE%20DECK%20for%20Solution-IRA.pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary">Slides</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/infographics/INFOGRAPHIC for Solution-IRA.jpg" data-media-type="image">Infographic</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/video_explainers/VIDEO EXPLAINER for Solution-IRA.mp4" data-media-type="video">Video</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/audio_podcast_explainer/AUDIO OVERVIEW for Solution-IRA.m4a" data-media-type="audio">Audio</a>
+        </div>
+      </div>
+      <div class="card">
+        <span class="tag tag-solid">SECURE VIRTUAL MEETING</span>
+        <h3>Control exposure during collaboration</h3>
+        <p>Use when sensitive data is shared in meetings with internal users, customers, vendors, external participants, screen shares, or recordings.</p>
+        <div class="asset-actions">
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/exec_summary_reports_pdf%2Fsolution_secure_virtual_meeting.pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Report</a>
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/slide_decks%2FSLIDE%20DECK%20for%20Solution-SVM.pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary">Slides</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/infographics/INFOGRAPHIC for Solution-SVM.jpg" data-media-type="image">Infographic</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/video_explainers/VIDEO EXPLAINER for Solution-SVM.mp4" data-media-type="video">Video</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/audio_podcast_explainer/AUDIO OVERVIEW for Solution-SVM.m4a" data-media-type="audio">Audio</a>
+        </div>
+      </div>
+      <div class="card">
+        <span class="tag tag-solid">INSIDER THREAT MANAGEMENT</span>
+        <h3>Detect risky behavior around visible data</h3>
+        <p>Use when buyers need to detect negligent, stealthy, privileged, repeated, or malicious behavior before exposed information becomes data loss.</p>
+        <div class="asset-actions">
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/exec_summary_reports_pdf%2Fsolution_insider_threat_management.pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Report</a>
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/slide_decks%2FSLIDE%20DECK%20for%20Solution-ITM.pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary">Slides</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/infographics/INFOGRAPHIC for Solution-ITM.jpg" data-media-type="image">Infographic</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/video_explainers/VIDEO EXPLAINER for Solution-ITM.mp4" data-media-type="video">Video</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/audio_podcast_explainer/AUDIO OVERVIEW for Solution-ITM.m4a" data-media-type="audio">Audio</a>
+        </div>
+      </div>
+      <div class="card">
+        <span class="tag tag-solid">EXPOSURE DATA LOSS PREVENTION</span>
+        <h3>Extend DLP to visible data exposure</h3>
+        <p>Use when buyers already have classification, DLP, or CASB controls but still cannot control what users see, capture, copy, share, or expose on screen.</p>
+        <div class="asset-actions">
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/exec_summary_reports_pdf%2Fsolution_exposure_dlp.pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Report</a>
+          <a href="https://firebasestorage.googleapis.com/v0/b/trendzact-partners-001.firebasestorage.app/o/slide_decks%2FSLIDE%20DECK%20for%20Solution-EDLP.pdf?alt=media" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary">Slides</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/infographics/INFOGRAPHIC for Solution-EDLP.jpg" data-media-type="image">Infographic</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/video_explainers/VIDEO EXPLAINER for Solution-EDLP.mp4" data-media-type="video">Video</a>
+          <a href="#" class="btn btn-sm btn-secondary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/audio_podcast_explainer/AUDIO OVERVIEW for Solution-EDLP.m4a" data-media-type="audio">Audio</a>
+        </div>
+      </div>
+      <div class="card playbook-callout">
+        <span class="tag">GROUP ASSET</span>
+        <h3>Need a one-screen solution overview?</h3>
+        <p>Use the generic Solutions infographic when the buyer is still exploring which solution area fits their exposure problem.</p>
+        <div class="asset-actions">
+          <a href="#" class="btn btn-sm btn-primary" data-media-player data-media-src="gs://trendzact-partners-001.firebasestorage.app/infographics/INFOGRAPHIC for Solutions.jpeg" data-media-type="image">Open Solutions Infographic</a>
+          <a href="/discover.html" class="btn btn-sm btn-secondary">Open Discover</a>
+        </div>
+      </div>
     </div>
   </section>
 
   <section class="section">
     <h2>Discovery Questions</h2>
-    <p class="section-sub">Use these to identify which exposure coverage to lead with.</p>
+    <p class="section-sub">Use these to diagnose the buyer’s lead solution area.</p>
     <div class="card-grid two">
       <div class="card">
-        <h3>Exposure Risk</h3>
+        <h3>Identify the exposure condition</h3>
         <ul class="check-list">
-          <li>Where is sensitive data most exposed once it is visible?</li>
-          <li>What happens when sensitive data is shared in meetings?</li>
-          <li>Can you confirm who is present during sensitive work?</li>
-          <li>Do you have proof of what was visible during an incident?</li>
+          <li>When sensitive data is visible, what could go wrong before a file is transferred?</li>
+          <li>Which workspaces or user groups handle the most sensitive visible information?</li>
+          <li>Where do external participants, observers, phones, recordings, or screen sharing create risk?</li>
+          <li>Can you prove what was visible, who was present, and what action was taken during an incident?</li>
         </ul>
       </div>
       <div class="card">
-        <h3>Current Controls</h3>
+        <h3>Map to the first solution</h3>
         <ul class="check-list">
-          <li>What happens after a risky event is detected?</li>
-          <li>How are sensitivity labels enforced at the screen level?</li>
-          <li>How long does it take to investigate insider-related alerts?</li>
-          <li>How complete is your evidence for audit or incident review?</li>
+          <li>Workspace or observer risk → lead with Secure Workspace.</li>
+          <li>Active-session user confidence → lead with Identity Recognition Assurance.</li>
+          <li>Sensitive collaboration risk → lead with Secure Virtual Meeting.</li>
+          <li>Repeated risky behavior → lead with Insider Threat Management.</li>
+          <li>Visible data outside file-transfer control → lead with Exposure Data Loss Prevention.</li>
         </ul>
       </div>
     </div>
@@ -90,20 +188,27 @@
   <section class="section">
     <h2>Deal Motion by Stage</h2>
     <div class="card-grid four">
-      <div class="card"><span class="tag-gray tag">STAGE 01</span><h3>Discovery</h3><p>Identify the highest-risk exposure moment across workspace, meetings, identity, screen, behavior, or evidence.</p></div>
-      <div class="card"><span class="tag-gray tag">STAGE 02</span><h3>Technical Eval</h3><p>Use Live Demo scenarios aligned to the selected exposure coverage.</p></div>
-      <div class="card"><span class="tag-gray tag">STAGE 03</span><h3>Business Case</h3><p>Align to audit readiness, reduced exposure risk, and operational efficiency.</p></div>
-      <div class="card"><span class="tag-gray tag">STAGE 04</span><h3>Proposal</h3><p>Select Data Exposure Coverage and Enhancements based on the buyer’s exposure profile.</p></div>
+      <div class="card"><span class="tag-gray tag">STAGE 01</span><h3>Discover</h3><p>Anchor on the exposure moment and identify the lead solution area.</p><a href="/discover.html" class="link-arrow">Open Discover →</a></div>
+      <div class="card"><span class="tag-gray tag">STAGE 02</span><h3>Demo</h3><p>Use a demo scenario aligned to the buyer’s exposure condition.</p><a href="/live-demo.html" class="link-arrow">Open Demos →</a></div>
+      <div class="card"><span class="tag-gray tag">STAGE 03</span><h3>Business Case</h3><p>Use reports, infographics, and decks to link exposure control to audit, risk, and operational outcomes.</p><a href="/resources.html" class="link-arrow">Open Resources →</a></div>
+      <div class="card"><span class="tag-gray tag">STAGE 04</span><h3>Proposal</h3><p>Package the lead solution, adjacent modules, and enhancements based on the buyer’s exposure profile.</p><a href="/proposal" class="link-arrow">Build Proposal →</a></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Talk Track</h2>
+    <div class="card playbook-callout">
+      <p class="talk-track">“Most security tools answer whether someone had access. Trendzact answers what happened after access was granted: what sensitive data was visible, who was present, where exposure occurred, whether the context was acceptable, and what action should happen in real time.”</p>
     </div>
   </section>
 
   <section class="section">
     <h2>Objection Handling</h2>
     <div class="card-grid two">
-      <div class="card"><h3>"This feels like surveillance."</h3><p>Trendzact uses privacy-aware, policy-driven controls. Evidence is captured only when exposure risk triggers action.</p></div>
-      <div class="card"><h3>"We already have DLP or Purview."</h3><p>Trendzact extends those investments by controlling the moment data becomes visible—not just when it moves.</p></div>
-      <div class="card"><h3>"Our SOC cannot handle more alerts."</h3><p>Trendzact reduces noise by linking exposure, identity, and behavior into high-confidence events.</p></div>
-      <div class="card"><h3>"Can’t meeting platforms do this?"</h3><p>Collaboration tools provide basic controls. Trendzact enforces sensitivity-aware protection during exposure moments.</p></div>
+      <div class="card"><h3>“This feels like surveillance.”</h3><p>Reframe to policy-governed exposure control. Trendzact is designed to prove and control specific exposure conditions, not to create unmanaged employee monitoring.</p></div>
+      <div class="card"><h3>“We already have DLP or Purview.”</h3><p>Position EDLP as an extension. Purview and DLP help classify and govern data; Trendzact controls what happens when sensitive data becomes visible at the human edge.</p></div>
+      <div class="card"><h3>“Our SOC cannot handle more alerts.”</h3><p>Lead with context and action. Trendzact correlates visibility, presence, environment, behavior, and evidence so teams can focus on high-confidence exposure events.</p></div>
+      <div class="card"><h3>“Can meeting platforms do this?”</h3><p>Meeting platforms manage collaboration. Trendzact governs sensitive data exposure inside the collaboration moment, including participants, screen sharing, recordings, and evidence conditions.</p></div>
     </div>
   </section>
 
@@ -116,5 +221,6 @@
 <script src="/assets/header.js"></script>
 <script src="/assets/footer.js"></script>
 <script src="/assets/app.js"></script>
+<script src="/assets/media-player.js"></script>
 </body>
 </html>
