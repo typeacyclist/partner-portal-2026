@@ -5,12 +5,22 @@
     {
       heading: 'Primary Navigation',
       links: [
+        { href: '/index.html', label: 'Home' },
         { href: '/discover.html', label: 'Discover' },
-        { href: '/live-demo.html', label: 'Demos' },
-        { href: '/resources.html', label: 'Resources' },
         { href: '/gtm-playbook.html', label: 'Sales Playbook' },
-        { href: '/proposal', label: 'Proposal Builder' },
-        { href: '/contact.html', label: 'Contact' }
+        { href: '/resources.html', label: 'Resources' },
+        { href: '/contact.html', label: 'Contact' },
+        { href: '/proposal', label: 'Proposal Builder' }
+      ]
+    },
+    {
+      heading: 'Beta Page Links',
+      links: [
+        { href: '/proposal_v2.html', label: 'Proposal Builder v2' },
+        { href: '/live-demo.html', label: 'Demos' },
+        { href: '/grc-one.html', label: 'GRC One' },
+        { href: '/sales-order.html', label: 'Sales Order' },
+        { href: '/video-explainers', label: 'Videos' }
       ]
     }
   ];
