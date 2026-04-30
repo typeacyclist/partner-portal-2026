@@ -1,12 +1,10 @@
 // Trendzact Partners - Proposal PDF Renderer (v7)
 //
-// Takes a draft + allTiers (3 commitment options) + catalog and produces a 3-page PDF using jsPDF.
-// v7 changes:
-//   - Module-count pricing with commitment tiers
-//   - All 3 commitment options (1yr / 2yr / 3yr) shown on cover page
-//   - Line items on page 2 use 1-year base rates
-//   - No bundle discount references
-//   - Uses v7 result field names (annualRecurringMsrp, tcvMsrp, msrpLine, etc.)
+// Produces a 4-page PDF (prospect gets pages 1-3, partner keeps page 4):
+//   Page 1 — Cover: prospect details + MSRP commitment options
+//   Page 2 — Scope & MSRP Pricing: pricing inputs, base pricing, commitment tiers
+//   Page 3 — Next Steps + disclaimer + contact
+//   Page 4 — Distributor-Reseller Worksheet (channel pricing with subdomain discounts)
 //
 // Public API:
 //   window.TrendzactProposalRender.render({ draft, allTiers, catalog, partnerEmail, ccTo })
@@ -28,14 +26,13 @@
 
   var PAGE_W = 210, PAGE_H = 297, MARGIN = 16;
   var CONTENT_W = PAGE_W - MARGIN * 2;
-  var MSRP_LABEL = 'MSRP Price USD($)';
-  var MSRP_SUMMARY_LABEL = 'MSRP PRICING SUMMARY USD($)';
-  var MSRP_NOTE = 'Actual price based on distributor negotiated terms';
 
   function fmt(n) {
     if (n == null || isNaN(n)) return '$0';
     return '$' + Math.round(n).toLocaleString('en-US');
   }
+
+  function pct(n) { return Math.round(n * 100) + '%'; }
 
   function fillRect(doc, x, y, w, h, color) {
     doc.setFillColor.apply(doc, color);
@@ -62,39 +59,64 @@
     return wrapped.length;
   }
 
-  function formatSectorLabel(sector) {
-    if (!sector) return '—';
-    if (sector === 'commercial') return 'Commercial';
-    if (sector === 'govt-public-works') return 'Govt / Public Works';
-    return String(sector).split('-').map(function (part) {
-      return part ? part.charAt(0).toUpperCase() + part.slice(1) : part;
-    }).join(' ');
+  function hRule(doc, x1, x2, y, color) {
+    doc.setDrawColor(color[0], color[1], color[2]);
+    doc.setLineWidth(0.2);
+    doc.line(x1, y, x2, y);
   }
 
-  function pageFooter(doc, pageNum, totalPages, proposalId, portalDomain) {
+  function pageHeader(doc, title, proposalId) {
+    fillRect(doc, 0, 0, PAGE_W, 14, C.tintLight);
+    text(doc, title, MARGIN, 9.5, { size: 11, style: 'bold', color: C.darkGray });
+    text(doc, proposalId, PAGE_W - MARGIN, 9.5, { size: 8, color: C.medGray, align: 'right' });
+  }
+
+  function pageFooter(doc, proposalId, portalDomain) {
     var domainLabel = portalDomain || 'partner portal';
-    text(doc, 'Trendzact Partner Proposal ' + proposalId + ' - Confidential. For ' + domainLabel + ' use only.', MARGIN, PAGE_H - 8, { size: 8, color: C.medGray });
-    text(doc, 'Page ' + pageNum + ' of ' + totalPages, PAGE_W - MARGIN, PAGE_H - 8, { size: 8, color: C.medGray, align: 'right' });
+    text(doc, 'Trendzact  \u00b7  ' + proposalId + '  \u00b7  Confidential', MARGIN, PAGE_H - 8, { size: 7, color: C.medGray });
+    text(doc, domainLabel, PAGE_W - MARGIN, PAGE_H - 8, { size: 7, color: C.medGray, align: 'right' });
   }
 
+  // ================================================================
+  //  Build the PDF
+  // ================================================================
   function buildPdf(input) {
     var draft = input.draft || {};
     var allTiers = input.allTiers || [];
-    var calc = allTiers[0] || input.calculation || {};
+    var catalog = input.catalog || {};
+    var calc = allTiers[0] || {};
     var partnerEmail = input.partnerEmail || '';
     var jspdf = window.jspdf;
     if (!jspdf || !jspdf.jsPDF) throw new Error('jsPDF library not loaded');
 
     var doc = new jspdf.jsPDF({ unit: 'mm', format: 'a4' });
     var proposalId = calc.proposalId;
+    var inp = calc.input || {};
     var generatedAt = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    var totalPages = 3;
     var portalDomain = (window.location && window.location.hostname) || 'partner portal';
+    var subdomain = inp.subdomain || '';
+    var isDirectSale = !subdomain;
 
-    // ============== PAGE 1 - COVER ==============
+    // Resolve channel config for page 4
+    var channelConfig = window.TrendzactMath
+        ? window.TrendzactMath.resolveChannelConfig(catalog, subdomain)
+        : { regularDistDiscount: 0, regularResellerDiscount: 0, enhDistDiscount: 0, enhResellerDiscount: 0, _direct: true };
+
+    var tableLeft = MARGIN;
+    var tableRight = PAGE_W - MARGIN;
+    var tableWidth = tableRight - tableLeft;
+    var colCount = allTiers.length || 1;
+
+
+    // ================================================================
+    //  PAGE 1 \u2014 COVER
+    // ================================================================
+
+    // Dark header banner
     fillRect(doc, 0, 0, PAGE_W, 52, C.darkGray);
     fillRect(doc, 0, 52, PAGE_W, 2, C.darkGreen);
 
+    // Logo mark
     fillRect(doc, MARGIN, 16, 10, 10, C.darkGreen);
     doc.setDrawColor(C.white[0], C.white[1], C.white[2]);
     doc.setLineWidth(0.6);
@@ -105,192 +127,282 @@
     text(doc, 'PROPOSAL', PAGE_W - MARGIN, 21, { size: 10, style: 'bold', color: C.white, align: 'right' });
     text(doc, proposalId, PAGE_W - MARGIN, 25.5, { size: 8, color: [180, 220, 218], align: 'right' });
 
-    // ============== PAGE 1 — COVER DETAILS ==============
+    // --- Two-column detail section ---
+    var detY = 68;
+    var leftX = MARGIN;
+    var rightX = MARGIN + CONTENT_W / 2 + 4;
 
-    // Company name — hero
-    text(doc, draft.companyName || 'Prospect', MARGIN, 76, { size: 26, style: 'bold', color: C.darkGray });
-
-    // Subtitle: project name
-    var projectName = draft.proposalTitle && draft.proposalTitle.trim() ? draft.proposalTitle.trim() : '';
-    if (projectName) {
-      text(doc, projectName, MARGIN, 85, { size: 12, color: C.medGray });
-    }
-
-    // Divider
-    doc.setDrawColor(C.medGreen[0], C.medGreen[1], C.medGreen[2]);
-    doc.setLineWidth(0.6);
-    doc.line(MARGIN, 91, MARGIN + 40, 91);
-
-    // Detail grid — 2 columns, 3 rows
-    var detailY = 99;
-    var detailColW = CONTENT_W / 2;
-    var detailRowH = 14;
-    var detailItems = [
-      ['PREPARED FOR',     draft.contactName || '—'],
-      ['CONTACT EMAIL',    draft.contactEmail || '—'],
-      ['PRIMARY USE CASE', draft.primaryUseCase || '—'],
-      ['LICENSED USERS',   (draft.userCount || 0).toLocaleString('en-US')],
-      ['DEAL STAGE',       draft.dealStage || '—'],
-      ['EST. DECISION',    draft.estimatedCloseDate || '—']
+    // Left: Prepared For
+    text(doc, 'PREPARED FOR', leftX, detY, { size: 8, style: 'bold', color: C.darkGreen });
+    detY += 8;
+    var leftItems = [
+      ['Company', draft.companyName || '\u2014'],
+      ['Contact', draft.contactName || '\u2014'],
+      ['Email', draft.contactEmail || '\u2014']
     ];
-    detailItems.forEach(function (row, i) {
-      var col = i % 2;
-      var r = Math.floor(i / 2);
-      var dx = MARGIN + col * detailColW;
-      var dy = detailY + r * detailRowH;
-      text(doc, row[0], dx, dy, { size: 7, color: C.medGray });
-      text(doc, String(row[1]), dx, dy + 5, { size: 10, style: 'bold', color: C.darkGray });
+    leftItems.forEach(function (row) {
+      text(doc, row[0] + ':', leftX, detY, { size: 8, color: C.medGray });
+      text(doc, row[1], leftX + 24, detY, { size: 9, style: 'bold', color: C.darkGray });
+      detY += 7;
     });
 
-    // Scope note
-    var noteY = detailY + 3 * detailRowH + 6;
-    var scopeNote = 'This proposal outlines a Trendzact GRC One deployment scoped to ' + (draft.companyName || 'the prospect') +
-        "'s priority use case and risk profile. MSRP pricing (USD) is included for planning purposes; " +
-        'actual price is based on distributor negotiated terms. Final pricing, scope, and deployment terms are subject to Trendzact Deal Desk approval.';
-    lines(doc, scopeNote, MARGIN, noteY, CONTENT_W, { size: 9, color: C.medGray });
+    // Right: Proposal Details
+    var rightY = 68;
+    text(doc, 'PROPOSAL DETAILS', rightX, rightY, { size: 8, style: 'bold', color: C.darkGreen });
+    rightY += 8;
+    var rightItems = [
+      ['Title', (draft.proposalTitle && draft.proposalTitle.trim()) || '\u2014'],
+      ['Use Case', draft.primaryUseCase || '\u2014'],
+      ['Licenses', (draft.userCount || 0).toLocaleString('en-US')],
+      ['Est. Decision', draft.estimatedCloseDate || '\u2014']
+    ];
+    rightItems.forEach(function (row) {
+      text(doc, row[0] + ':', rightX, rightY, { size: 8, color: C.medGray });
+      text(doc, row[1], rightX + 28, rightY, { size: 9, style: 'bold', color: C.darkGray });
+      rightY += 7;
+    });
 
-    // ---- Commitment Options — 3-column comparison ----
-    var boxY = 180;
+    // Divider
+    var divY = Math.max(detY, rightY) + 4;
+    hRule(doc, MARGIN, PAGE_W - MARGIN, divY, C.border);
+
+    // Scope paragraph
+    var paraY = divY + 6;
+    var scopeNote = 'This proposal outlines a Trendzact GRC One deployment sized for the organization described above. ' +
+        'MSRP pricing (USD) is included for planning purposes. Final pricing, scope, and deployment terms are subject to Trendzact Deal Desk approval.';
+    var paraLineCount = lines(doc, scopeNote, MARGIN, paraY, CONTENT_W, { size: 9, color: C.medGray });
+
+    // --- MSRP Commitment Options ---
+    var boxY = paraY + paraLineCount * 4.5 + 10;
     var boxH = 72;
-    var colCount = allTiers.length || 1;
     var colW = CONTENT_W / colCount;
     var labelColor = [200, 200, 210];
     var valueColor = C.white;
-    var highlightCol = [0, 180, 170]; // teal accent for best-value column
+    var highlightCol = [0, 180, 170];
 
-    text(doc, 'COMMITMENT OPTIONS', MARGIN, boxY - 4, { size: 8, style: 'bold', color: C.darkGreen });
+    text(doc, 'MSRP PRICING SUMMARY USD($)', MARGIN, boxY - 4, { size: 8, style: 'bold', color: C.darkGreen });
 
     fillRect(doc, MARGIN, boxY, CONTENT_W, boxH, C.darkGray);
-    text(doc, MSRP_SUMMARY_LABEL, MARGIN + 6, boxY + 8, { size: 7, style: 'bold', color: labelColor });
-    text(doc, MSRP_NOTE, MARGIN + 6, boxY + 12.5, { size: 6.5, color: C.tintDark });
 
-    var tierTopY = boxY + 20;
+    var tierTopY = boxY + 8;
     allTiers.forEach(function (t, idx) {
       var tt = t.totals || {};
       var cx = MARGIN + idx * colW;
       var midX = cx + colW / 2;
       var isLast = idx === colCount - 1;
 
-      // Column divider (skip first)
+      // Column divider
       if (idx > 0) {
         doc.setDrawColor(80, 85, 95);
         doc.setLineWidth(0.3);
-        doc.line(cx, tierTopY - 2, cx, boxY + boxH - 5);
+        doc.line(cx, tierTopY, cx, boxY + boxH - 4);
       }
 
       // Tier label
-      text(doc, (t.commitment && t.commitment.label) || (tt.contractYears + '-year'), midX, tierTopY + 2, { size: 9, style: 'bold', color: isLast ? highlightCol : valueColor, align: 'center' });
+      text(doc, (t.commitment && t.commitment.label) || (tt.contractYears + '-year'), midX, tierTopY + 4, { size: 10, style: 'bold', color: isLast ? highlightCol : valueColor, align: 'center' });
 
       // Annual recurring
-      text(doc, 'Annual recurring', midX, tierTopY + 11, { size: 7, color: labelColor, align: 'center' });
-      text(doc, fmt(tt.annualRecurringMsrp), midX, tierTopY + 17, { size: 11, style: 'bold', color: valueColor, align: 'center' });
+      text(doc, 'Annual recurring', midX, tierTopY + 15, { size: 7, color: labelColor, align: 'center' });
+      text(doc, fmt(tt.annualRecurringMsrp), midX, tierTopY + 21, { size: 11, style: 'bold', color: valueColor, align: 'center' });
 
       // One-time
-      text(doc, 'One-time setup', midX, tierTopY + 25, { size: 7, color: labelColor, align: 'center' });
-      text(doc, fmt(tt.oneTimeMsrp), midX, tierTopY + 31, { size: 9, style: 'bold', color: valueColor, align: 'center' });
+      text(doc, 'One-time setup', midX, tierTopY + 30, { size: 7, color: labelColor, align: 'center' });
+      text(doc, fmt(tt.oneTimeMsrp), midX, tierTopY + 36, { size: 9, style: 'bold', color: valueColor, align: 'center' });
 
-      // TCV highlight
-      text(doc, 'TCV (' + tt.contractYears + 'yr)', midX, tierTopY + 39, { size: 7, color: isLast ? highlightCol : labelColor, align: 'center' });
-      text(doc, fmt(tt.tcvMsrp), midX, tierTopY + 45, { size: 13, style: 'bold', color: isLast ? highlightCol : C.tintDark, align: 'center' });
+      // TCV
+      text(doc, 'TCV (' + tt.contractYears + 'yr)', midX, tierTopY + 46, { size: 7, color: isLast ? highlightCol : labelColor, align: 'center' });
+      text(doc, fmt(tt.tcvMsrp), midX, tierTopY + 53, { size: 14, style: 'bold', color: isLast ? highlightCol : C.tintDark, align: 'center' });
     });
 
+    // Footer
     text(doc, 'Generated ' + generatedAt, MARGIN, 267, { size: 8, color: C.medGray });
     if (partnerEmail) text(doc, 'Prepared by ' + partnerEmail, PAGE_W - MARGIN, 267, { size: 8, color: C.medGray, align: 'right' });
-    pageFooter(doc, 1, totalPages, proposalId, portalDomain);
+    pageFooter(doc, proposalId, portalDomain);
 
-    // ============== PAGE 2 - LINE ITEMS ==============
+
+    // ================================================================
+    //  PAGE 2 \u2014 SCOPE & MSRP PRICING
+    // ================================================================
     doc.addPage();
-    fillRect(doc, 0, 0, PAGE_W, 14, C.tintLight);
-    text(doc, 'Scope & MSRP Pricing USD($)', MARGIN, 9.5, { size: 11, style: 'bold', color: C.darkGray });
-    text(doc, proposalId, PAGE_W - MARGIN, 9.5, { size: 8, color: C.medGray, align: 'right' });
+    pageHeader(doc, 'Scope & MSRP Pricing USD($)', proposalId);
 
-    var y = 28;
-    text(doc, 'PACKAGING', MARGIN, y, { size: 8, color: C.medGreen });
-    fillRect(doc, MARGIN, y + 2, 30, 0.8, C.medGreen);
-    y += 12;
-    text(doc, 'Line items for ' + (draft.companyName || 'the prospect'), MARGIN, y, { size: 14, style: 'bold', color: C.darkGray });
-    y += 8;
-    text(doc, MSRP_LABEL + ' — ' + MSRP_NOTE, MARGIN, y, { size: 8, style: 'bold', color: C.medGray });
+    var y = 24;
+
+    // --- Pricing Inputs ---
+    text(doc, 'PRICING INPUTS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
     y += 7;
 
-    var ctx = formatSectorLabel(draft.sector) + '  |  ' + ((calc.input && calc.input.companySegmentLabel) || '—') +
-        '  |  ' + ((calc.input && calc.input.moduleCount) || 0) + ' modules × ' +
-        ((calc.input && calc.input.moduleMultiplier) || 0).toFixed(2) +
-        '  |  1-year base rates (see cover for commitment options)';
-    text(doc, ctx, MARGIN, y, { size: 9, color: C.medGray });
+    var segLabel = inp.companySegmentLabel || '\u2014';
+    var licenseCount = inp.userCount || 0;
+    var moduleCount = inp.moduleCount || 0;
+    var modMult = inp.moduleMultiplier || 0;
+    var bracketLabel = inp.bracket || '\u2014';
+
+    text(doc, 'Company size:', MARGIN, y, { size: 8, color: C.medGray });
+    text(doc, segLabel, MARGIN + 30, y, { size: 9, style: 'bold', color: C.darkGray });
+    text(doc, 'Volume bracket:', MARGIN + CONTENT_W / 2, y, { size: 8, color: C.medGray });
+    text(doc, bracketLabel, MARGIN + CONTENT_W / 2 + 32, y, { size: 9, style: 'bold', color: C.darkGray });
+    y += 6;
+    text(doc, 'Monitored users:', MARGIN, y, { size: 8, color: C.medGray });
+    text(doc, licenseCount.toLocaleString('en-US'), MARGIN + 30, y, { size: 9, style: 'bold', color: C.darkGray });
+    text(doc, 'Module count:', MARGIN + CONTENT_W / 2, y, { size: 8, color: C.medGray });
+    text(doc, moduleCount + ' modules  \u00d7  ' + modMult.toFixed(2) + ' multiplier', MARGIN + CONTENT_W / 2 + 32, y, { size: 9, style: 'bold', color: C.darkGray });
     y += 10;
 
-    var cols = [
-      { label: 'SKU', x: MARGIN + 3, w: 28, align: 'left' },
-      { label: 'Description', x: MARGIN + 31, w: 100, align: 'left' },
-      { label: 'MSRP', x: PAGE_W - MARGIN - 5, w: 30, align: 'right' }
-    ];
-    var tableLeft = MARGIN, tableRight = PAGE_W - MARGIN, tableWidth = tableRight - tableLeft;
-    var headerH = 9, rowH = 8;
+    hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
+    y += 8;
 
-    fillRect(doc, tableLeft, y, tableWidth, headerH, C.tintLight);
-    doc.setDrawColor(C.border[0], C.border[1], C.border[2]);
-    doc.setLineWidth(0.2);
-    doc.line(tableLeft, y + headerH, tableRight, y + headerH);
-    cols.forEach(function (col) {
-      text(doc, col.label, col.x, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: col.align });
-    });
-    y += headerH;
+    // --- MSRP Base Pricing ---
+    text(doc, 'MSRP BASE PRICING (1-YEAR)', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
+    y += 8;
 
-    var pageBreakAt = PAGE_H - 50;
-    (calc.lines || []).forEach(function (l, i) {
-      if (y > pageBreakAt) {
-        pageFooter(doc, doc.internal.getNumberOfPages(), totalPages, proposalId, portalDomain);
-        doc.addPage();
-        fillRect(doc, 0, 0, PAGE_W, 14, C.tintLight);
-        text(doc, 'Scope & MSRP Pricing USD($) (continued)', MARGIN, 9.5, { size: 11, style: 'bold', color: C.darkGray });
-        y = 28;
-        fillRect(doc, tableLeft, y, tableWidth, headerH, C.tintLight);
-        doc.line(tableLeft, y + headerH, tableRight, y + headerH);
-        cols.forEach(function (col) {
-          text(doc, col.label, col.x, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: col.align });
-        });
-        y += headerH;
+    // Summary row helper
+    function summaryRow(label, sublabel, value, opts) {
+      opts = opts || {};
+      var rowH = sublabel ? 12 : 8;
+      if (opts.bg) fillRect(doc, tableLeft, y - 1, tableWidth, rowH, opts.bg);
+      text(doc, label, MARGIN + 2, y + 3.5, { size: opts.labelSize || 9, style: opts.labelStyle || 'normal', color: opts.labelColor || C.darkGray });
+      if (sublabel) text(doc, sublabel, MARGIN + 2, y + 8.5, { size: 7.5, color: C.medGray });
+      text(doc, value, PAGE_W - MARGIN - 3, y + 3.5, { size: opts.valueSize || 9, style: 'bold', color: opts.valueColor || C.darkGray, align: 'right' });
+      hRule(doc, tableLeft, tableRight, y + rowH, C.border);
+      y += rowH + 1;
+    }
+
+    // Find lines from 1yr calc
+    var calcLines = calc.lines || [];
+    var findLine = function (code) {
+      for (var i = 0; i < calcLines.length; i++) {
+        if (calcLines[i].code === code) return calcLines[i];
       }
+      return null;
+    };
 
-      if (i % 2 === 1) fillRect(doc, tableLeft, y, tableWidth, rowH, [250, 250, 251]);
-      var name = l.name + (l.timing === 'oneTime' ? ' (one-time)' : '');
-      if (name.length > 80) name = name.slice(0, 79) + '…';
-      text(doc, l.code, MARGIN + 3, y + 5.5, { size: 8.5, color: C.darkGray });
-      text(doc, name, MARGIN + 31, y + 5.5, { size: 8.5, color: C.darkGray });
-      text(doc, fmt(l.msrpLine), PAGE_W - MARGIN - 5, y + 5.5, { size: 8.5, color: C.darkGray, align: 'right' });
-      doc.setDrawColor(C.border[0], C.border[1], C.border[2]);
-      doc.line(tableLeft, y + rowH, tableRight, y + rowH);
-      y += rowH;
+    // CARE
+    var careLine = findLine('CARE');
+    var carePrice = careLine ? careLine.msrpLine : 0;
+    summaryRow('Core Services', 'SLA for ' + segLabel, fmt(carePrice));
+
+    // Named User License (modules + enhancements)
+    var moduleMsrp = 0;
+    var enhMsrp = 0;
+    var moduleNames = [];
+    var enhNames = [];
+    calcLines.forEach(function (l) {
+      if (l.isModule) { moduleMsrp += l.msrpLine; moduleNames.push(l.code); }
+      else if (l.category === '20-Enhancement' || l.category === '25-Standalone Enhancement') { enhMsrp += l.msrpLine; enhNames.push(l.code); }
+    });
+    var namedUserTotal = moduleMsrp + enhMsrp;
+    var namedUserPerUser = licenseCount > 0 ? namedUserTotal / licenseCount : 0;
+    var namedUserSub = fmt(Math.round(namedUserPerUser)) + '/user  \u00d7  ' + licenseCount.toLocaleString('en-US') + ' licenses  (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + (enhNames.length > 0 ? ' + ' + enhNames.length + ' enh.' : '') + ')';
+    summaryRow('Named User License', namedUserSub, fmt(namedUserTotal));
+
+    // One-time
+    var onbrdLine = findLine('INIT-ONBRD');
+    var onbrdPrice = onbrdLine ? onbrdLine.msrpLine : 0;
+    var otherOneTime = 0;
+    calcLines.forEach(function (l) {
+      if (l.timing === 'oneTime' && l.code !== 'INIT-ONBRD') otherOneTime += l.msrpLine;
+    });
+    summaryRow('One-Time Setup', segLabel + ' Onboarding' + (otherOneTime > 0 ? ' + integrations' : ''), fmt(onbrdPrice + otherOneTime));
+
+    y += 4;
+    hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
+    y += 8;
+
+    // --- Commitment Options Table ---
+    text(doc, 'MSRP WITH ANNUAL COMMITMENT OPTIONS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
+    y += 7;
+
+    // Header row
+    var tierColW = (CONTENT_W - 44) / colCount;
+    fillRect(doc, tableLeft, y - 2, tableWidth, 9, C.tintLight);
+    allTiers.forEach(function (t, idx) {
+      var colCenter = MARGIN + 44 + idx * tierColW + tierColW / 2;
+      var pctOff = Math.round((1 - t.commitment.factor) * 100);
+      var hdr = t.totals.contractYears + '-year' + (pctOff > 0 ? ' (' + pctOff + '% off)' : '');
+      text(doc, hdr, colCenter, y + 3.5, { size: 8, style: 'bold', color: C.darkGray, align: 'center' });
+    });
+    hRule(doc, tableLeft, tableRight, y + 7, C.border);
+    y += 9;
+
+    // Data rows
+    var commitRows = [
+      { label: 'Annual recurring', key: 'annualRecurringMsrp' },
+      { label: 'One-time setup', key: 'oneTimeMsrp' },
+      { label: 'Total Contract Value', key: 'tcvMsrp', bold: true }
+    ];
+    commitRows.forEach(function (row) {
+      var isBold = row.bold;
+      if (isBold) fillRect(doc, tableLeft, y - 2, tableWidth, 10, C.tintLight);
+      text(doc, row.label, MARGIN + 2, y + 3.5, { size: 8.5, style: isBold ? 'bold' : 'normal', color: C.darkGray });
+      allTiers.forEach(function (t, idx) {
+        var colCenter = MARGIN + 44 + idx * tierColW + tierColW / 2;
+        var val = t.totals[row.key] || 0;
+        text(doc, fmt(val), colCenter, y + 3.5, { size: isBold ? 10 : 9, style: 'bold', color: isBold ? C.darkGreen : C.darkGray, align: 'center' });
+      });
+      hRule(doc, tableLeft, tableRight, y + (isBold ? 8 : 6), C.border);
+      y += isBold ? 10 : 8;
     });
 
+    y += 6;
+
+    // --- Line Items ---
+    text(doc, 'LINE ITEMS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
+    y += 7;
+
+    var lineHeaderH = 8;
+    fillRect(doc, tableLeft, y, tableWidth, lineHeaderH, C.tintLight);
+    text(doc, 'SKU', MARGIN + 2, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
+    text(doc, 'Description', MARGIN + 28, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
+    text(doc, 'Timing', PAGE_W - MARGIN - 42, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'center' });
+    text(doc, 'MSRP', PAGE_W - MARGIN - 3, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
+    hRule(doc, tableLeft, tableRight, y + lineHeaderH, C.border);
+    y += lineHeaderH;
+
+    var lineRowH = 7;
+    var pageBreakAt = PAGE_H - 30;
+    calcLines.forEach(function (l, i) {
+      if (y > pageBreakAt) {
+        pageFooter(doc, proposalId, portalDomain);
+        doc.addPage();
+        pageHeader(doc, 'Scope & MSRP Pricing (continued)', proposalId);
+        y = 24;
+        fillRect(doc, tableLeft, y, tableWidth, lineHeaderH, C.tintLight);
+        text(doc, 'SKU', MARGIN + 2, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
+        text(doc, 'Description', MARGIN + 28, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
+        text(doc, 'Timing', PAGE_W - MARGIN - 42, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'center' });
+        text(doc, 'MSRP', PAGE_W - MARGIN - 3, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
+        hRule(doc, tableLeft, tableRight, y + lineHeaderH, C.border);
+        y += lineHeaderH;
+      }
+      if (i % 2 === 1) fillRect(doc, tableLeft, y, tableWidth, lineRowH, [250, 250, 251]);
+      var name = l.name;
+      if (name.length > 65) name = name.slice(0, 64) + '\u2026';
+      text(doc, l.code, MARGIN + 2, y + 5, { size: 8, color: C.darkGray });
+      text(doc, name, MARGIN + 28, y + 5, { size: 8, color: C.darkGray });
+      text(doc, l.timing === 'oneTime' ? 'One-time' : 'Annual', PAGE_W - MARGIN - 42, y + 5, { size: 7.5, color: C.medGray, align: 'center' });
+      text(doc, fmt(l.msrpLine), PAGE_W - MARGIN - 3, y + 5, { size: 8, color: C.darkGray, align: 'right' });
+      hRule(doc, tableLeft, tableRight, y + lineRowH, C.border);
+      y += lineRowH;
+    });
+
+    // Validity
     y += 4;
     var issuedAt = new Date();
     var expiresAt = new Date(issuedAt.getTime());
     expiresAt.setUTCDate(expiresAt.getUTCDate() + 90);
-    var issuedStr = issuedAt.toISOString().slice(0, 10);
-    var expiresStr = expiresAt.toISOString().slice(0, 10);
-    text(doc, 'MSRP pricing valid for 90 days from issue. Issued ' + issuedStr + '  ·  Expires ' + expiresStr + '. ' + MSRP_NOTE + '.', MARGIN, y + 3, { size: 8, style: 'italic', color: C.medGray });
-    y += 8;
+    text(doc, 'MSRP pricing valid for 90 days. Issued ' + issuedAt.toISOString().slice(0, 10) + '  \u00b7  Expires ' + expiresAt.toISOString().slice(0, 10) + '.', MARGIN, y + 3, { size: 7.5, style: 'italic', color: C.medGray });
 
-    if (draft.notes && draft.notes.trim()) {
-      y += 4;
-      text(doc, 'PROPOSAL NOTES', MARGIN, y, { size: 8, color: C.medGreen });
-      y += 6;
-      var noteCount = lines(doc, draft.notes, MARGIN, y, CONTENT_W, { size: 9, color: C.darkGray });
-      y += noteCount * 4.5 + 4;
-    }
-    pageFooter(doc, doc.internal.getNumberOfPages(), totalPages, proposalId, portalDomain);
+    pageFooter(doc, proposalId, portalDomain);
 
-    // ============== PAGE 3 - NEXT STEPS ==============
+
+    // ================================================================
+    //  PAGE 3 \u2014 NEXT STEPS
+    // ================================================================
     doc.addPage();
-    fillRect(doc, 0, 0, PAGE_W, 14, C.tintLight);
-    text(doc, 'Next Steps', MARGIN, 9.5, { size: 11, style: 'bold', color: C.darkGray });
-    text(doc, proposalId, PAGE_W - MARGIN, 9.5, { size: 8, color: C.medGray, align: 'right' });
+    pageHeader(doc, 'Next Steps', proposalId);
 
     y = 28;
-    text(doc, 'NEXT STEP', MARGIN, y, { size: 8, color: C.darkGreen, style: 'bold' });
-    y += 10;
     text(doc, 'How we move forward', MARGIN, y, { size: 18, style: 'bold', color: C.darkGray });
     y += 14;
 
@@ -312,8 +424,8 @@
     y += 4;
     fillRect(doc, MARGIN, y, CONTENT_W, 34, C.tintLight);
     text(doc, 'Disclaimer', MARGIN + 5, y + 8, { size: 9, style: 'bold', color: C.darkGray });
-    var disc = MSRP_LABEL + ' shown is based on information provided at the time of generation. ' + MSRP_NOTE + '. ' +
-        'Final pricing is subject to Trendzact Deal Desk review, volume tier approval, deployment scope, and executed reseller terms. ' +
+    var disc = 'MSRP pricing shown is based on information provided at the time of generation. ' +
+        'Final pricing is subject to Trendzact Deal Desk review, volume tier approval, deployment scope, and executed terms. ' +
         'This document is confidential and intended only for the named partner and prospect.';
     lines(doc, disc, MARGIN + 5, y + 14, CONTENT_W - 10, { size: 8, color: C.medGray });
     y += 40;
@@ -324,10 +436,140 @@
     text(doc, 'deal-desk@trendzact.com', MARGIN + 8, y + 26, { size: 11, style: 'bold', color: C.white });
     text(doc, 'Response within 1 business day', MARGIN + 8, y + 32, { size: 8, color: [180, 220, 218] });
 
-    pageFooter(doc, doc.internal.getNumberOfPages(), totalPages, proposalId, portalDomain);
+    pageFooter(doc, proposalId, portalDomain);
+
+
+    // ================================================================
+    //  PAGE 4 \u2014 DISTRIBUTOR\u2013RESELLER WORKSHEET
+    // ================================================================
+    doc.addPage();
+    pageHeader(doc, 'Distributor\u2013Reseller Worksheet', proposalId);
+
+    y = 24;
+
+    // Channel info
+    var channelLabel = subdomain ? subdomain.toUpperCase() : 'DIRECT';
+    text(doc, 'CHANNEL: ' + channelLabel, MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
+    y += 6;
+
+    if (isDirectSale) {
+      text(doc, 'Direct sale \u2014 no distributor or reseller discounts applied. Trendzact retains 100% of MSRP.', MARGIN, y, { size: 9, color: C.medGray });
+      y += 8;
+    } else {
+      text(doc, 'Distributor discount (regular): ' + pct(channelConfig.regularDistDiscount) + '    Reseller discount (regular): ' + pct(channelConfig.regularResellerDiscount), MARGIN, y, { size: 8, color: C.medGray });
+      y += 5;
+      text(doc, 'Distributor discount (enhancement): ' + pct(channelConfig.enhDistDiscount) + '    Reseller discount (enhancement): ' + pct(channelConfig.enhResellerDiscount), MARGIN, y, { size: 8, color: C.medGray });
+      y += 8;
+    }
+
+    hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
+    y += 6;
+
+    // Channel line-item table
+    var chColSku = MARGIN + 2;
+    var chColDesc = MARGIN + 26;
+    var chColMsrp = MARGIN + CONTENT_W * 0.52;
+    var chColDist = MARGIN + CONTENT_W * 0.70;
+    var chColResell = MARGIN + CONTENT_W * 0.88;
+
+    var chHeaderH = 8;
+    fillRect(doc, tableLeft, y, tableWidth, chHeaderH, C.tintLight);
+    text(doc, 'SKU', chColSku, y + 5.5, { size: 7, style: 'bold', color: C.darkGray });
+    text(doc, 'Description', chColDesc, y + 5.5, { size: 7, style: 'bold', color: C.darkGray });
+    text(doc, 'MSRP', chColMsrp, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
+    text(doc, 'Dist. Cost', chColDist, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
+    text(doc, 'Reseller Cost', chColResell, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
+    hRule(doc, tableLeft, tableRight, y + chHeaderH, C.border);
+    y += chHeaderH;
+
+    var chRowH = 7;
+    var chRecMsrp = 0, chRecDist = 0, chRecResell = 0;
+    var chOnceMsrp = 0, chOnceDist = 0, chOnceResell = 0;
+
+    calcLines.forEach(function (l, i) {
+      if (y > PAGE_H - 40) {
+        pageFooter(doc, proposalId, portalDomain);
+        doc.addPage();
+        pageHeader(doc, 'Distributor\u2013Reseller Worksheet (continued)', proposalId);
+        y = 24;
+        fillRect(doc, tableLeft, y, tableWidth, chHeaderH, C.tintLight);
+        text(doc, 'SKU', chColSku, y + 5.5, { size: 7, style: 'bold', color: C.darkGray });
+        text(doc, 'Description', chColDesc, y + 5.5, { size: 7, style: 'bold', color: C.darkGray });
+        text(doc, 'MSRP', chColMsrp, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
+        text(doc, 'Dist. Cost', chColDist, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
+        text(doc, 'Reseller Cost', chColResell, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
+        hRule(doc, tableLeft, tableRight, y + chHeaderH, C.border);
+        y += chHeaderH;
+      }
+
+      if (i % 2 === 1) fillRect(doc, tableLeft, y, tableWidth, chRowH, [250, 250, 251]);
+      var ch = l.channel || {};
+      var distCost = ch.trendzactNet != null ? ch.trendzactNet : l.msrpLine;
+      var resellerCost = ch.distributorPrice != null ? ch.distributorPrice : l.msrpLine;
+
+      var name = l.name;
+      if (name.length > 40) name = name.slice(0, 39) + '\u2026';
+      text(doc, l.code, chColSku, y + 5, { size: 7.5, color: C.darkGray });
+      text(doc, name, chColDesc, y + 5, { size: 7.5, color: C.darkGray });
+      text(doc, fmt(l.msrpLine), chColMsrp, y + 5, { size: 7.5, color: C.darkGray, align: 'right' });
+      text(doc, fmt(distCost), chColDist, y + 5, { size: 7.5, color: C.darkGray, align: 'right' });
+      text(doc, fmt(resellerCost), chColResell, y + 5, { size: 7.5, color: C.darkGray, align: 'right' });
+      hRule(doc, tableLeft, tableRight, y + chRowH, C.border);
+
+      if (l.timing === 'recurring') {
+        chRecMsrp += l.msrpLine; chRecDist += distCost; chRecResell += resellerCost;
+      } else {
+        chOnceMsrp += l.msrpLine; chOnceDist += distCost; chOnceResell += resellerCost;
+      }
+      y += chRowH;
+    });
+
+    // Totals
+    y += 2;
+    fillRect(doc, tableLeft, y, tableWidth, 9, C.tintLight);
+    text(doc, 'Annual Recurring', chColDesc, y + 6, { size: 8, style: 'bold', color: C.darkGray });
+    text(doc, fmt(chRecMsrp), chColMsrp, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
+    text(doc, fmt(chRecDist), chColDist, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
+    text(doc, fmt(chRecResell), chColResell, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
+    y += 10;
+
+    fillRect(doc, tableLeft, y, tableWidth, 9, [250, 250, 251]);
+    text(doc, 'One-Time', chColDesc, y + 6, { size: 8, style: 'bold', color: C.darkGray });
+    text(doc, fmt(chOnceMsrp), chColMsrp, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
+    text(doc, fmt(chOnceDist), chColDist, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
+    text(doc, fmt(chOnceResell), chColResell, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
+    y += 14;
+
+    // Margin summary
+    if (!isDirectSale) {
+      text(doc, 'MARGIN SUMMARY (1-YEAR ANNUAL RECURRING)', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
+      y += 8;
+      var t1 = allTiers[0] ? allTiers[0].totals : {};
+      var marginItems = [
+        ['MSRP (end-customer price)',  fmt(t1.annualRecurringMsrp)],
+        ['Trendzact net',              fmt(t1.annualTrendzactNet)],
+        ['Distributor retains',        fmt(t1.annualDistRetains)],
+        ['Reseller retains',           fmt(t1.annualResellerRetains)]
+      ];
+      marginItems.forEach(function (row) {
+        text(doc, row[0], MARGIN + 2, y, { size: 8.5, color: C.darkGray });
+        text(doc, row[1], MARGIN + CONTENT_W / 2, y, { size: 9, style: 'bold', color: C.darkGray, align: 'right' });
+        y += 7;
+      });
+    }
+
+    y += 4;
+    text(doc, 'This page is for partner internal use and should not be shared with the end customer.', MARGIN, y, { size: 7.5, style: 'italic', color: C.medGray });
+
+    pageFooter(doc, proposalId, portalDomain);
+
     return { doc: doc, proposalId: proposalId };
   }
 
+
+  // ================================================================
+  //  Email
+  // ================================================================
   async function sendEmail(input, proposalId, pdfBase64, pdfFilename) {
     try {
       var cfg = window.TrendzactConfig || {};
@@ -337,10 +579,10 @@
       var endpoint = cfg.sendProposalUrl || '/api/send-proposal';
       var draft = input.draft || {};
       var allTiers = input.allTiers || [];
-      var calc1 = allTiers[0] || input.calculation || {};
+      var calc1 = allTiers[0] || {};
       var totals = calc1.totals || {};
       var partnerEmail = (input.partnerEmail || '').trim();
-      if (!partnerEmail) return { ok: false, code: 'NO_PARTNER_EMAIL', error: 'Partner email not available — email not sent.' };
+      if (!partnerEmail) return { ok: false, code: 'NO_PARTNER_EMAIL', error: 'Partner email not available \u2014 email not sent.' };
 
       var ccList = [];
       if (input.ccTo && input.ccTo.trim()) {
