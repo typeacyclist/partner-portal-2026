@@ -1799,6 +1799,69 @@ p { margin: 0 0 1em; color: var(--dark-gray); }
   border: 1px solid #FCA5A5;
 }
 
+/* -------------------- Step 3/4: Commitment tier comparison grid -------------------- */
+.tp-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 8px 0;
+}
+.tp-tier-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  background: #fff;
+}
+.tp-tier-card.tp-tier-discount {
+  border-color: var(--med-green);
+  background: var(--tint-light);
+}
+.tp-tier-card.tp-tier-active {
+  border-color: var(--dark-green);
+  background: var(--tint-light);
+  box-shadow: 0 0 0 2px var(--dark-green);
+}
+.tp-tier-label {
+  font-family: var(--ff-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--med-gray);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.tp-tier-card.tp-tier-discount .tp-tier-label,
+.tp-tier-card.tp-tier-active .tp-tier-label {
+  color: var(--dark-green);
+}
+.tp-tier-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 2px 0;
+  color: var(--med-gray);
+  font-variant-numeric: tabular-nums;
+}
+.tp-tier-row span:last-child {
+  font-weight: 500;
+  color: var(--dark-gray);
+}
+.tp-tier-row.tp-tier-total {
+  border-top: 1px solid var(--border-soft);
+  margin-top: 6px;
+  padding-top: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--dark-gray);
+}
+.tp-tier-row.tp-tier-total span:last-child {
+  color: var(--dark-green);
+  font-weight: 600;
+}
+@media (max-width: 720px) {
+  .tp-tier-grid { grid-template-columns: 1fr; }
+}
+
 /* -------------------- Bottom nav bar -------------------- */
 .tp-nav {
   display: flex;
