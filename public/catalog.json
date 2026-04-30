@@ -171,13 +171,13 @@
     },
     {
       "years": 2,
-      "factor": 0.925,
-      "label": "2-year (7.5% off)"
+      "factor": 0.90,
+      "label": "2-year (10% off)"
     },
     {
       "years": 3,
-      "factor": 0.85,
-      "label": "3-year (15% off)"
+      "factor": 0.80,
+      "label": "3-year (20% off)"
     }
   ],
   "_commitmentDoc": "Flat annual \u2014 same price every year of term. Factor applied to MSRP. Applies to modules and per-user enhancements.",
