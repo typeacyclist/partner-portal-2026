@@ -997,25 +997,18 @@
     var d = state.draft;
     // Calculate all 3 commitment tiers
     var allTiers = TrendzactMath.calculateAllTiers(buildDraftForMathEngine(1), state.catalog);
-    var calc1 = allTiers[0]; // 1yr — use as the reference for inputs/lines
+    var calc1 = allTiers[0]; // 1yr reference
     state._lastCalc = calc1;
     state._allTiers = allTiers;
     var fmt = TrendzactMath.formatMoney;
 
     var seg = state.catalog.companySizeSegments.find(function (s) { return s.key === d.companySegment; });
-    var segLabel = seg ? seg.label + ' (' + seg.headcountRange + ')' : '—';
-
-    // Prospect snapshot
-    var prospectLine = [
-      d.prospectCompany || '—',
-      d.primaryContactName + (d.primaryContactRole ? ', ' + d.primaryContactRole : ''),
-      segLabel,
-      (d.expectedLicenseCount || '—') + ' monitored users'
-    ].filter(Boolean).join(' · ');
+    var segLabel = seg ? seg.label : '—';
+    var licenseCount = parseInt(d.expectedLicenseCount, 10) || 0;
 
     var mods = d.selectedModules;
     var modOpts = d.selectedModuleOptions;
-    var one = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; });
+    var oneOptional = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; });
 
     var skuName = function (code) {
       var s = state.catalog.skus.find(function (x) { return x.code === code; });
@@ -1027,44 +1020,6 @@
       errorsHtml = '<div class="tp-section-blocker">Cannot calculate: ' + calc1.errors.map(esc).join('; ') + '</div>';
     }
 
-    // Pricing inputs (same across all tiers)
-    var summaryRows = [];
-    summaryRows.push('<div class="tp-summary-row subgroup">Pricing inputs</div>');
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Volume bracket</span><span>' + esc(calc1.input.bracket || '—') + ' · MSRP base ' + fmt(calc1.input.bracketMsrpBase) + '/user</span></div>');
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Modules selected</span><span>' + calc1.input.moduleCount + ' → multiplier ' + (calc1.input.moduleMultiplier || 0).toFixed(2) + '×</span></div>');
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Channel</span><span>' + esc(detectSubdomain() || 'Direct (no subdomain)') + '</span></div>');
-
-    // 3-tier comparison table
-    summaryRows.push('<div class="tp-summary-row subgroup">MSRP by commitment term</div>');
-    summaryRows.push('<div class="tp-tier-grid">');
-    allTiers.forEach(function (t) {
-      var tierLabel = t.commitment.label || (t.totals.contractYears + '-year');
-      var isOneYr = t.totals.contractYears === 1;
-      summaryRows.push(
-        '<div class="tp-tier-card' + (isOneYr ? '' : ' tp-tier-discount') + '">' +
-          '<div class="tp-tier-label">' + esc(tierLabel) + '</div>' +
-          '<div class="tp-tier-row"><span>Annual recurring</span><span>' + fmt(t.totals.annualRecurringMsrp) + '</span></div>' +
-          '<div class="tp-tier-row"><span>One-time</span><span>' + fmt(t.totals.oneTimeMsrp) + '</span></div>' +
-          '<div class="tp-tier-row tp-tier-total"><span>TCV (' + t.totals.contractYears + 'yr)</span><span>' + fmt(t.totals.tcvMsrp) + '</span></div>' +
-        '</div>'
-      );
-    });
-    summaryRows.push('</div>');
-
-    // Channel breakdown — only shown when subdomain matched a channel partner
-    var detectedSub = detectSubdomain();
-    var channelSubs = state.catalog.subdomains || {};
-    var isChannelDeal = detectedSub && channelSubs[detectedSub];
-    if (isChannelDeal) {
-      summaryRows.push('<div class="tp-summary-row subgroup">Channel breakdown (annual recurring · 1yr reference)</div>');
-      summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Trendzact net</span><span>' + fmt(calc1.totals.annualTrendzactNet) + '</span></div>');
-      summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Distributor retains</span><span>' + fmt(calc1.totals.annualDistRetains) + '</span></div>');
-      summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Reseller retains</span><span>' + fmt(calc1.totals.annualResellerRetains) + '</span></div>');
-    } else {
-      summaryRows.push('<div class="tp-summary-row subgroup">Channel</div>');
-      summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Direct sales</span><span>No distributor/reseller discounts applied</span></div>');
-    }
-
     var itemList = function (codes, emptyText) {
       if (!codes.length) return '<li style="color:var(--med-gray);">' + esc(emptyText) + '</li>';
       return codes.map(function (c) {
@@ -1072,27 +1027,72 @@
       }).join('');
     };
 
+    // --- Included SKU sections ---
+    var groups = catalogByCategory();
+    var requiredCodes = groups.required.map(function (s) { return s.code; });
+
+    // Find line prices from 1yr calc
+    var findLine = function (code) {
+      return (calc1.lines || []).find(function (l) { return l.code === code; });
+    };
+
+    // CARE line
+    var careLine = findLine('CARE');
+    var carePrice = careLine ? careLine.msrpLine : 0;
+
+    // Module lines — annual per-user at 1yr (before commitment discount, which is 1.0 at 1yr)
+    // The per-user module rate is the same for all modules (module-count pricing)
+    var modulePerUser = calc1.input.bracketMsrpBase * calc1.input.moduleMultiplier;
+    var moduleTotalAnnual = modulePerUser * licenseCount;
+    // Enhancement lines are included in this total
+    var enhTotal = 0;
+    modOpts.forEach(function (code) {
+      var line = findLine(code);
+      if (line) enhTotal += line.msrpLine;
+    });
+    var namedUserTotal = moduleTotalAnnual + enhTotal;
+
+    // INIT-ONBRD line
+    var onbrdLine = findLine('INIT-ONBRD');
+    var onbrdPrice = onbrdLine ? onbrdLine.msrpLine : 0;
+    // Other one-time lines
+    var otherOneTimeTotal = 0;
+    oneOptional.forEach(function (code) {
+      var line = findLine(code);
+      if (line) otherOneTimeTotal += line.msrpLine;
+    });
+
+    // --- Annual commitment tiers ---
+    // Annual total = CARE + named-user-total (modules+enh) + other-one-time-recurring
+    // Commitment factor only applies to per-user items
+    // We use the allTiers calc which already has the commitment baked in
+
     return (
       '<h3>Step 3 — Review &amp; Calculate</h3>' +
-      '<p class="tp-lede">Live totals. Click any "Edit →" link to jump back and adjust.</p>' +
+      '<p class="tp-lede">MSRP pricing summary for prospect review. Click "Edit →" to adjust selections.</p>' +
 
       errorsHtml +
 
+      // --- Pricing Inputs ---
       '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
-          '<span class="tp-review-title">Prospect</span>' +
+          '<span class="tp-review-title">Pricing Inputs</span>' +
           '<button class="tp-review-edit" data-goto="0">Edit →</button>' +
         '</div>' +
-        '<div style="font-size:12px;color:var(--med-gray);margin-top:4px;">' + esc(prospectLine) + '</div>' +
+        '<div style="margin-top:8px; font-size:13px;">' +
+          '<div class="tp-summary-row"><span class="tp-pricing-label">Company size</span><span>' + esc(segLabel) + '</span></div>' +
+          '<div class="tp-summary-row"><span class="tp-pricing-label">Licenses</span><span>' + licenseCount.toLocaleString('en-US') + '</span></div>' +
+        '</div>' +
       '</div>' +
 
+      // --- Included SKUs ---
       '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
           '<span class="tp-review-title">Core Services</span>' +
-          '<span class="tp-review-count">Always included</span>' +
+          '<span class="tp-review-count">' + groups.required.length + ' included</span>' +
         '</div>' +
         '<ul class="tp-review-items">' +
-          catalogByCategory().required.map(function (s) {
+          groups.required.map(function (s) {
             return '<li><code>' + esc(s.code) + '</code> — ' + esc(s.name) + '</li>';
           }).join('') +
         '</ul>' +
@@ -1101,7 +1101,7 @@
       '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
           '<span class="tp-review-title">Data Exposure Coverage</span>' +
-          '<span class="tp-review-count">' + mods.length + ' selected' + (d.sectionNone.modules ? ' (none needed)' : '') + '</span>' +
+          '<span class="tp-review-count">' + mods.length + ' selected</span>' +
           '<button class="tp-review-edit" data-goto="1">Edit →</button>' +
         '</div>' +
         '<ul class="tp-review-items">' + itemList(mods, 'None needed') + '</ul>' +
@@ -1109,8 +1109,8 @@
 
       '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
-          '<span class="tp-review-title">Enhancements</span>' +
-          '<span class="tp-review-count">' + modOpts.length + ' selected' + (d.sectionNone.enhancements ? ' (none needed)' : '') + '</span>' +
+          '<span class="tp-review-title">Data Exposure Coverage Enhancements</span>' +
+          '<span class="tp-review-count">' + modOpts.length + ' selected</span>' +
           '<button class="tp-review-edit" data-goto="1">Edit →</button>' +
         '</div>' +
         '<ul class="tp-review-items">' + itemList(modOpts, 'None needed') + '</ul>' +
@@ -1119,16 +1119,49 @@
       '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
           '<span class="tp-review-title">One-Time Setup</span>' +
-          '<span class="tp-review-count">' + one.length + ' selected' + (d.sectionNone.oneTime ? ' (no add-ons needed)' : '') + '</span>' +
+          '<span class="tp-review-count">' + (1 + oneOptional.length) + ' included</span>' +
         '</div>' +
         '<ul class="tp-review-items">' +
           '<li><code>INIT-ONBRD</code> — Initialization and Client Champions Onboarding</li>' +
-          itemList(one, '').replace(/<li style="[^"]+">.*?<\/li>/, '') +
+          itemList(oneOptional, '').replace(/<li style="[^"]+">.*?<\/li>/, '') +
         '</ul>' +
       '</div>' +
 
+      // --- MSRP Base Pricing ---
       '<div class="tp-summary">' +
-        summaryRows.join('') +
+        '<div class="tp-summary-row subgroup">MSRP base pricing</div>' +
+
+        '<div class="tp-summary-row">' +
+          '<span class="tp-pricing-label">Core Services<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">SLA for ' + esc(segLabel) + '</span></span>' +
+          '<span>' + fmt(carePrice) + '</span>' +
+        '</div>' +
+
+        '<div class="tp-summary-row">' +
+          '<span class="tp-pricing-label">Named User License' + (modOpts.length > 0 ? ' (includes Enhancements)' : '') + '<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + fmt(Math.round(namedUserTotal / licenseCount)) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + mods.length + ' module' + (mods.length !== 1 ? 's' : '') + ')</span></span>' +
+          '<span>' + fmt(namedUserTotal) + '</span>' +
+        '</div>' +
+
+        '<div class="tp-summary-row">' +
+          '<span class="tp-pricing-label">One-Time<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + esc(segLabel) + ' Onboarding' + (otherOneTimeTotal > 0 ? ' + integrations' : '') + '</span></span>' +
+          '<span>' + fmt(onbrdPrice + otherOneTimeTotal) + '</span>' +
+        '</div>' +
+
+        '<div class="tp-summary-row subgroup">Annual commitment</div>' +
+
+        '<div class="tp-tier-grid">' +
+          allTiers.map(function (t) {
+            var yrs = t.totals.contractYears;
+            var pctLabel = Math.round((1 - t.commitment.factor) * 100);
+            var tierLabel = yrs + '-year' + (pctLabel > 0 ? ' (' + pctLabel + '% off)' : '');
+            return '<div class="tp-tier-card' + (yrs > 1 ? ' tp-tier-discount' : '') + '">' +
+              '<div class="tp-tier-label">' + esc(tierLabel) + '</div>' +
+              '<div class="tp-tier-row"><span>Annual recurring</span><span>' + fmt(t.totals.annualRecurringMsrp) + '</span></div>' +
+              '<div class="tp-tier-row"><span>One-time</span><span>' + fmt(t.totals.oneTimeMsrp) + '</span></div>' +
+              '<div class="tp-tier-row tp-tier-total"><span>TCV</span><span>' + fmt(t.totals.tcvMsrp) + '</span></div>' +
+            '</div>';
+          }).join('') +
+        '</div>' +
+
       '</div>'
     );
   }
