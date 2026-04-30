@@ -87,11 +87,9 @@
 
     var doc = new jspdf.jsPDF({ unit: 'mm', format: 'a4' });
     var proposalId = calc.proposalId;
-    var totals = calc.totals || {};
     var generatedAt = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     var totalPages = 3;
     var portalDomain = (window.location && window.location.hostname) || 'partner portal';
-    var commitment = calc.commitment || {};
 
     // ============== PAGE 1 - COVER ==============
     fillRect(doc, 0, 0, PAGE_W, 52, C.darkGray);
@@ -107,50 +105,64 @@
     text(doc, 'PROPOSAL', PAGE_W - MARGIN, 21, { size: 10, style: 'bold', color: C.white, align: 'right' });
     text(doc, proposalId, PAGE_W - MARGIN, 25.5, { size: 8, color: [180, 220, 218], align: 'right' });
 
-    text(doc, 'Prepared for', MARGIN, 72, { size: 9, color: C.medGray });
-    text(doc, 'Primary contact: ' + (draft.contactName || '—'), MARGIN, 80, { size: 10, color: C.medGray });
-    var projectName = draft.proposalTitle && draft.proposalTitle.trim() ? draft.proposalTitle.trim() : '—';
-    text(doc, 'Project Name: "' + projectName + '"', MARGIN, 86, { size: 10, color: C.medGray });
-    text(doc, draft.companyName || 'Prospect', MARGIN, 97, { size: 22, style: 'bold', color: C.darkGray });
+    // ============== PAGE 1 — COVER DETAILS ==============
 
-    var yKd = 110;
-    fillRect(doc, MARGIN, yKd, CONTENT_W, 44, C.tintLight);
+    // Company name — hero
+    text(doc, draft.companyName || 'Prospect', MARGIN, 76, { size: 26, style: 'bold', color: C.darkGray });
+
+    // Subtitle: project name
+    var projectName = draft.proposalTitle && draft.proposalTitle.trim() ? draft.proposalTitle.trim() : '';
+    if (projectName) {
+      text(doc, projectName, MARGIN, 85, { size: 12, color: C.medGray });
+    }
+
+    // Divider
     doc.setDrawColor(C.medGreen[0], C.medGreen[1], C.medGreen[2]);
-    doc.setLineWidth(0.4);
-    doc.line(MARGIN, yKd, MARGIN, yKd + 44);
+    doc.setLineWidth(0.6);
+    doc.line(MARGIN, 91, MARGIN + 40, 91);
 
-    var kv = [
-      ['Primary use case', draft.primaryUseCase || '—'],
-      ['Deal stage', draft.dealStage || '—'],
-      ['Estimated close', draft.estimatedCloseDate || '—'],
-      ['Licensed users', (draft.userCount || 0).toLocaleString('en-US')]
+    // Detail grid — 2 columns, 3 rows
+    var detailY = 99;
+    var detailColW = CONTENT_W / 2;
+    var detailRowH = 14;
+    var detailItems = [
+      ['PREPARED FOR',     draft.contactName || '—'],
+      ['CONTACT EMAIL',    draft.contactEmail || '—'],
+      ['PRIMARY USE CASE', draft.primaryUseCase || '—'],
+      ['LICENSED USERS',   (draft.userCount || 0).toLocaleString('en-US')],
+      ['DEAL STAGE',       draft.dealStage || '—'],
+      ['EST. DECISION',    draft.estimatedCloseDate || '—']
     ];
-    kv.forEach(function (row, i) {
+    detailItems.forEach(function (row, i) {
       var col = i % 2;
       var r = Math.floor(i / 2);
-      var cx = MARGIN + 6 + col * (CONTENT_W / 2);
-      var cy = yKd + 10 + r * 18;
-      text(doc, row[0].toUpperCase(), cx, cy, { size: 7, color: C.medGray });
-      text(doc, String(row[1]), cx, cy + 6, { size: 11, style: 'bold', color: C.darkGray });
+      var dx = MARGIN + col * detailColW;
+      var dy = detailY + r * detailRowH;
+      text(doc, row[0], dx, dy, { size: 7, color: C.medGray });
+      text(doc, String(row[1]), dx, dy + 5, { size: 10, style: 'bold', color: C.darkGray });
     });
 
-    var intro = 'This proposal outlines a Trendzact deployment scoped to ' + (draft.companyName || 'the prospect') +
-      "'s priority use case and risk profile. MSRP price USD($) is included for planning purposes. " +
-      MSRP_NOTE + '. Final pricing, terms, and deployment scope are subject to Trendzact Deal Desk approval.';
-    lines(doc, intro, MARGIN, 168, CONTENT_W, { size: 10, color: C.darkGray });
+    // Scope note
+    var noteY = detailY + 3 * detailRowH + 6;
+    var scopeNote = 'This proposal outlines a Trendzact GRC One deployment scoped to ' + (draft.companyName || 'the prospect') +
+        "'s priority use case and risk profile. MSRP pricing (USD) is included for planning purposes; " +
+        'actual price is based on distributor negotiated terms. Final pricing, scope, and deployment terms are subject to Trendzact Deal Desk approval.';
+    lines(doc, scopeNote, MARGIN, noteY, CONTENT_W, { size: 9, color: C.medGray });
 
     // ---- Commitment Options — 3-column comparison ----
-    var boxY = 188;
-    var boxH = 70;
+    var boxY = 180;
+    var boxH = 72;
     var colCount = allTiers.length || 1;
     var colW = CONTENT_W / colCount;
     var labelColor = [200, 200, 210];
     var valueColor = C.white;
     var highlightCol = [0, 180, 170]; // teal accent for best-value column
 
+    text(doc, 'COMMITMENT OPTIONS', MARGIN, boxY - 4, { size: 8, style: 'bold', color: C.darkGreen });
+
     fillRect(doc, MARGIN, boxY, CONTENT_W, boxH, C.darkGray);
-    text(doc, MSRP_SUMMARY_LABEL, MARGIN + 6, boxY + 8, { size: 8, style: 'bold', color: labelColor });
-    text(doc, MSRP_NOTE, MARGIN + 6, boxY + 13, { size: 7, color: C.tintDark });
+    text(doc, MSRP_SUMMARY_LABEL, MARGIN + 6, boxY + 8, { size: 7, style: 'bold', color: labelColor });
+    text(doc, MSRP_NOTE, MARGIN + 6, boxY + 12.5, { size: 6.5, color: C.tintDark });
 
     var tierTopY = boxY + 20;
     allTiers.forEach(function (t, idx) {
@@ -202,9 +214,9 @@
     y += 7;
 
     var ctx = formatSectorLabel(draft.sector) + '  |  ' + ((calc.input && calc.input.companySegmentLabel) || '—') +
-              '  |  ' + ((calc.input && calc.input.moduleCount) || 0) + ' modules × ' +
-              ((calc.input && calc.input.moduleMultiplier) || 0).toFixed(2) +
-              '  |  1-year base rates (see cover for commitment options)';
+        '  |  ' + ((calc.input && calc.input.moduleCount) || 0) + ' modules × ' +
+        ((calc.input && calc.input.moduleMultiplier) || 0).toFixed(2) +
+        '  |  1-year base rates (see cover for commitment options)';
     text(doc, ctx, MARGIN, y, { size: 9, color: C.medGray });
     y += 10;
 
@@ -301,8 +313,8 @@
     fillRect(doc, MARGIN, y, CONTENT_W, 34, C.tintLight);
     text(doc, 'Disclaimer', MARGIN + 5, y + 8, { size: 9, style: 'bold', color: C.darkGray });
     var disc = MSRP_LABEL + ' shown is based on information provided at the time of generation. ' + MSRP_NOTE + '. ' +
-      'Final pricing is subject to Trendzact Deal Desk review, volume tier approval, deployment scope, and executed reseller terms. ' +
-      'This document is confidential and intended only for the named partner and prospect.';
+        'Final pricing is subject to Trendzact Deal Desk review, volume tier approval, deployment scope, and executed reseller terms. ' +
+        'This document is confidential and intended only for the named partner and prospect.';
     lines(doc, disc, MARGIN + 5, y + 14, CONTENT_W - 10, { size: 8, color: C.medGray });
     y += 40;
 
