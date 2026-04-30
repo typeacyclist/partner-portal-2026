@@ -1,15 +1,23 @@
-// Trendzact Partners — Proposal Wizard (v5-style, v6 catalog)
+// Trendzact Partners — Proposal Wizard (v5-style, v7 catalog)
 //
 // Rebuilt against mockup v5 interaction model:
 //   - 4 steps: Proposal Fields | Solution Selectors | Review & Calculate | Save & Submit
 //   - Horizontal step chips, not numbered circles
-//   - Collapsible sections (Required/Modules/Platform/One-Time) with count pills
+//   - Collapsible sections (Required/Modules/Enhancements/One-Time) with count pills
 //   - Modules rendered as accordions with inline features and nested option rows
 //   - "None needed" acknowledgment checkboxes per optional section
 //   - Field-level inline errors, section-level blockers
 //   - Step 4 = Submit panel with proposal title, CC-to, UUID chip
 //
-// Reads the real v6 catalog from /catalog.json. Math is delegated to
+// v7 changes:
+//   - Module-count pricing (uniform MSRP base × moduleMultiplier × commitFactor)
+//   - Commitment tiers (1yr/2yr/3yr) replace multi-year continuity
+//   - Channel pricing: MSRP / Trendzact net / Distributor retains / Reseller retains
+//   - Platform Options section removed (all omitted in v7)
+//   - CORE SKU removed (absorbed into CARE)
+//   - Subdomain selector added for channel discount lookup
+//
+// Reads the real v7 catalog from /catalog.json. Math is delegated to
 // window.TrendzactMath.calculateProposal. PDF is delegated to
 // window.TrendzactProposalRender.render.
 //
@@ -22,9 +30,6 @@
   // --------------------------------------------------------------
   // Constants
   // --------------------------------------------------------------
-
-  var MSRP_SUMMARY_LABEL = 'MSRP PRICING SUMMARY USD($)';
-
   var STEPS = [
     { id: 'fields',    num: '01', name: 'Proposal Fields' },
     { id: 'selectors', num: '02', name: 'Solution Selectors' },
@@ -35,7 +40,7 @@
   var REQUIRED_STEP1_FIELDS = [
     'prospectCompany', 'primaryContactName', 'primaryContactRole',
     'contactEmail', 'companySegment', 'sector', 'expectedLicenseCount',
-    'estDecisionDate', 'termYears', 'solutionChallenge'
+    'estDecisionDate', 'termYears', 'subdomain', 'solutionChallenge'
   ];
 
   // --------------------------------------------------------------
@@ -53,15 +58,15 @@
       expectedLicenseCount: '',
       estDecisionDate: '',
       termYears: '',
+      subdomain: 'jlead',
       solutionChallenge: '',
 
       // Step 2 — Solution Selectors
-      sectionOpen: { core: true, modules: true, platform: true, oneTime: true },
-      sectionNone: { modules: false, platform: false, oneTime: false },
+      sectionOpen: { core: true, modules: true, enhancements: true, oneTime: true },
+      sectionNone: { modules: false, enhancements: false, oneTime: false },
       moduleExpanded: [],        // array of module codes that are open
       selectedModules: [],       // module codes
-      selectedModuleOptions: [], // option codes
-      selectedPlatform: [],      // platform option codes
+      selectedModuleOptions: [], // enhancement codes (UVA-WEBCAM, PRIVSCR, etc.)
       selectedOneTime: [],       // one-time codes (including INIT-ONBRD which is required)
 
       // Step 4 — Submit fields
@@ -123,13 +128,10 @@
       return;
     }
 
-     // Load Firestore module dynamically
-     if (state.user && state.db) {
-       try {
-         // Keep URL in a variable to avoid IDE unresolved-literal inspection noise.
-         var firestoreCdnUrl = 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-         // @ts-ignore - External CDN module, resolves at runtime in browser.
-         state.fsModule = await import(firestoreCdnUrl);
+    // Load Firestore module dynamically
+    if (state.user && state.db) {
+      try {
+        state.fsModule = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
         state.docRef = state.fsModule.doc(state.db, 'users', state.user.uid, 'activeProposal', 'current');
       } catch (e) {
         console.warn('[TP Wizard] Firestore module load failed; running without persistence', e);
@@ -350,6 +352,12 @@
       return '<option value="' + esc(s.key) + '" ' + sel + '>' + esc(s.label) + ' (' + esc(s.headcountRange) + ')</option>';
     }).join('');
 
+    var subs = state.catalog.subdomains || {};
+    var subdomainOptions = Object.keys(subs).map(function (key) {
+      var sel = d.subdomain === key ? ' selected' : '';
+      return '<option value="' + esc(key) + '"' + sel + '>' + esc(subs[key].label || key) + '</option>';
+    }).join('');
+
     return (
       '<h3>Step 1 — Proposal Fields</h3>' +
       '<p class="tp-lede">Capture the prospect, company size, and pricing term. All fields are required.</p>' +
@@ -373,12 +381,15 @@
                   '500', 'Per-named-user licensing is the v1 model.', 'expectedLicenseCount', 'min="1"') +
         fieldHtml('Est. Decision Date (YYYY-MM)', 'f-decision', 'month', d.estDecisionDate,
                   '', 'Month-level precision is fine for pipeline.', 'estDecisionDate') +
-        selectHtml('Term (years)', 'f-term',
+        selectHtml('Commitment Term', 'f-term',
                    '<option value="">— Select a term —</option>' +
                    '<option value="1"' + (String(d.termYears) === '1' ? ' selected' : '') + '>1 year</option>' +
-                   '<option value="2"' + (String(d.termYears) === '2' ? ' selected' : '') + '>2 years (continuity discount)</option>' +
-                   '<option value="3"' + (String(d.termYears) === '3' ? ' selected' : '') + '>3 years (deeper continuity discount)</option>',
-                   'Multi-year applies continuity discounts to recurring line items only.', 'termYears') +
+                   '<option value="2"' + (String(d.termYears) === '2' ? ' selected' : '') + '>2 years (7.5% commitment discount)</option>' +
+                   '<option value="3"' + (String(d.termYears) === '3' ? ' selected' : '') + '>3 years (15% commitment discount)</option>',
+                   'Commitment discount applies to per-user recurring line items. Same price every year of the term.', 'termYears') +
+        selectHtml('Channel / Subdomain', 'f-subdomain',
+                   subdomainOptions,
+                   'Determines distributor and reseller discount tiers for channel pricing.', 'subdomain') +
         '<div class="tp-field" style="grid-column:1/-1;">' +
           '<label>Explain Prospective Client Challenge / Pain Points<span class="req">*</span></label>' +
           '<textarea id="f-challenge" rows="3" class="' + fieldCls('solutionChallenge') + '" ' +
@@ -391,15 +402,11 @@
     );
   }
 
-   function fieldHtml(label, id, type, val, ph, hint, key, extra) {
-     extra = extra || '';
-      var typeAttr = 'type="text"';
-      if (type === 'email') typeAttr = 'type="email"';
-      else if (type === 'number') typeAttr = 'type="number"';
-      else if (type === 'month') typeAttr = 'type="month"';
-     return '<div class="tp-field">' +
-            '<label>' + label + '<span class="req">*</span></label>' +
-              '<input ' + typeAttr + ' id="' + id + '" value="' + esc(val) + '" placeholder="' + esc(ph) + '" class="' + fieldCls(key) + '" ' + extra + '/>' +
+  function fieldHtml(label, id, type, val, ph, hint, key, extra) {
+    extra = extra || '';
+    return '<div class="tp-field">' +
+           '<label>' + label + '<span class="req">*</span></label>' +
+           '<input type="' + type + '" id="' + id + '" value="' + esc(val) + '" placeholder="' + esc(ph) + '" class="' + fieldCls(key) + '" ' + extra + '/>' +
            '<p class="tp-hint">' + esc(hint) + '</p>' +
            fieldErrHtml(key) +
            '</div>';
@@ -431,16 +438,16 @@
       'f-role': 'primaryContactRole', 'f-email': 'contactEmail',
       'f-seg': 'companySegment', 'f-sector': 'sector',
       'f-licenses': 'expectedLicenseCount', 'f-decision': 'estDecisionDate',
-      'f-term': 'termYears', 'f-challenge': 'solutionChallenge'
+      'f-term': 'termYears', 'f-subdomain': 'subdomain', 'f-challenge': 'solutionChallenge'
     };
     Object.keys(map).forEach(function (id) {
       var el = g(id);
       if (!el) return;
       var key = map[id];
-       var handler = function () {
-         var v = el.value;
-         if (key === 'expectedLicenseCount') v = parseInt(v, 10) || '';
-         state.draft[key] = v;
+      var handler = function () {
+        var v = el.value;
+        if (key === 'expectedLicenseCount') v = parseInt(v, 10) || '';
+        state.draft[key] = v;
         if (state.draft.fieldErrors && state.draft.fieldErrors[key]) {
           delete state.draft.fieldErrors[key];
           el.classList.remove('invalid');
@@ -478,19 +485,19 @@
   // ==============================================================
   // STEP 2 — Solution Selectors
   // ==============================================================
-   function catalogByCategory() {
-     // Returns grouped SKU arrays for Step 2 rendering.
-     var cat = state.catalog.skus.filter(function (s) { return s.isActive !== false; });
-     return {
-       required: cat.filter(function (s) {
-         var b = (s.selection && s.selection.displayBadges) || [];
-         return b.indexOf('REQUIRED') !== -1 && s.category !== '30-Setup/Integration Option';
-       }).sort(byDisplayOrder),
-       modules: cat.filter(function (s) {
-         return s.category === '10-Data Exposure Coverage' || s.category === '10-Module';
-       }).sort(byDisplayOrder),
-      platform: cat.filter(function (s) {
-        return s.category === '25-Platform Option Recurring';
+  function catalogByCategory() {
+    // Returns grouped SKU arrays for Step 2 rendering.
+    var cat = state.catalog.skus.filter(function (s) { return s.isActive !== false; });
+    return {
+      required: cat.filter(function (s) {
+        var b = (s.selection && s.selection.displayBadges) || [];
+        return b.indexOf('REQUIRED') !== -1 && s.category !== '30-Setup/Integration Option';
+      }).sort(byDisplayOrder),
+      modules: cat.filter(function (s) {
+        return s.category === '10-Data Exposure Coverage';
+      }).sort(byDisplayOrder),
+      enhancements: cat.filter(function (s) {
+        return s.category === '20-Extended Coverage Option';
       }).sort(byDisplayOrder),
       oneTime: cat.filter(function (s) {
         return s.category === '30-Setup/Integration Option';
@@ -517,12 +524,14 @@
     return b.indexOf('BETA') !== -1;
   }
 
-   function isNewGa(sku) {
-     var b = (sku.selection && sku.selection.displayBadges) || [];
-     return b.indexOf('NEW GA') !== -1;
-   }
+  function isNewGa(sku) {
+    var b = (sku.selection && sku.selection.displayBadges) || [];
+    return b.indexOf('NEW GA') !== -1;
+  }
 
-   function sectionStatus(id) {
+  // v7: No inline price labels in Step 2 selection UI — pricing shown only in Step 3 Review
+
+  function sectionStatus(id) {
     var d = state.draft;
     if (id === 'core') {
       var ct = catalogByCategory().required.length;
@@ -530,7 +539,7 @@
     }
     var count = 0;
     if (id === 'modules') count = d.selectedModules.length;
-    else if (id === 'platform') count = d.selectedPlatform.length;
+    else if (id === 'enhancements') count = d.selectedModuleOptions.length;
     else if (id === 'oneTime') {
       count = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; }).length;
     }
@@ -576,28 +585,24 @@
       if (beta) badgeHtml = '<span class="tp-badge tp-badge-beta">BETA</span>';
       else if (newga) badgeHtml = '<span class="tp-badge tp-badge-newga">NEW GA</span>';
 
-       var children = childOptionsFor(m.code);
-       var childSelectedCount = children.filter(function (c) {
-         return d.selectedModuleOptions.indexOf(c.code) !== -1;
-       }).length;
+      var children = childOptionsFor(m.code);
+      var childSelectedCount = children.filter(function (c) {
+        return d.selectedModuleOptions.indexOf(c.code) !== -1;
+      }).length;
 
-       var rightSide;
-       if (beta) {
-         rightSide = '';
-       } else if (childSelectedCount > 0) {
-         rightSide = '<span class="tp-sku-opt-count">+' + childSelectedCount + ' option' + (childSelectedCount > 1 ? 's' : '') + '</span>';
-       } else {
-         rightSide = '';
-       }
+      var rightSide = '';
+      if (!beta && childSelectedCount > 0) {
+        rightSide = '<span class="tp-sku-opt-count">+' + childSelectedCount + ' enhancement' + (childSelectedCount > 1 ? 's' : '') + '</span>';
+      }
 
       var accordionBody = '';
       if (open) {
         var incl = (m.features && m.features.included) || [];
         var featsHtml = '';
         if (incl.length) {
-           featsHtml =
-             '<div class="tp-feature-head">Included Detections</div>' +
-             '<div class="tp-feature-list">' +
+          featsHtml =
+            '<div class="tp-feature-head">Included Detections</div>' +
+            '<div class="tp-feature-list">' +
               incl.map(function (f) { return '<span class="inc">' + esc(f) + '</span>'; }).join('') +
             '</div>';
         }
@@ -607,21 +612,22 @@
         if (!beta) {
           var visibleChildren = children.filter(function (c) { return !isBeta(c); });
           if (visibleChildren.length) {
-             optsHtml =
-               '<div class="tp-feature-head">Enhancements</div>' +
-               visibleChildren.map(function (o) {
+            optsHtml =
+              '<div class="tp-feature-head">Enhancements</div>' +
+              visibleChildren.map(function (o) {
                 var oSel = d.selectedModuleOptions.indexOf(o.code) !== -1;
                 var oDisabled = !selected;
                 return '<div class="tp-opt-row">' +
                          '<input type="checkbox" data-mopt="' + esc(o.code) + '" ' +
                            (oSel ? 'checked' : '') + (oDisabled ? ' disabled' : '') + '/>' +
-                          '<label>' +
-                            '<span class="tp-sku-code">' + esc(o.code) + '</span> ' + esc(o.name) +
-                          '</label>' +
+                         '<label>' +
+                           '<span class="tp-sku-code">' + esc(o.code) + '</span> ' + esc(o.name) +
+                           ' <span class="tp-opt-price">' + esc(priceLabel(o)) + '</span>' +
+                         '</label>' +
                        '</div>';
               }).join('');
             if (!selected) {
-              optsHtml += '<p class="tp-hint" style="margin-top:6px;">Select the parent module to enable these options.</p>';
+              optsHtml += '<p class="tp-hint" style="margin-top:6px;">Select the parent coverage to enable these enhancements.</p>';
             }
           }
         }
@@ -656,27 +662,35 @@
              '</div>';
     }).join('');
 
-    // Platform Options section
-    var platformCount = d.selectedPlatform.length;
-    var platformNone =
+    // Enhancements section (standalone — not nested under modules)
+    var enhCount = d.selectedModuleOptions.length;
+    var enhNone =
       '<div class="tp-none-row">' +
-        '<input type="checkbox" id="none-platform" ' +
-          (d.sectionNone.platform ? 'checked' : '') +
-          (platformCount > 0 ? ' disabled' : '') + '/>' +
-        '<label for="none-platform">None needed for this opportunity (acknowledge to proceed)</label>' +
+        '<input type="checkbox" id="none-enhancements" ' +
+          (d.sectionNone.enhancements ? 'checked' : '') +
+          (enhCount > 0 ? ' disabled' : '') + '/>' +
+        '<label for="none-enhancements">None needed for this opportunity (acknowledge to proceed)</label>' +
       '</div>';
 
-    var platformHtml = groups.platform.map(function (p) {
-      var sel = d.selectedPlatform.indexOf(p.code) !== -1;
-      var disabled = d.sectionNone.platform && !sel;
-      return '<div class="tp-sku-row' + (sel ? ' selected' : '') + (disabled ? ' disabled' : '') + '" data-platform="' + esc(p.code) + '">' +
+    var enhHtml = groups.enhancements.map(function (e) {
+      var sel = d.selectedModuleOptions.indexOf(e.code) !== -1;
+      var disabled = d.sectionNone.enhancements && !sel;
+      // Check if parent is selected (conditional enhancement)
+      var parentCheck = e.selection && e.selection.mode === 'conditional' && Array.isArray(e.selection.parentCodes);
+      var parentMissing = parentCheck && !e.selection.parentCodes.some(function (p) { return d.selectedModules.indexOf(p) !== -1; });
+      if (parentMissing) disabled = true;
+      var parentNote = parentMissing && parentCheck
+        ? '<p class="tp-hint" style="margin-top:4px;">Requires parent module: ' + esc(e.selection.parentCodes.join(' or ')) + '</p>'
+        : '';
+      return '<div class="tp-sku-row' + (sel ? ' selected' : '') + (disabled ? ' disabled' : '') + '" data-enhancement="' + esc(e.code) + '">' +
                '<input type="checkbox" ' + (sel ? 'checked' : '') + (disabled ? ' disabled' : '') + '/>' +
                '<div class="tp-sku-body">' +
-                  '<div class="tp-sku-line">' +
-                    '<span class="tp-sku-code">' + esc(p.code) + '</span>' +
-                    '<span class="tp-sku-name">' + esc(p.name) + '</span>' +
-                  '</div>' +
-                 '<p class="tp-sku-desc">' + esc(p.description || '') + '</p>' +
+                 '<div class="tp-sku-line">' +
+                   '<span class="tp-sku-code">' + esc(e.code) + '</span>' +
+                   '<span class="tp-sku-name">' + esc(e.name) + '</span>' +
+                 '</div>' +
+                 '<p class="tp-sku-desc">' + esc(e.description || '') + '</p>' +
+                 parentNote +
                '</div>' +
              '</div>';
     }).join('');
@@ -699,30 +713,34 @@
       return '<div class="tp-sku-row' + (sel ? ' selected' : '') + (disabled ? ' disabled' : '') + '" data-onetime="' + esc(o.code) + '">' +
                '<input type="checkbox" ' + (sel ? 'checked' : '') + (req || disabled ? ' disabled' : '') + '/>' +
                '<div class="tp-sku-body">' +
-                  '<div class="tp-sku-line">' +
-                    '<span class="tp-sku-code">' + esc(o.code) + '</span>' +
-                    '<span class="tp-sku-name">' + esc(o.name) + '</span>' +
-                    requiredBadge +
-                  '</div>' +
+                 '<div class="tp-sku-line">' +
+                   '<span class="tp-sku-code">' + esc(o.code) + '</span>' +
+                   '<span class="tp-sku-name">' + esc(o.name) + '</span>' +
+                   requiredBadge +
+                 '</div>' +
                  '<p class="tp-sku-desc">' + esc(o.description || '') + '</p>' +
                '</div>' +
              '</div>';
     }).join('');
 
-     // Helper to render a section
-     function sectionHtml(id, title, bodyInnerHtml, subtext) {
+    // Helper to render a section
+    function sectionHtml(id, title, bodyInnerHtml, subtext) {
       var st = sectionStatus(id);
       var invalid = state.draft.sectionErrors && state.draft.sectionErrors[id];
       var classes = 'tp-section';
       if (d.sectionOpen[id]) classes += ' open';
       if (invalid) classes += ' invalid';
+      var subtextHtml = subtext
+        ? '<span class="tp-section-subtext">' + esc(subtext) + '</span>'
+        : '';
       return '<div class="' + classes + '" data-section="' + id + '">' +
                '<div class="tp-section-toggle" data-section-toggle="' + id + '">' +
                  '<span class="tp-section-caret">▶</span>' +
                  '<span class="tp-section-title">' + esc(title) + '</span>' +
+                 subtextHtml +
                  '<span class="tp-section-count ' + (st.klass || '') + '">' + esc(st.label) + '</span>' +
                '</div>' +
-                (d.sectionOpen[id] ? '<div class="tp-section-body">' + (subtext ? '<p class="tp-lede">' + esc(subtext) + '</p>' : '') + bodyInnerHtml + '</div>' : '') +
+               (d.sectionOpen[id] ? '<div class="tp-section-body">' + bodyInnerHtml + '</div>' : '') +
              '</div>';
     }
 
@@ -731,19 +749,20 @@
       blocker = '<div class="tp-section-blocker">Every optional section needs at least one selection or a "None needed" acknowledgment before continuing.</div>';
     }
 
-     return (
-       '<h3>Step 2 — Solution Selectors</h3>' +
-       '<p class="tp-lede">Select coverage areas for the prospect. If a section does not apply, check "None needed" to acknowledge.</p>' +
+    return (
+      '<h3>Step 2 — Solution Selectors</h3>' +
+      '<p class="tp-lede">Pick what the prospect needs in each section. If a section doesn\'t apply, check "None needed" to acknowledge.</p>' +
 
-       sectionHtml('core', 'Core Services', coreHtml) +
-       sectionHtml(
-         'modules',
-         'Select Your Data Exposure Coverage',
-         modulesNone + modulesHtml,
-         'Define where sensitive data is exposed—and apply real-time protection'
-       ) +
-       sectionHtml('platform', 'Platform Infrastructure', platformNone + platformHtml) +
-       sectionHtml('oneTime', 'Initialization & Integrations', oneTimeNone + oneTimeHtml) +
+      sectionHtml('core', 'Core Services', coreHtml) +
+      sectionHtml(
+        'modules',
+        'Select Your Data Exposure Coverage',
+        modulesNone + modulesHtml,
+        'Define where sensitive data is exposed — and apply real-time protection'
+      ) +
+      sectionHtml('enhancements', 'Enhancements', enhNone + enhHtml,
+        'Per-user and connector enhancements for selected modules') +
+      sectionHtml('oneTime', 'One-Time Setup & Integrations', oneTimeNone + oneTimeHtml) +
       blocker
     );
   }
@@ -784,14 +803,6 @@
           d.selectedModules.push(code);
           // If 'None needed' was checked, uncheck it
           d.sectionNone.modules = false;
-
-          // Auto-open this module when it has nested selectable options.
-          var hasChildOptions = childOptionsFor(code).some(function (c) {
-            return !isBeta(c);
-          });
-          if (hasChildOptions && d.moduleExpanded.indexOf(code) === -1) {
-            d.moduleExpanded.push(code);
-          }
         } else if (!el.checked && i !== -1) {
           d.selectedModules.splice(i, 1);
           // Cascade: remove any child options that no longer have a parent
@@ -824,19 +835,19 @@
       });
     });
 
-    // Platform option rows — entire row clickable
-    document.querySelectorAll('[data-platform]').forEach(function (el) {
+    // Enhancement rows — standalone section
+    document.querySelectorAll('[data-enhancement]').forEach(function (el) {
       el.addEventListener('click', function () {
         if (el.classList.contains('disabled')) return;
-        var code = el.dataset.platform;
-        var i = d.selectedPlatform.indexOf(code);
+        var code = el.dataset.enhancement;
+        var i = d.selectedModuleOptions.indexOf(code);
         if (i === -1) {
-          d.selectedPlatform.push(code);
-          d.sectionNone.platform = false;
+          d.selectedModuleOptions.push(code);
+          d.sectionNone.enhancements = false;
         } else {
-          d.selectedPlatform.splice(i, 1);
+          d.selectedModuleOptions.splice(i, 1);
         }
-        if (d.sectionErrors && d.sectionErrors.platform) delete d.sectionErrors.platform;
+        if (d.sectionErrors && d.sectionErrors.enhancements) delete d.sectionErrors.enhancements;
         scheduleAutosave();
         reRenderStep2();
       });
@@ -874,10 +885,10 @@
       reRenderStep2();
     });
 
-    var nonePlat = document.getElementById('none-platform');
-    if (nonePlat) nonePlat.addEventListener('change', function () {
-      d.sectionNone.platform = nonePlat.checked;
-      if (d.sectionErrors && d.sectionErrors.platform) delete d.sectionErrors.platform;
+    var noneEnh = document.getElementById('none-enhancements');
+    if (noneEnh) noneEnh.addEventListener('change', function () {
+      d.sectionNone.enhancements = noneEnh.checked;
+      if (d.sectionErrors && d.sectionErrors.enhancements) delete d.sectionErrors.enhancements;
       scheduleAutosave();
       reRenderStep2();
     });
@@ -901,7 +912,7 @@
     var errs = {};
     var d = state.draft;
     if (d.selectedModules.length === 0 && !d.sectionNone.modules) errs.modules = true;
-    if (d.selectedPlatform.length === 0 && !d.sectionNone.platform) errs.platform = true;
+    if (d.selectedModuleOptions.length === 0 && !d.sectionNone.enhancements) errs.enhancements = true;
     var optOneTime = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; });
     if (optOneTime.length === 0 && !d.sectionNone.oneTime) errs.oneTime = true;
     d.sectionErrors = errs;
@@ -917,7 +928,6 @@
     var selected = []
       .concat(d.selectedModules)
       .concat(d.selectedModuleOptions)
-      .concat(d.selectedPlatform)
       .concat(d.selectedOneTime);
     return {
       companyName: d.prospectCompany,
@@ -930,6 +940,7 @@
       companySegment: d.companySegment,
       userCount: parseInt(d.expectedLicenseCount, 10) || 0,
       contractYears: parseInt(d.termYears, 10) || 1,
+      subdomain: d.subdomain || '',
       selectedSkuCodes: selected,
       notes: ''
     };
@@ -956,7 +967,6 @@
 
     var mods = d.selectedModules;
     var modOpts = d.selectedModuleOptions;
-    var plat = d.selectedPlatform;
     var one = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; });
 
     var skuName = function (code) {
@@ -970,22 +980,21 @@
     }
 
     var summaryRows = [];
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Recurring subtotal (list)</span><span>' + fmt(calc.totals.recurringListUsd) + '</span></div>');
-    if (calc.bundleDiscount.discountAmountUsd > 0) {
-      summaryRows.push('<div class="tp-summary-row discount"><span class="tp-pricing-label">Bundle discount (' + calc.bundleDiscount.eligibleModuleCount + ' modules, ' + calc.bundleDiscount.discountPct + '%)</span><span>−' + fmt(calc.bundleDiscount.discountAmountUsd) + '</span></div>');
-    }
-    summaryRows.push('<div class="tp-summary-row subgroup">Annual recurring by year</div>');
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Year 1</span><span>' + fmt(calc.totals.recurringYear1Usd) + '</span></div>');
-    if (calc.totals.contractYears >= 2) {
-      summaryRows.push('<div class="tp-summary-row discount"><span class="tp-pricing-label">Year 2 (' + (100 - calc.multiYearContinuity.year2Pct) + '% of Y1)</span><span>' + fmt(calc.totals.recurringYear2Usd) + '</span></div>');
-    }
-    if (calc.totals.contractYears >= 3) {
-      summaryRows.push('<div class="tp-summary-row discount"><span class="tp-pricing-label">Year 3 (' + (100 - calc.multiYearContinuity.year3Pct) + '% of Y1)</span><span>' + fmt(calc.totals.recurringYear3Usd) + '</span></div>');
-    }
-    summaryRows.push('<div class="tp-summary-row subgroup">One-time setup</div>');
-    summaryRows.push('<div class="tp-summary-row onetime"><span class="tp-pricing-label">Total one-time setup</span><span>' + fmt(calc.totals.oneTimeUsd) + '</span></div>');
-    summaryRows.push('<div class="tp-summary-row total"><span>' + MSRP_SUMMARY_LABEL + ': Total contract value (' + calc.totals.contractYears + 'yr)</span><span>' + fmt(calc.totals.tcvUsd) + '</span></div>');
-    
+    summaryRows.push('<div class="tp-summary-row subgroup">Pricing inputs</div>');
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Volume bracket</span><span>' + esc(calc.input.bracket || '—') + ' · MSRP base ' + fmt(calc.input.bracketMsrpBase) + '/user</span></div>');
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Modules selected</span><span>' + calc.input.moduleCount + ' → multiplier ' + (calc.input.moduleMultiplier || 0).toFixed(2) + '×</span></div>');
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Commitment</span><span>' + esc(calc.commitment.label) + '</span></div>');
+
+    summaryRows.push('<div class="tp-summary-row subgroup">MSRP pricing</div>');
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Annual recurring (MSRP)</span><span>' + fmt(calc.totals.annualRecurringMsrp) + '</span></div>');
+    summaryRows.push('<div class="tp-summary-row onetime"><span class="tp-pricing-label">One-time setup (MSRP)</span><span>' + fmt(calc.totals.oneTimeMsrp) + '</span></div>');
+    summaryRows.push('<div class="tp-summary-row total"><span>MSRP TCV (' + calc.totals.contractYears + 'yr)</span><span>' + fmt(calc.totals.tcvMsrp) + '</span></div>');
+
+    summaryRows.push('<div class="tp-summary-row subgroup">Channel breakdown (annual recurring)</div>');
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Trendzact net (60%)</span><span>' + fmt(calc.totals.annualTrendzactNet) + '</span></div>');
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Distributor retains (~10%)</span><span>' + fmt(calc.totals.annualDistRetains) + '</span></div>');
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Reseller retains (~30%)</span><span>' + fmt(calc.totals.annualResellerRetains) + '</span></div>');
+
     var itemList = function (codes, emptyText) {
       if (!codes.length) return '<li style="color:var(--med-gray);">' + esc(emptyText) + '</li>';
       return codes.map(function (c) {
@@ -1019,35 +1028,28 @@
         '</ul>' +
       '</div>' +
 
-       '<div class="tp-review-section">' +
-         '<div class="tp-review-head">' +
-           '<span class="tp-review-title">Data Exposure Coverage</span>' +
-           '<span class="tp-review-count">' + mods.length + ' selected' + (d.sectionNone.modules ? ' (none needed)' : '') + '</span>' +
+      '<div class="tp-review-section">' +
+        '<div class="tp-review-head">' +
+          '<span class="tp-review-title">Data Exposure Coverage</span>' +
+          '<span class="tp-review-count">' + mods.length + ' selected' + (d.sectionNone.modules ? ' (none needed)' : '') + '</span>' +
           '<button class="tp-review-edit" data-goto="1">Edit →</button>' +
         '</div>' +
         '<ul class="tp-review-items">' + itemList(mods, 'None needed') + '</ul>' +
       '</div>' +
 
-       '<div class="tp-review-section">' +
-         '<div class="tp-review-head">' +
-           '<span class="tp-review-title">Enhancements</span>' +
-           '<span class="tp-review-count">' + modOpts.length + ' selected</span>' +
+      '<div class="tp-review-section">' +
+        '<div class="tp-review-head">' +
+          '<span class="tp-review-title">Enhancements</span>' +
+          '<span class="tp-review-count">' + modOpts.length + ' selected' + (d.sectionNone.enhancements ? ' (none needed)' : '') + '</span>' +
+          '<button class="tp-review-edit" data-goto="1">Edit →</button>' +
         '</div>' +
-        '<ul class="tp-review-items">' + itemList(modOpts, 'None') + '</ul>' +
+        '<ul class="tp-review-items">' + itemList(modOpts, 'None needed') + '</ul>' +
       '</div>' +
 
-       '<div class="tp-review-section">' +
-         '<div class="tp-review-head">' +
-           '<span class="tp-review-title">Platform Infrastructure</span>' +
-           '<span class="tp-review-count">' + plat.length + ' selected' + (d.sectionNone.platform ? ' (none needed)' : '') + '</span>' +
-        '</div>' +
-        '<ul class="tp-review-items">' + itemList(plat, 'None needed') + '</ul>' +
-      '</div>' +
-
-       '<div class="tp-review-section">' +
-         '<div class="tp-review-head">' +
-           '<span class="tp-review-title">Initialization & Integrations</span>' +
-           '<span class="tp-review-count">' + one.length + ' selected' + (d.sectionNone.oneTime ? ' (no add-ons needed)' : '') + '</span>' +
+      '<div class="tp-review-section">' +
+        '<div class="tp-review-head">' +
+          '<span class="tp-review-title">One-Time Setup</span>' +
+          '<span class="tp-review-count">' + one.length + ' selected' + (d.sectionNone.oneTime ? ' (no add-ons needed)' : '') + '</span>' +
         '</div>' +
         '<ul class="tp-review-items">' +
           '<li><code>INIT-ONBRD</code> — Initialization and Client Champions Onboarding</li>' +
@@ -1080,16 +1082,13 @@
     var fmt = TrendzactMath.formatMoney;
     var userEmail = (state.user && state.user.email) || 'partner.user@example.com';
 
-    var defaultTitle = d.proposalTitle || '';
-    var titleHelper = defaultTitle && defaultTitle.trim()
-      ? ''
-      : '<p class="tp-hint" style="margin-top:4px;">Add a descriptive title</p>';
+    var defaultTitle = d.proposalTitle || (d.prospectCompany ? 'Proposal for ' + d.prospectCompany : '');
 
-     var banner = '';
-     if (state.submitResult) {
-       var er = state.submitResult.emailResult || {};
-       var emailLine;
-       if (er.ok) {
+    var banner = '';
+    if (state.submitResult) {
+      var er = state.submitResult.emailResult || {};
+      var emailLine = '';
+      if (er.ok) {
         var ccPart = (d.ccTo && d.ccTo.trim()) ? ' and CC\'d to ' + esc(d.ccTo.trim()) : '';
         emailLine = '<br/>Email copy sent to <code>' + esc(state.user && state.user.email || 'you') + '</code>' + ccPart + '.';
       } else {
@@ -1110,8 +1109,8 @@
       '<div class="tp-submit-panel">' +
         '<div class="tp-submit-header">' +
           '<div>' +
-            '<div class="tp-submit-hero-label">Total contract value (' + calc.totals.contractYears + 'yr)</div>' +
-            '<div class="tp-submit-hero-value">' + fmt(calc.totals.tcvUsd) + '</div>' +
+            '<div class="tp-submit-hero-label">MSRP TCV (' + calc.totals.contractYears + 'yr)</div>' +
+            '<div class="tp-submit-hero-value">' + fmt(calc.totals.tcvMsrp) + '</div>' +
           '</div>' +
           '<div style="text-align:right;">' +
             '<div class="tp-submit-hero-label">Proposal ID (assigned on submit)</div>' +
@@ -1124,7 +1123,6 @@
         '<div class="tp-submit-field">' +
           '<label>Proposal Title<span class="req">*</span></label>' +
           '<input type="text" id="sf-title" value="' + esc(defaultTitle) + '" placeholder="e.g., Proposal for Acme Manufacturing"/>' +
-          titleHelper +
           '<p class="tp-hint" style="margin-top:4px;">Appears on the PDF cover.</p>' +
         '</div>' +
 

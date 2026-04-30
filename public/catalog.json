@@ -2,160 +2,240 @@
   "_readme": [
     "Trendzact Partners Portal - Global Product Catalog",
     "",
-    "v6 - Fully priced v1 commercial catalog + complete feature copy",
-    "  - 8 GA modules priced (SWA/SIA/eDLP $180, ITM/SVM/MSR $120, SR-QAM/ECS $80)",
-    "  - CORE $25K flat, CARE $20K base (x careMultiplier), INIT-ONBRD $25K base (x presaleMultiplier)",
-    "  - License-count bracket multipliers: 1.20x (1-100) / 1.00x (101-500) / 0.85x (501-2500) / 0.70x (2501+)",
-    "  - Bundle discount FORMULA-BASED: 15% per module from 2+, caps at 45%",
-    "  - Multi-year continuity: 15% Year 2, 30% Year 3",
-    "  - PRIVSCR is per-user $20/user/yr service on SWA + SIA",
-    "  - OBSRVR-DET is per-user $15/user/yr on SWA",
-    "  - Meeting connectors $8K each (TEAMS/ZOOM/WEBEX/GMEET), CONN-PURVIEW $15K (multi-parent)",
-    "  - 5 Platform Options: PLAT-AWSACC $75K / PLAT-AWSBCP $40K / PLAT-PBK $20K / PLAT-SOC $30K / PLAT-BI $15K",
-    "  - 5 One-Time: INIT-DPIA $20K / INT-OKTA $8K / INT-PING $8K / INT-GRAPH $12K / INT-SPLUNK $10K",
+    "v7 - Module-count pricing model + channel discount structure",
+    "",
+    "PRICING MODEL:",
+    "  - Module-count pricing: all modules share a uniform per-user MSRP base.",
+    "    Price driven by HOW MANY modules selected, not WHICH ones.",
+    "  - moduleMultipliers: cumulative multipliers for 1-8 modules (1.0/1.6/2.0/2.3/2.5/2.6/2.65/2.65)",
+    "  - 6 volume brackets with MSRP bases: 1-100=$114, 101-500=$96, 501-2.5K=$81, 2.5K-7.5K=$66, 7.5K-20K=$54, 20K+=$48",
+    "  - Commitment tiers: 1yr=100%, 2yr=92.5%, 3yr=85% (flat annual, same price every year of term)",
+    "  - Bundle discount formula REMOVED \u2014 incentive baked into module-count curve",
+    "  - Multi-year continuity (Y1/Y2/Y3 percentages) REMOVED \u2014 replaced by commitment tiers",
+    "",
+    "CHANNEL MODEL:",
+    "  - Two-tier: Trendzact \u2192 Distributor \u2192 Reseller \u2192 Customer",
+    "  - MSRP = MAP (minimum advertised price = end-customer anchor, never changes per partner)",
+    "  - Per-subdomain config with 4 enforced discount fields:",
+    "    Regular SKUs (modules, CARE, connectors, one-times): distDiscount / resellerDiscount",
+    "    Enhancement SKUs (UVA-WEBCAM, PRIVSCR): enhDistDiscount / enhResellerDiscount",
+    "  - Portal shows 3 prices: MSRP, Distributor Price, Reseller Price",
+    "  - JJNet and JLEAD rates: regular 40%/30%, enhancement 50%/35%",
+    "",
+    "CARE / CORE:",
+    "  - CORE absorbed into CARE. Single CARE line replaces both.",
+    "  - CARE: $15K base \u00d7 careMultiplier (recurring annual, required, MSRP)",
+    "  - CARE costs: Early Growth=$5K, Scaled SMB=$5K, Emerging Mid-Mkt=$10.5K,",
+    "    Core Mid-Mkt=$15K, Upper Mid-Mkt=$18K (knee), Commercial Ent=$23K,",
+    "    Strategic Ent=$26K, Global=$27.5K",
+    "",
+    "INIT-ONBRD:",
+    "  - $10K base \u00d7 presaleMultiplier (one-time, MSRP)",
+    "  - Range: $3,500\u2013$50,000 by company size",
+    "",
+    "ENHANCEMENTS (v7 lineup \u2014 4 SKUs total, down from 15):",
+    "  - Per-user: UVA-WEBCAM $67 MSRP ($40 whl @ 501-2.5K ref), PRIVSCR $25 MSRP ($15 whl @ 501-2.5K ref)",
+    "    Both use same volume bracket ratios + commitment tiers as modules",
+    "    discountGroup: 'enhancement' (deeper channel discount)",
+    "  - Flat annual: CONN-TEAMS $8K MSRP, CONN-PURVIEW $15K MSRP (no volume/commit scaling)",
+    "  - OMITTED: OBSRVR-DET, ARCH, MSR-ALL, MSR-ALERT, STT, GEO-ALERT,",
+    "    CONN-ZOOM, CONN-WEBEX, CONN-GMEET",
+    "",
+    "PLATFORM OPTIONS: ALL OMITTED (PLAT-AWSACC, PLAT-AWSBCP, PLAT-PBK, PLAT-SOC, PLAT-BI)",
+    "",
+    "ONE-TIME INTEGRATIONS:",
+    "  - INT-GRAPH retained ($12K MSRP, isActive: true)",
+    "  - OMITTED: INIT-DPIA, INT-OKTA, INT-PING, INT-SPLUNK",
     "",
     "Naming conventions:",
     "   INT-*    one-time setup/integration (category 30)",
     "   CONN-*   recurring connector (category 20)",
-    "   PLAT-*   platform option (category 25)",
     "   INIT-*   one-time initialization/assessment (category 30)",
     "",
-    "Allowed displayBadges values (v1):",
+    "Allowed displayBadges values:",
     "   REQUIRED  - auto-included, un-toggleable (blue in wizard)",
     "   NEW GA    - recently promoted to GA, visible and selectable (green in wizard)",
     "",
-    "   - Checkbox is disabled (cursor not-allowed)",
-    "",
     "This file is served at /catalog.json with Cache-Control: no-cache.",
-    "Schema spec: product-catalog-schema-v1.md",
-    "Framing update:",
-    "  - User-facing category label '10-Module' should be interpreted as Data Exposure Coverage.",
-    "  - User-facing category label '20-Module Option Recurring' should be interpreted as Extended Coverage.",
-    "  - User-facing section label 'Included Features' should be rendered as Risk Detections for category 10 coverage SKUs.",
-    "  - User-facing section label 'Optional Add-Ons' should be rendered as Extended Coverage.",
-    "Discover-card framing update:",
-    "  - Category 10 SKUs can be rendered as buyer-facing Data Exposure Coverage cards.",
-    "  - Card names are scenario-based and map back to existing SKU codes; no new field names required.",
-    "  - features.included should render as Included Detections.",
-    "  - features.optionalAddOns should render as Enhancements.",
-    "  - Some cards reference related SKUs in optionalAddOns to support cross-sell/discovery; pricing engines should continue to use selected SKU codes only.",
     "",
-    "GA production update:",
-    "  - All Data Exposure Coverage cards are GA / production selectable.",
-    "  - No category 10 coverage SKU carries a BETA badge.",
-    "  - Former beta coverage cards remain active and selectable under the same schema.",
+    "Framing (unchanged from v6):",
+    "  - Category 10 = Data Exposure Coverage",
+    "  - Category 20 = Extended Coverage Option (rendered as Enhancements)",
+    "  - features.included \u2192 Included Detections",
+    "  - features.optionalAddOns \u2192 Enhancements",
     "",
-    "Category 20 content alignment update:",
-    "  - Category value remains '20-Extended Coverage Option' for schema and UI compatibility.",
-    "  - User-facing names/descriptions are aligned to the Enhancements concept.",
-    "  - UI may continue to render Category 20 as Enhancements while preserving the category string."
+    "discountGroup field:",
+    "  - 'regular' (default) \u2014 standard channel discount applies",
+    "  - 'enhancement' \u2014 deeper channel discount applies (UVA-WEBCAM, PRIVSCR only)"
   ],
-  "catalogVersion": "global-v6-draft",
-  "updatedAt": "2026-04-20T00:00:00Z",
+  "catalogVersion": "global-v7",
+  "updatedAt": "2026-04-30T00:00:00Z",
   "companySizeSegments": [
     {
       "key": "early_growth",
       "label": "Early Growth",
       "headcountRange": "1-50",
-      "presaleMultiplier": 0.15,
-      "careMultiplier": 0.1
+      "presaleMultiplier": 0.35
     },
     {
       "key": "scaled_smb",
       "label": "Scaled SMB",
       "headcountRange": "51-200",
-      "presaleMultiplier": 0.35,
-      "careMultiplier": 0.25
+      "presaleMultiplier": 0.35
     },
     {
       "key": "emerging_midmkt",
       "label": "Emerging Mid-Mkt",
       "headcountRange": "201-500",
-      "presaleMultiplier": 0.75,
-      "careMultiplier": 0.8
+      "presaleMultiplier": 0.75
     },
     {
       "key": "core_midmkt",
       "label": "Core Mid-Market",
       "headcountRange": "501-1,000",
-      "presaleMultiplier": 1.0,
-      "careMultiplier": 1.0
+      "presaleMultiplier": 1.0
     },
     {
       "key": "upper_midmkt",
       "label": "Upper Mid-Market",
       "headcountRange": "1,001-2,500",
-      "presaleMultiplier": 1.5,
-      "careMultiplier": 1.3
+      "presaleMultiplier": 1.5
     },
     {
       "key": "commercial_ent",
       "label": "Commercial Ent.",
       "headcountRange": "2,501-7,500",
-      "presaleMultiplier": 2.5,
-      "careMultiplier": 1.8
+      "presaleMultiplier": 2.5
     },
     {
       "key": "strategic_ent",
       "label": "Strategic Ent.",
       "headcountRange": "7,501-20,000",
-      "presaleMultiplier": 4.0,
-      "careMultiplier": 2.5
+      "presaleMultiplier": 3.5
     },
     {
       "key": "global_conglom",
       "label": "Global Conglom.",
       "headcountRange": "20,000+",
-      "presaleMultiplier": 6.0,
-      "careMultiplier": 4.0
+      "presaleMultiplier": 5.0
     }
   ],
-  "licenseCountBrackets": [
+  "volumeBrackets": [
     {
       "maxUsers": 100,
-      "multiplier": 1.2,
+      "msrpBase": 114,
       "label": "1-100 users"
     },
     {
       "maxUsers": 500,
-      "multiplier": 1.0,
+      "msrpBase": 96,
       "label": "101-500 users"
     },
     {
       "maxUsers": 2500,
-      "multiplier": 0.85,
+      "msrpBase": 81,
       "label": "501-2,500 users"
     },
     {
+      "maxUsers": 7500,
+      "msrpBase": 66,
+      "label": "2,501-7,500 users"
+    },
+    {
+      "maxUsers": 20000,
+      "msrpBase": 54,
+      "label": "7,501-20,000 users"
+    },
+    {
       "maxUsers": null,
-      "multiplier": 0.7,
-      "label": "2,501+ users"
+      "msrpBase": 48,
+      "label": "20,000+ users"
     }
   ],
-  "bundleDiscount": {
-    "perModulePct": 15,
-    "maxPct": 60,
-    "startAtCount": 2,
-    "_doc": "Discount applies only to Modules that have bundleEligible:true and are not BETA. n=count of selected eligible modules. discount% = min(maxPct, max(0, (n - startAtCount + 1) * perModulePct)). So n=1 -> 0%, n=2 -> 15%, n=3 -> 30%, n=4+ -> 45%."
+  "moduleMultipliers": [
+    1.0,
+    1.6,
+    2.0,
+    2.3,
+    2.5,
+    2.6,
+    2.65,
+    2.65
+  ],
+  "_moduleMultipliersDoc": "Index 0 = 1 module, index 7 = 8 modules. Cumulative total always rises. Cap at 8 modules (2.65\u00d7).",
+  "commitmentTiers": [
+    {
+      "years": 1,
+      "factor": 1.0,
+      "label": "1-year"
+    },
+    {
+      "years": 2,
+      "factor": 0.925,
+      "label": "2-year (7.5% off)"
+    },
+    {
+      "years": 3,
+      "factor": 0.85,
+      "label": "3-year (15% off)"
+    }
+  ],
+  "_commitmentDoc": "Flat annual \u2014 same price every year of term. Factor applied to MSRP. Applies to modules and per-user enhancements.",
+  "channelDefaults": {
+    "_doc": "Per-subdomain config. Portal shows all 3 prices: MSRP, Distributor, Reseller. Discounts are off MSRP.",
+    "regular": {
+      "distDiscount": 0.4,
+      "resellerDiscount": 0.3,
+      "_distRetains": "~10%",
+      "_resellerRetains": "~30%"
+    },
+    "enhancement": {
+      "distDiscount": 0.5,
+      "resellerDiscount": 0.35,
+      "_distRetains": "~15%",
+      "_resellerRetains": "~35%"
+    }
   },
-  "multiYearContinuity": {
-    "year1Pct": 0,
-    "year2Pct": 15,
-    "year3Pct": 35,
-    "_doc": "Applied to recurring totals. Year 1 = full price. Year 2 = (1 - 0.15) of Year 1 recurring. Year 3 = (1 - 0.30) of Year 1 recurring."
+  "subdomains": {
+    "jjnet": {
+      "label": "JJNet",
+      "regularDistDiscount": 0.4,
+      "regularResellerDiscount": 0.3,
+      "enhDistDiscount": 0.5,
+      "enhResellerDiscount": 0.35
+    },
+    "jlead": {
+      "label": "JLEAD",
+      "regularDistDiscount": 0.4,
+      "regularResellerDiscount": 0.3,
+      "enhDistDiscount": 0.5,
+      "enhResellerDiscount": 0.35
+    }
   },
   "skus": [
     {
-      "code": "CORE",
-      "name": "GRC1 Core Platform",
+      "code": "CARE",
+      "name": "Care Support with aligned SLA",
       "category": "11-Required Service",
-      "description": "Unified edge-first governance, risk, and control platform. Required for every Trendzact deployment. Includes edge agent, embedded decision engine, monitoring profiles, and SOC operations framework.",
+      "description": "Ongoing platform support, incident response, upgrade management, and advisory hours. Includes all capabilities formerly in CORE (edge agent, decision engine, monitoring profiles, SOC framework, audit ledger). Tiered by client size.",
       "isActive": true,
       "displayOrder": 1,
+      "discountGroup": "regular",
       "pricing": {
-        "model": "flat",
-        "billableUnit": "flat per tenant annual",
-        "amountUsd": 5000
+        "model": "tieredByCompanySize",
+        "billableUnit": "per segment tier annual (MSRP)",
+        "baseAmountUsd": 15000,
+        "msrpBySegment": {
+          "early_growth": 5000,
+          "scaled_smb": 5000,
+          "emerging_midmkt": 10500,
+          "core_midmkt": 15000,
+          "upper_midmkt": 18000,
+          "commercial_ent": 23000,
+          "strategic_ent": 26000,
+          "global_conglom": 27500
+        },
+        "_doc": "Locked MSRP values per segment. msrpBySegment is authoritative \u2014 use these directly. Channel discount applied on top. CORE is absorbed \u2014 no separate CORE SKU."
       },
       "selection": {
         "mode": "auto",
@@ -165,41 +245,12 @@
         ]
       },
       "timing": "recurring",
-      "bundleEligible": false,
       "features": {
         "included": [
           "Edge agent and decision engine",
           "Monitoring profiles and policy authoring",
           "SOC operations framework",
-          "Audit and evidence ledger"
-        ],
-        "optionalAddOns": []
-      }
-    },
-    {
-      "code": "CARE",
-      "name": "Care Support with aligned SLA",
-      "category": "11-Required Service",
-      "description": "Ongoing support and SLA tiered by client size. Includes incident response, upgrade management, and advisory hours.",
-      "isActive": true,
-      "displayOrder": 2,
-      "pricing": {
-        "model": "tieredByCompanySize",
-        "billableUnit": "per segment tier annual",
-        "baseAmountUsd": 10000,
-        "multiplierRef": "careMultiplier"
-      },
-      "selection": {
-        "mode": "auto",
-        "parentCodes": null,
-        "displayBadges": [
-          "REQUIRED"
-        ]
-      },
-      "timing": "recurring",
-      "bundleEligible": false,
-      "features": {
-        "included": [
+          "Audit and evidence ledger",
           "24x7 incident response",
           "Upgrade and patch management",
           "Quarterly advisory review",
@@ -212,13 +263,14 @@
       "code": "SWA",
       "name": "Workspace Exposure",
       "category": "10-Data Exposure Coverage",
-      "description": "Protects sensitive data where it is physically visible in the workspace. Detects webcam-visible risk conditions such as phones, paper, unattended screens, observers, and non-compliant work areas—and applies real-time controls to reduce exposure.",
+      "description": "Protects sensitive data where it is physically visible in the workspace. Detects webcam-visible risk conditions such as phones, paper, unattended screens, observers, and non-compliant work areas\u2014and applies real-time controls to reduce exposure.",
       "isActive": true,
       "displayOrder": 10,
+      "discountGroup": "regular",
       "pricing": {
-        "model": "tieredByLicenseCount",
-        "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 120
+        "model": "moduleCount",
+        "billableUnit": "per named user annual (MSRP)",
+        "_doc": "Price = volumeBracket.msrpBase \u00d7 moduleMultiplier[n-1] \u00d7 commitFactor. All modules use the same rate."
       },
       "selection": {
         "mode": "partner",
@@ -226,7 +278,6 @@
         "displayBadges": []
       },
       "timing": "recurring",
-      "bundleEligible": true,
       "features": {
         "included": [
           "Phone, camera, or recording device visible near sensitive work",
@@ -250,10 +301,11 @@
       "description": "Protects sensitive sessions when login credentials alone are not enough. Uses continuous facial recognition, presence assurance, and liveness signals to detect imposters, proxy work, credential sharing, and identity uncertainty in real time.",
       "isActive": true,
       "displayOrder": 11,
+      "discountGroup": "regular",
       "pricing": {
-        "model": "tieredByLicenseCount",
-        "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 80
+        "model": "moduleCount",
+        "billableUnit": "per named user annual (MSRP)",
+        "_doc": "Price = volumeBracket.msrpBase \u00d7 moduleMultiplier[n-1] \u00d7 commitFactor."
       },
       "selection": {
         "mode": "partner",
@@ -261,7 +313,6 @@
         "displayBadges": []
       },
       "timing": "recurring",
-      "bundleEligible": true,
       "features": {
         "included": [
           "Logged-in user does not match the person present",
@@ -282,12 +333,13 @@
       "name": "High Risk Exposure based on User Time, Place, and Application",
       "category": "10-Data Exposure Coverage",
       "description": "Protects sensitive data at the moment it appears on screen. Detects restricted, labeled, or high-risk content visibility across displays and applies real-time masking, watermarking, restriction, or control.",
-      "isActive": false,
+      "isActive": true,
       "displayOrder": 12,
+      "discountGroup": "regular",
       "pricing": {
-        "model": "tieredByLicenseCount",
-        "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 140
+        "model": "moduleCount",
+        "billableUnit": "per named user annual (MSRP)",
+        "_doc": "Price = volumeBracket.msrpBase \u00d7 moduleMultiplier[n-1] \u00d7 commitFactor."
       },
       "selection": {
         "mode": "partner",
@@ -295,7 +347,6 @@
         "displayBadges": []
       },
       "timing": "recurring",
-      "bundleEligible": true,
       "features": {
         "included": [
           "Sensitive information appears on screen",
@@ -316,7 +367,9 @@
           "Activity gaps requiring exposure review",
           "Work activity occurs outside expected time-place pattern"
         ],
-        "optionalAddOns": ["MSR"]
+        "optionalAddOns": [
+          "MSR"
+        ]
       }
     },
     {
@@ -326,10 +379,11 @@
       "description": "Protects against negligent, malicious, or collusive insider behavior before it becomes data loss. Detects staging, suspicious handling, external transfer indicators, and activity patterns requiring containment or SOC review.",
       "isActive": true,
       "displayOrder": 13,
+      "discountGroup": "regular",
       "pricing": {
-        "model": "tieredByLicenseCount",
-        "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 80
+        "model": "moduleCount",
+        "billableUnit": "per named user annual (MSRP)",
+        "_doc": "Price = volumeBracket.msrpBase \u00d7 moduleMultiplier[n-1] \u00d7 commitFactor."
       },
       "selection": {
         "mode": "partner",
@@ -337,7 +391,6 @@
         "displayBadges": []
       },
       "timing": "recurring",
-      "bundleEligible": true,
       "features": {
         "included": [
           "User accesses sensitive data outside normal pattern",
@@ -347,7 +400,9 @@
           "User behavior crosses containment threshold",
           "Insider activity requires case creation or SOC review"
         ],
-        "optionalAddOns": ["MSR"]
+        "optionalAddOns": [
+          "MSR"
+        ]
       }
     },
     {
@@ -357,10 +412,11 @@
       "description": "Protects sensitive data during virtual meetings and screen sharing. Detects Microsoft Teams and other meeting exposure scenarios, including MIP/AIP-labeled content visibility, external participants, unauthorized observers, and recording governance risk.",
       "isActive": true,
       "displayOrder": 14,
+      "discountGroup": "regular",
       "pricing": {
-        "model": "tieredByLicenseCount",
-        "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 180
+        "model": "moduleCount",
+        "billableUnit": "per named user annual (MSRP)",
+        "_doc": "Price = volumeBracket.msrpBase \u00d7 moduleMultiplier[n-1] \u00d7 commitFactor."
       },
       "selection": {
         "mode": "partner",
@@ -368,7 +424,6 @@
         "displayBadges": []
       },
       "timing": "recurring",
-      "bundleEligible": true,
       "features": {
         "included": [
           "Sensitive data exposed during MS Teams screen sharing",
@@ -378,7 +433,9 @@
           "Screen sharing continues after sensitive content appears",
           "Meeting recording or evidence governance risk"
         ],
-        "optionalAddOns": ["MSR"]
+        "optionalAddOns": [
+          "MSR"
+        ]
       }
     },
     {
@@ -388,10 +445,11 @@
       "description": "Multi-screen recording for quality assurance or defensible evidence when exposure occurs. Records and links screen activity to events so teams can reconstruct incidents, support regulated review, and prove what happened.",
       "isActive": true,
       "displayOrder": 15,
+      "discountGroup": "regular",
       "pricing": {
-        "model": "tieredByLicenseCount",
-        "billableUnit": "per named user annual",
-        "baseAmountUsdPerUser": 140
+        "model": "moduleCount",
+        "billableUnit": "per named user annual (MSRP)",
+        "_doc": "Price = volumeBracket.msrpBase \u00d7 moduleMultiplier[n-1] \u00d7 commitFactor."
       },
       "selection": {
         "mode": "partner",
@@ -399,7 +457,6 @@
         "displayBadges": []
       },
       "timing": "recurring",
-      "bundleEligible": true,
       "features": {
         "included": [
           "Exposure event requires defensible evidence",
@@ -413,117 +470,91 @@
       }
     },
     {
-      "code": "ARCH",
-      "name": "Evidence Retention Enhancement",
+      "code": "SR-QAM",
+      "name": "Session Recording & Quality Assurance Monitoring",
+      "category": "10-Data Exposure Coverage",
+      "description": "Structured session recording for quality assurance, compliance review, and regulated interaction monitoring. Supports QA scoring, dispute resolution, and adherence verification.",
+      "isActive": true,
+      "displayOrder": 16,
+      "discountGroup": "regular",
+      "pricing": {
+        "model": "moduleCount",
+        "billableUnit": "per named user annual (MSRP)",
+        "_doc": "Price = volumeBracket.msrpBase \u00d7 moduleMultiplier[n-1] \u00d7 commitFactor."
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "features": {
+        "included": [
+          "Regulated interaction requires structured recording",
+          "QA scoring requires linked screen and audio capture",
+          "Dispute resolution requires session replay evidence",
+          "Compliance adherence requires verifiable review trail",
+          "Supervisor review requires searchable interaction archive",
+          "Training and coaching require annotated session examples"
+        ],
+        "optionalAddOns": []
+      }
+    },
+    {
+      "code": "ECS",
+      "name": "Endpoint Context & Security",
+      "category": "10-Data Exposure Coverage",
+      "description": "Extends exposure control to endpoint posture, location, and environmental context. Detects geolocation anomalies, device compliance drift, and context-driven risk conditions at the endpoint.",
+      "isActive": true,
+      "displayOrder": 17,
+      "discountGroup": "regular",
+      "pricing": {
+        "model": "moduleCount",
+        "billableUnit": "per named user annual (MSRP)",
+        "_doc": "Price = volumeBracket.msrpBase \u00d7 moduleMultiplier[n-1] \u00d7 commitFactor."
+      },
+      "selection": {
+        "mode": "partner",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "recurring",
+      "features": {
+        "included": [
+          "Endpoint posture drifts from compliance baseline",
+          "Device operates outside approved configuration",
+          "Work session originates from unexpected or restricted location",
+          "Jurisdiction crossing detected during sensitive activity",
+          "Environmental context signals elevated endpoint risk",
+          "Endpoint health condition requires policy enforcement"
+        ],
+        "optionalAddOns": []
+      }
+    },
+    {
+      "code": "UVA-WEBCAM",
+      "name": "Ultrawide Webcam Enhancement",
       "category": "20-Extended Coverage Option",
-      "description": "Enhances exposure coverage by retaining screen, alert, and interaction evidence after risk occurs. Supports investigation, audit review, and compliance validation when proof must be preserved.",
-      "isActive": false,
+      "description": "Enhances workspace exposure coverage with an ultrawide webcam to improve visibility of the physical workspace, including phones, paper, observers, unattended screens, and surrounding exposure conditions.",
+      "isActive": true,
       "displayOrder": 30,
+      "discountGroup": "enhancement",
       "pricing": {
-        "model": "flat",
-        "billableUnit": "flat annual",
-        "amountUsd": 12000
+        "model": "perUserVolume",
+        "billableUnit": "per named user annual (MSRP)",
+        "msrpBaseAtRef": 67,
+        "wholesaleBaseAtRef": 40,
+        "_refBracket": "501-2,500 users",
+        "_doc": "Same volume bracket ratios and commitment tiers as modules. discountGroup=enhancement for deeper channel margin."
       },
       "selection": {
         "mode": "conditional",
         "parentCodes": [
-          "SWA",
-          "MSR",
-          "ITM",
-          "eDLP"
+          "SWA"
         ],
         "displayBadges": []
       },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "MSR-ALL",
-      "name": "Continuous Capture Enhancement",
-      "category": "20-Extended Coverage Option",
-      "description": "Enhances evidence coverage by capturing full-session on-screen activity. Supports complete reconstruction when regulated review or high-risk operations require continuous proof.",
-      "isActive": true,
-      "displayOrder": 31,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat annual",
-        "amountUsd": 18000
-      },
-      "selection": {
-        "mode": "conditional",
-        "parentCodes": [
-          "MSR"
-        ],
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "MSR-ALERT",
-      "name": "Alert-Triggered Capture Enhancement",
-      "category": "20-Extended Coverage Option",
-      "description": "Enhances evidence coverage by capturing screen activity only when exposure risk is detected. Provides focused proof for real-time alerts without requiring continuous recording.",
-      "isActive": true,
-      "displayOrder": 32,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat annual",
-        "amountUsd": 10000
-      },
-      "selection": {
-        "mode": "conditional",
-        "parentCodes": [
-          "MSR"
-        ],
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "STT",
-      "name": "Speech-to-Text Evidence Enhancement",
-      "category": "20-Extended Coverage Option",
-      "description": "Enhances quality and compliance review by converting voice interactions into searchable records. Supports investigation of exposure-related conversations, QA scoring, and regulated review.",
-      "isActive": true,
-      "displayOrder": 33,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat annual",
-        "amountUsd": 8000
-      },
-      "selection": {
-        "mode": "conditional",
-        "parentCodes": [
-          "SR-QAM"
-        ],
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "GEO-ALERT",
-      "name": "Geolocation Anomaly Enhancement",
-      "category": "20-Extended Coverage Option",
-      "description": "Enhances location and activity exposure coverage by alerting on unusual locations, jurisdiction crossings, and policy-restricted regions that increase exposure risk.",
-      "isActive": true,
-      "displayOrder": 34,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat annual",
-        "amountUsd": 5000
-      },
-      "selection": {
-        "mode": "conditional",
-        "parentCodes": [
-          "ECS"
-        ],
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
+      "timing": "recurring"
     },
     {
       "code": "PRIVSCR",
@@ -531,11 +562,15 @@
       "category": "20-Extended Coverage Option",
       "description": "Enhances workspace exposure coverage by reducing screen visibility to unintended observers. Helps limit visual exposure in shared, hybrid, and uncontrolled environments.",
       "isActive": true,
-      "displayOrder": 35,
+      "displayOrder": 31,
+      "discountGroup": "enhancement",
       "pricing": {
-        "model": "flatPerUser",
-        "billableUnit": "per named user annual",
-        "amountUsdPerUser": 20
+        "model": "perUserVolume",
+        "billableUnit": "per named user annual (MSRP)",
+        "msrpBaseAtRef": 25,
+        "wholesaleBaseAtRef": 15,
+        "_refBracket": "501-2,500 users",
+        "_doc": "Same volume bracket ratios and commitment tiers as modules. discountGroup=enhancement for deeper channel margin."
       },
       "selection": {
         "mode": "conditional",
@@ -545,54 +580,7 @@
         ],
         "displayBadges": []
       },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "UVA-WEBCAM",
-      "name": "Ultrawide Webcam Enhancement",
-      "category": "20-Extended Coverage Option",
-      "description": "Enhances workspace exposure coverage with an ultrawide webcam to improve visibility of the physical workspace, including phones, paper, observers, unattended screens, and surrounding exposure conditions.",
-      "isActive": true,
-      "displayOrder": 37,
-      "pricing": {
-        "model": "flatPerUser",
-        "billableUnit": "per named user annual",
-        "amountUsdPerUser": 30
-      },
-      "selection": {
-        "mode": "conditional",
-        "parentCodes": [
-          "SWA"
-        ],
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "OBSRVR-DET",
-      "name": "Observer Detection Enhancement",
-      "category": "20-Extended Coverage Option",
-      "description": "Enhances workspace exposure coverage by detecting unauthorized observers near sensitive activity. Flags shoulder-surfing, unknown presence, and observer-driven exposure risk in real time.",
-      "isActive": false,
-      "displayOrder": 36,
-      "pricing": {
-        "model": "flatPerUser",
-        "billableUnit": "per named user annual",
-        "amountUsdPerUser": 15
-      },
-      "selection": {
-        "mode": "conditional",
-        "parentCodes": [
-          "SWA"
-        ],
-        "displayBadges": [
-          "NEW GA"
-        ]
-      },
-      "timing": "recurring",
-      "bundleEligible": false
+      "timing": "recurring"
     },
     {
       "code": "CONN-TEAMS",
@@ -600,11 +588,13 @@
       "category": "20-Extended Coverage Option",
       "description": "Enhances virtual meeting exposure coverage by connecting Microsoft Teams context to real-time screen-share detection, participant awareness, and meeting-specific controls.",
       "isActive": true,
-      "displayOrder": 40,
+      "displayOrder": 32,
+      "discountGroup": "regular",
       "pricing": {
         "model": "flat",
-        "billableUnit": "flat annual",
-        "amountUsd": 8000
+        "billableUnit": "flat annual (MSRP)",
+        "amountUsd": 8000,
+        "_doc": "No volume or commitment scaling. Channel discount (regular) applied on top."
       },
       "selection": {
         "mode": "conditional",
@@ -613,74 +603,7 @@
         ],
         "displayBadges": []
       },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "CONN-ZOOM",
-      "name": "Zoom Coverage Connector",
-      "category": "20-Extended Coverage Option",
-      "description": "Enhances virtual meeting exposure coverage by connecting Zoom meeting context to real-time screen-share detection, participant awareness, and meeting-specific controls.",
-      "isActive": false,
-      "displayOrder": 41,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat annual",
-        "amountUsd": 8000
-      },
-      "selection": {
-        "mode": "conditional",
-        "parentCodes": [
-          "SVM"
-        ],
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "CONN-WEBEX",
-      "name": "Webex Coverage Connector",
-      "category": "20-Extended Coverage Option",
-      "description": "Enhances virtual meeting exposure coverage by connecting Webex meeting context to real-time screen-share detection, participant awareness, and meeting-specific controls.",
-      "isActive": false,
-      "displayOrder": 42,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat annual",
-        "amountUsd": 8000
-      },
-      "selection": {
-        "mode": "conditional",
-        "parentCodes": [
-          "SVM"
-        ],
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "CONN-GMEET",
-      "name": "Google Meet Coverage Connector",
-      "category": "20-Extended Coverage Option",
-      "description": "Enhances virtual meeting exposure coverage by connecting Google Meet context to real-time screen-share detection, participant awareness, and meeting-specific controls.",
-      "isActive": false,
-      "displayOrder": 43,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat annual",
-        "amountUsd": 8000
-      },
-      "selection": {
-        "mode": "conditional",
-        "parentCodes": [
-          "SVM"
-        ],
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
+      "timing": "recurring"
     },
     {
       "code": "CONN-PURVIEW",
@@ -688,123 +611,24 @@
       "category": "20-Extended Coverage Option",
       "description": "Enhances on-screen and meeting exposure coverage with Microsoft Purview sensitivity labels. Enables labeled data to be recognized when visible and used for real-time masking, watermarking, restriction, or evidence controls.",
       "isActive": true,
-      "displayOrder": 44,
+      "displayOrder": 33,
+      "discountGroup": "regular",
       "pricing": {
         "model": "flat",
-        "billableUnit": "flat annual",
-        "amountUsd": 15000
+        "billableUnit": "flat annual (MSRP)",
+        "amountUsd": 15000,
+        "_doc": "No volume or commitment scaling. Channel discount (regular) applied on top."
       },
       "selection": {
         "mode": "conditional",
         "parentCodes": [
-          "eDLP",
+          "eDLP-EUBA",
           "MSR",
           "ITM"
         ],
         "displayBadges": []
       },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "PLAT-AWSACC",
-      "name": "Dedicated AWS Workload Pipeline",
-      "category": "25-Platform Option Recurring",
-      "description": "Isolated compute and storage per domain. Single-tenant AWS footprint for data-residency-sensitive deployments.",
-      "isActive": true,
-      "displayOrder": 50,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat per tenant annual",
-        "amountUsd": 75000
-      },
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "PLAT-AWSBCP",
-      "name": "BCP Failover SLA Addendum",
-      "category": "25-Platform Option Recurring",
-      "description": "Pilot-light business continuity failover in a second AWS region. RPO and RTO commitments per SLA addendum.",
-      "isActive": false,
-      "displayOrder": 51,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat per tenant annual",
-        "amountUsd": 40000
-      },
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "PLAT-PBK",
-      "name": "Playbook Authoring Workspace",
-      "category": "25-Platform Option Recurring",
-      "description": "Dedicated authoring environment for governed response playbooks.",
-      "isActive": false,
-      "displayOrder": 52,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat per tenant annual",
-        "amountUsd": 20000
-      },
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "PLAT-SOC",
-      "name": "Managed SOC Analyst Hours Pool",
-      "category": "25-Platform Option Recurring",
-      "description": "Pool of Trendzact SOC analyst hours for triage and investigation assist.",
-      "isActive": false,
-      "displayOrder": 53,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat per tenant annual",
-        "amountUsd": 30000
-      },
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
-    },
-    {
-      "code": "PLAT-BI",
-      "name": "Embedded BI / Power BI Connector",
-      "category": "25-Platform Option Recurring",
-      "description": "Embedded BI workspace and Power BI connector for executive reporting.",
-      "isActive": false,
-      "displayOrder": 54,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "flat per tenant annual",
-        "amountUsd": 15000
-      },
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "recurring",
-      "bundleEligible": false
+      "timing": "recurring"
     },
     {
       "code": "INIT-ONBRD",
@@ -812,12 +636,14 @@
       "category": "30-Setup/Integration Option",
       "description": "Tenant initialization and client champions onboarding. Tiered by company size per segment multiplier.",
       "isActive": true,
-      "displayOrder": 60,
+      "displayOrder": 50,
+      "discountGroup": "regular",
       "pricing": {
         "model": "tieredByCompanySize",
-        "billableUnit": "one-time, tier by company size",
+        "billableUnit": "one-time, tier by company size (MSRP)",
         "baseAmountUsd": 10000,
-        "multiplierRef": "presaleMultiplier"
+        "multiplierRef": "presaleMultiplier",
+        "_doc": "MSRP = baseAmountUsd \u00d7 presaleMultiplier. Channel discount (regular) applied on top."
       },
       "selection": {
         "mode": "auto",
@@ -826,108 +652,28 @@
           "REQUIRED"
         ]
       },
-      "timing": "oneTime",
-      "bundleEligible": false
-    },
-    {
-      "code": "INIT-DPIA",
-      "name": "Data Privacy Impact Assessment",
-      "category": "30-Setup/Integration Option",
-      "description": "One-time DPIA aligned to prospect jurisdiction. GDPR, CCPA, BDSG, LGPD, and territory-specific assessment.",
-      "isActive": false,
-      "displayOrder": 61,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "one-time per assessment",
-        "amountUsd": 20000
-      },
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "oneTime",
-      "bundleEligible": false
-    },
-    {
-      "code": "INT-OKTA",
-      "name": "Okta SSO Integration",
-      "category": "30-Setup/Integration Option",
-      "description": "One-time integration with Okta as identity provider.",
-      "isActive": false,
-      "displayOrder": 62,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "one-time per integration",
-        "amountUsd": 8000
-      },
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "oneTime",
-      "bundleEligible": false
-    },
-    {
-      "code": "INT-PING",
-      "name": "Ping SSO Integration",
-      "category": "30-Setup/Integration Option",
-      "description": "One-time integration with Ping Identity as identity provider.",
-      "isActive": false,
-      "displayOrder": 63,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "one-time per integration",
-        "amountUsd": 8000
-      },
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "oneTime",
-      "bundleEligible": false
+      "timing": "oneTime"
     },
     {
       "code": "INT-GRAPH",
       "name": "MS Graph API Integration",
       "category": "30-Setup/Integration Option",
       "description": "One-time integration with Microsoft Graph for Entra ID and M365 enrichment.",
-      "isActive": false,
-      "displayOrder": 64,
+      "isActive": true,
+      "displayOrder": 51,
+      "discountGroup": "regular",
       "pricing": {
         "model": "flat",
-        "billableUnit": "one-time per integration",
-        "amountUsd": 12000
+        "billableUnit": "one-time per integration (MSRP)",
+        "amountUsd": 12000,
+        "_doc": "Flat one-time MSRP. Channel discount (regular) applied on top."
       },
       "selection": {
         "mode": "partner",
         "parentCodes": null,
         "displayBadges": []
       },
-      "timing": "oneTime",
-      "bundleEligible": false
-    },
-    {
-      "code": "INT-SPLUNK",
-      "name": "Splunk SIEM Integration",
-      "category": "30-Setup/Integration Option",
-      "description": "One-time integration pushing GRC1 alerts, cases, and events to Splunk.",
-      "isActive": false,
-      "displayOrder": 65,
-      "pricing": {
-        "model": "flat",
-        "billableUnit": "one-time per integration",
-        "amountUsd": 10000
-      },
-      "selection": {
-        "mode": "partner",
-        "parentCodes": null,
-        "displayBadges": []
-      },
-      "timing": "oneTime",
-      "bundleEligible": false
+      "timing": "oneTime"
     }
   ]
 }
