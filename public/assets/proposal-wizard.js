@@ -1040,17 +1040,23 @@
     var careLine = findLine('CARE');
     var carePrice = careLine ? careLine.msrpLine : 0;
 
-    // Module lines — annual per-user at 1yr (before commitment discount, which is 1.0 at 1yr)
-    // The per-user module rate is the same for all modules (module-count pricing)
-    var modulePerUser = calc1.input.bracketMsrpBase * calc1.input.moduleMultiplier;
-    var moduleTotalAnnual = modulePerUser * licenseCount;
-    // Enhancement lines are included in this total
+    // Module total — sum all module lines from the calc (already correctly split per-line)
+    var moduleTotalAnnual = 0;
+    var modulePerUser = 0;
+    (calc1.lines || []).forEach(function (l) {
+      if (l.isModule) moduleTotalAnnual += l.msrpLine;
+    });
+    // The total per-user rate for all modules combined
+    modulePerUser = calc1.input.bracketMsrpBase * calc1.input.moduleMultiplier;
+
+    // Enhancement lines
     var enhTotal = 0;
     modOpts.forEach(function (code) {
       var line = findLine(code);
       if (line) enhTotal += line.msrpLine;
     });
     var namedUserTotal = moduleTotalAnnual + enhTotal;
+    var namedUserPerUser = licenseCount > 0 ? namedUserTotal / licenseCount : 0;
 
     // INIT-ONBRD line
     var onbrdLine = findLine('INIT-ONBRD');
@@ -1137,7 +1143,7 @@
         '</div>' +
 
         '<div class="tp-summary-row">' +
-          '<span class="tp-pricing-label">Named User License' + (modOpts.length > 0 ? ' (includes Enhancements)' : '') + '<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + fmt(Math.round(namedUserTotal / licenseCount)) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + mods.length + ' module' + (mods.length !== 1 ? 's' : '') + ')</span></span>' +
+          '<span class="tp-pricing-label">Named User License' + (modOpts.length > 0 ? ' (includes Enhancements)' : '') + '<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + fmt(Math.round(namedUserPerUser)) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + mods.length + ' module' + (mods.length !== 1 ? 's' : '') + ')</span></span>' +
           '<span>' + fmt(namedUserTotal) + '</span>' +
         '</div>' +
 

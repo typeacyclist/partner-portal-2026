@@ -191,13 +191,17 @@
 
     switch (p.model) {
       case 'moduleCount': {
-        // Module pricing: msrpBase (from bracket) × moduleMultiplier × commitFactor × userCount
+        // Module pricing: the moduleMultiplier prices ALL modules as a bundle.
+        // msrpBase × moduleMultiplier = total per-user cost for all modules combined.
+        // Each individual module line gets an equal share: total / moduleCount.
         var modMult = resolveModuleMultiplier(catalog, moduleCount);
-        var msrpPerUser = bracket.msrpBase * modMult * commitFactor;
+        var totalPerUser = bracket.msrpBase * modMult * commitFactor;
+        var perLinePerUser = moduleCount > 0 ? totalPerUser / moduleCount : 0;
         return {
-          msrpPerUser: msrpPerUser,
-          msrpLine: msrpPerUser * userCount,
-          unitDescription: formatMoney(bracket.msrpBase) + ' base × ' + modMult.toFixed(2) + ' (' + moduleCount + ' mod) × ' + commitFactor.toFixed(3) + ' commit = ' + formatMoney(msrpPerUser) + '/user/yr',
+          msrpPerUser: perLinePerUser,
+          msrpLine: perLinePerUser * userCount,
+          _totalPerUser: totalPerUser,
+          unitDescription: formatMoney(bracket.msrpBase) + ' base × ' + modMult.toFixed(2) + ' (' + moduleCount + ' mod) ÷ ' + moduleCount + ' × ' + commitFactor.toFixed(3) + ' commit = ' + formatMoney(perLinePerUser) + '/user/yr',
           billingNote: p.billableUnit + ' (' + bracket.label + ')'
         };
       }
