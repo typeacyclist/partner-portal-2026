@@ -39,9 +39,29 @@
 
   var REQUIRED_STEP1_FIELDS = [
     'prospectCompany', 'primaryContactName', 'primaryContactRole',
-    'contactEmail', 'companySegment', 'sector', 'expectedLicenseCount',
-    'estDecisionDate', 'termYears', 'subdomain', 'solutionChallenge'
+    'contactEmail', 'companySegment', 'expectedLicenseCount',
+    'estDecisionDate', 'solutionChallenge'
   ];
+
+  // Derive subdomain from current hostname (e.g. jlead.trendzact-partners-001.web.app → jlead)
+  // If no matching subdomain, returns '' → direct sales channel (no discounts).
+  function detectSubdomain() {
+    try {
+      var host = window.location.hostname || '';
+      var parts = host.split('.');
+      if (parts.length > 1 && parts[0] !== 'trendzact-partners-001' && parts[0] !== 'localhost') {
+        return parts[0].toLowerCase();
+      }
+    } catch (e) { /* ignore */ }
+    return '';
+  }
+
+  function currentYearMonth() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    return y + '-' + m;
+  }
 
   // --------------------------------------------------------------
   // State
@@ -54,11 +74,8 @@
       primaryContactRole: '',
       contactEmail: '',
       companySegment: '',
-      sector: 'commercial',
       expectedLicenseCount: '',
-      estDecisionDate: '',
-      termYears: '',
-      subdomain: 'jlead',
+      estDecisionDate: currentYearMonth(),
       solutionChallenge: '',
 
       // Step 2 — Solution Selectors
@@ -178,8 +195,29 @@
       if (t.dataset.act === 'resume') {
         var merged = emptyDraft();
         Object.keys(existing).forEach(function (k) {
-          if (k in merged) merged[k] = existing[k];
+          if (k in merged) {
+            // For nested objects (sectionOpen, sectionNone), merge keys individually
+            // so v7 keys survive even when resuming a v6 draft
+            if ((k === 'sectionOpen' || k === 'sectionNone') && typeof existing[k] === 'object' && existing[k] !== null) {
+              Object.keys(existing[k]).forEach(function (subKey) {
+                merged[k][subKey] = existing[k][subKey];
+              });
+            } else {
+              merged[k] = existing[k];
+            }
+          }
         });
+        // Migrate v6 → v7: if platform keys exist but enhancements don't, copy the state
+        if (merged.sectionNone.platform !== undefined && merged.sectionNone.enhancements === undefined) {
+          merged.sectionNone.enhancements = merged.sectionNone.platform;
+        }
+        if (merged.sectionOpen.platform !== undefined && merged.sectionOpen.enhancements === undefined) {
+          merged.sectionOpen.enhancements = merged.sectionOpen.platform;
+        }
+        // v7 removed selectedPlatform — migrate any leftover selections
+        if (existing.selectedPlatform && existing.selectedPlatform.length && !merged.selectedModuleOptions.length) {
+          // Platform codes were a different concept; don't merge them into enhancements
+        }
         state.draft = merged;
         modal.remove();
         renderShell();
@@ -352,15 +390,9 @@
       return '<option value="' + esc(s.key) + '" ' + sel + '>' + esc(s.label) + ' (' + esc(s.headcountRange) + ')</option>';
     }).join('');
 
-    var subs = state.catalog.subdomains || {};
-    var subdomainOptions = Object.keys(subs).map(function (key) {
-      var sel = d.subdomain === key ? ' selected' : '';
-      return '<option value="' + esc(key) + '"' + sel + '>' + esc(subs[key].label || key) + '</option>';
-    }).join('');
-
     return (
       '<h3>Step 1 — Proposal Fields</h3>' +
-      '<p class="tp-lede">Capture the prospect, company size, and pricing term. All fields are required.</p>' +
+      '<p class="tp-lede">Capture the prospect and company size. All fields are required.</p>' +
       '<div class="tp-grid-2">' +
         fieldHtml('Prospect Company', 'f-company', 'text', d.prospectCompany,
                   'Acme Manufacturing', 'Legal or doing-business-as name as it will appear on the proposal PDF.', 'prospectCompany') +
@@ -373,23 +405,10 @@
         selectHtml('Company Size Segment', 'f-seg',
                    '<option value="">— Select a segment —</option>' + segOptions,
                    'Drives CARE tier, onboarding tier, and SLA alignment.', 'companySegment') +
-        selectHtml('Sector', 'f-sector',
-                   '<option value="commercial"' + (d.sector === 'commercial' ? ' selected' : '') + '>Commercial</option>' +
-                   '<option value="govt-public-works"' + (d.sector === 'govt-public-works' ? ' selected' : '') + '>Govt / Public Works</option>',
-                   'Defaults to Commercial. Govt/public-works affects contract terms downstream.', 'sector') +
-        fieldHtml('Expected License Count (annual named user)', 'f-licenses', 'number', d.expectedLicenseCount,
-                  '500', 'Per-named-user licensing is the v1 model.', 'expectedLicenseCount', 'min="1"') +
-        fieldHtml('Est. Decision Date (YYYY-MM)', 'f-decision', 'month', d.estDecisionDate,
+        fieldHtml('Monitored Users (annual named user)', 'f-licenses', 'number', d.expectedLicenseCount,
+                  '500', 'Per-named-user annual licensing.', 'expectedLicenseCount', 'min="1"') +
+        fieldHtml('Est. Decision Date', 'f-decision', 'month', d.estDecisionDate,
                   '', 'Month-level precision is fine for pipeline.', 'estDecisionDate') +
-        selectHtml('Commitment Term', 'f-term',
-                   '<option value="">— Select a term —</option>' +
-                   '<option value="1"' + (String(d.termYears) === '1' ? ' selected' : '') + '>1 year</option>' +
-                   '<option value="2"' + (String(d.termYears) === '2' ? ' selected' : '') + '>2 years (7.5% commitment discount)</option>' +
-                   '<option value="3"' + (String(d.termYears) === '3' ? ' selected' : '') + '>3 years (15% commitment discount)</option>',
-                   'Commitment discount applies to per-user recurring line items. Same price every year of the term.', 'termYears') +
-        selectHtml('Channel / Subdomain', 'f-subdomain',
-                   subdomainOptions,
-                   'Determines distributor and reseller discount tiers for channel pricing.', 'subdomain') +
         '<div class="tp-field" style="grid-column:1/-1;">' +
           '<label>Explain Prospective Client Challenge / Pain Points<span class="req">*</span></label>' +
           '<textarea id="f-challenge" rows="3" class="' + fieldCls('solutionChallenge') + '" ' +
@@ -436,9 +455,9 @@
     var map = {
       'f-company': 'prospectCompany', 'f-contact': 'primaryContactName',
       'f-role': 'primaryContactRole', 'f-email': 'contactEmail',
-      'f-seg': 'companySegment', 'f-sector': 'sector',
+      'f-seg': 'companySegment',
       'f-licenses': 'expectedLicenseCount', 'f-decision': 'estDecisionDate',
-      'f-term': 'termYears', 'f-subdomain': 'subdomain', 'f-challenge': 'solutionChallenge'
+      'f-challenge': 'solutionChallenge'
     };
     Object.keys(map).forEach(function (id) {
       var el = g(id);
@@ -533,10 +552,24 @@
 
   function sectionStatus(id) {
     var d = state.draft;
+    var groups = catalogByCategory();
     if (id === 'core') {
-      var ct = catalogByCategory().required.length;
+      var ct = groups.required.length;
       return { label: ct + ' included', klass: 'ok' };
     }
+
+    // Check if the section has any selectable items
+    var hasItems = true;
+    if (id === 'modules') hasItems = groups.modules.length > 0;
+    else if (id === 'enhancements') hasItems = groups.enhancements.length > 0;
+    else if (id === 'oneTime') {
+      hasItems = (groups.oneTime || []).some(function (s) {
+        var badges = (s.selection && s.selection.displayBadges) || [];
+        return badges.indexOf('REQUIRED') === -1;
+      });
+    }
+    if (!hasItems) return { label: 'No items available', klass: 'ok' };
+
     var count = 0;
     if (id === 'modules') count = d.selectedModules.length;
     else if (id === 'enhancements') count = d.selectedModuleOptions.length;
@@ -911,10 +944,24 @@
   function validateStep2() {
     var errs = {};
     var d = state.draft;
-    if (d.selectedModules.length === 0 && !d.sectionNone.modules) errs.modules = true;
-    if (d.selectedModuleOptions.length === 0 && !d.sectionNone.enhancements) errs.enhancements = true;
-    var optOneTime = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; });
-    if (optOneTime.length === 0 && !d.sectionNone.oneTime) errs.oneTime = true;
+    var groups = catalogByCategory();
+
+    // Only require action if the section has items to choose from
+    if (groups.modules.length > 0) {
+      if (d.selectedModules.length === 0 && !d.sectionNone.modules) errs.modules = true;
+    }
+    if (groups.enhancements.length > 0) {
+      if (d.selectedModuleOptions.length === 0 && !d.sectionNone.enhancements) errs.enhancements = true;
+    }
+    var optOneTime = (groups.oneTime || []).filter(function (s) {
+      var badges = (s.selection && s.selection.displayBadges) || [];
+      return badges.indexOf('REQUIRED') === -1;
+    });
+    if (optOneTime.length > 0) {
+      var selectedOptional = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; });
+      if (selectedOptional.length === 0 && !d.sectionNone.oneTime) errs.oneTime = true;
+    }
+
     d.sectionErrors = errs;
     return Object.keys(errs).length === 0;
   }
@@ -922,7 +969,7 @@
   // ==============================================================
   // STEP 3 — Review & Calculate
   // ==============================================================
-  function buildDraftForMathEngine() {
+  function buildDraftForMathEngine(overrideYears) {
     var d = state.draft;
     // Aggregate all selections into the draft format the math engine expects
     var selected = []
@@ -936,11 +983,11 @@
       primaryUseCase: d.solutionChallenge,
       dealStage: 'Proposal',
       estimatedCloseDate: d.estDecisionDate,
-      sector: d.sector,
+      sector: 'commercial',
       companySegment: d.companySegment,
       userCount: parseInt(d.expectedLicenseCount, 10) || 0,
-      contractYears: parseInt(d.termYears, 10) || 1,
-      subdomain: d.subdomain || '',
+      contractYears: overrideYears || 1,
+      subdomain: detectSubdomain(),
       selectedSkuCodes: selected,
       notes: ''
     };
@@ -948,9 +995,11 @@
 
   function renderReview() {
     var d = state.draft;
-    var engineDraft = buildDraftForMathEngine();
-    var calc = TrendzactMath.calculateProposal(engineDraft, state.catalog);
-    state._lastCalc = calc;
+    // Calculate all 3 commitment tiers
+    var allTiers = TrendzactMath.calculateAllTiers(buildDraftForMathEngine(1), state.catalog);
+    var calc1 = allTiers[0]; // 1yr — use as the reference for inputs/lines
+    state._lastCalc = calc1;
+    state._allTiers = allTiers;
     var fmt = TrendzactMath.formatMoney;
 
     var seg = state.catalog.companySizeSegments.find(function (s) { return s.key === d.companySegment; });
@@ -961,8 +1010,7 @@
       d.prospectCompany || '—',
       d.primaryContactName + (d.primaryContactRole ? ', ' + d.primaryContactRole : ''),
       segLabel,
-      (d.expectedLicenseCount || '—') + ' licenses',
-      (d.termYears || '—') + 'yr term'
+      (d.expectedLicenseCount || '—') + ' monitored users'
     ].filter(Boolean).join(' · ');
 
     var mods = d.selectedModules;
@@ -975,25 +1023,47 @@
     };
 
     var errorsHtml = '';
-    if (calc.errors && calc.errors.length) {
-      errorsHtml = '<div class="tp-section-blocker">Cannot calculate: ' + calc.errors.map(esc).join('; ') + '</div>';
+    if (calc1.errors && calc1.errors.length) {
+      errorsHtml = '<div class="tp-section-blocker">Cannot calculate: ' + calc1.errors.map(esc).join('; ') + '</div>';
     }
 
+    // Pricing inputs (same across all tiers)
     var summaryRows = [];
     summaryRows.push('<div class="tp-summary-row subgroup">Pricing inputs</div>');
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Volume bracket</span><span>' + esc(calc.input.bracket || '—') + ' · MSRP base ' + fmt(calc.input.bracketMsrpBase) + '/user</span></div>');
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Modules selected</span><span>' + calc.input.moduleCount + ' → multiplier ' + (calc.input.moduleMultiplier || 0).toFixed(2) + '×</span></div>');
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Commitment</span><span>' + esc(calc.commitment.label) + '</span></div>');
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Volume bracket</span><span>' + esc(calc1.input.bracket || '—') + ' · MSRP base ' + fmt(calc1.input.bracketMsrpBase) + '/user</span></div>');
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Modules selected</span><span>' + calc1.input.moduleCount + ' → multiplier ' + (calc1.input.moduleMultiplier || 0).toFixed(2) + '×</span></div>');
+    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Channel</span><span>' + esc(detectSubdomain() || 'Direct (no subdomain)') + '</span></div>');
 
-    summaryRows.push('<div class="tp-summary-row subgroup">MSRP pricing</div>');
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Annual recurring (MSRP)</span><span>' + fmt(calc.totals.annualRecurringMsrp) + '</span></div>');
-    summaryRows.push('<div class="tp-summary-row onetime"><span class="tp-pricing-label">One-time setup (MSRP)</span><span>' + fmt(calc.totals.oneTimeMsrp) + '</span></div>');
-    summaryRows.push('<div class="tp-summary-row total"><span>MSRP TCV (' + calc.totals.contractYears + 'yr)</span><span>' + fmt(calc.totals.tcvMsrp) + '</span></div>');
+    // 3-tier comparison table
+    summaryRows.push('<div class="tp-summary-row subgroup">MSRP by commitment term</div>');
+    summaryRows.push('<div class="tp-tier-grid">');
+    allTiers.forEach(function (t) {
+      var tierLabel = t.commitment.label || (t.totals.contractYears + '-year');
+      var isOneYr = t.totals.contractYears === 1;
+      summaryRows.push(
+        '<div class="tp-tier-card' + (isOneYr ? '' : ' tp-tier-discount') + '">' +
+          '<div class="tp-tier-label">' + esc(tierLabel) + '</div>' +
+          '<div class="tp-tier-row"><span>Annual recurring</span><span>' + fmt(t.totals.annualRecurringMsrp) + '</span></div>' +
+          '<div class="tp-tier-row"><span>One-time</span><span>' + fmt(t.totals.oneTimeMsrp) + '</span></div>' +
+          '<div class="tp-tier-row tp-tier-total"><span>TCV (' + t.totals.contractYears + 'yr)</span><span>' + fmt(t.totals.tcvMsrp) + '</span></div>' +
+        '</div>'
+      );
+    });
+    summaryRows.push('</div>');
 
-    summaryRows.push('<div class="tp-summary-row subgroup">Channel breakdown (annual recurring)</div>');
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Trendzact net (60%)</span><span>' + fmt(calc.totals.annualTrendzactNet) + '</span></div>');
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Distributor retains (~10%)</span><span>' + fmt(calc.totals.annualDistRetains) + '</span></div>');
-    summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Reseller retains (~30%)</span><span>' + fmt(calc.totals.annualResellerRetains) + '</span></div>');
+    // Channel breakdown — only shown when subdomain matched a channel partner
+    var detectedSub = detectSubdomain();
+    var channelSubs = state.catalog.subdomains || {};
+    var isChannelDeal = detectedSub && channelSubs[detectedSub];
+    if (isChannelDeal) {
+      summaryRows.push('<div class="tp-summary-row subgroup">Channel breakdown (annual recurring · 1yr reference)</div>');
+      summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Trendzact net</span><span>' + fmt(calc1.totals.annualTrendzactNet) + '</span></div>');
+      summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Distributor retains</span><span>' + fmt(calc1.totals.annualDistRetains) + '</span></div>');
+      summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Reseller retains</span><span>' + fmt(calc1.totals.annualResellerRetains) + '</span></div>');
+    } else {
+      summaryRows.push('<div class="tp-summary-row subgroup">Channel</div>');
+      summaryRows.push('<div class="tp-summary-row"><span class="tp-pricing-label">Direct sales</span><span>No distributor/reseller discounts applied</span></div>');
+    }
 
     var itemList = function (codes, emptyText) {
       if (!codes.length) return '<li style="color:var(--med-gray);">' + esc(emptyText) + '</li>';
@@ -1076,11 +1146,14 @@
   // STEP 4 — Save & Submit
   // ==============================================================
   function renderSubmit() {
-    var calc = state._lastCalc || TrendzactMath.calculateProposal(buildDraftForMathEngine(), state.catalog);
-    state._lastCalc = calc;
+    var allTiers = state._allTiers || TrendzactMath.calculateAllTiers(buildDraftForMathEngine(1), state.catalog);
+    state._allTiers = allTiers;
+    var calc1 = allTiers[0];
+    state._lastCalc = calc1;
     var d = state.draft;
     var fmt = TrendzactMath.formatMoney;
     var userEmail = (state.user && state.user.email) || 'partner.user@example.com';
+    var selectedTerm = state._selectedSubmitTerm || 1;
 
     var defaultTitle = d.proposalTitle || (d.prospectCompany ? 'Proposal for ' + d.prospectCompany : '');
 
@@ -1102,15 +1175,27 @@
                '</div>';
     }
 
+    // TCV tier selector
+    var tierHeroHtml = '<div class="tp-tier-grid" style="margin-bottom:14px;">';
+    allTiers.forEach(function (t) {
+      var yrs = t.totals.contractYears;
+      var active = yrs === selectedTerm;
+      tierHeroHtml += '<div class="tp-tier-card' + (active ? ' tp-tier-active' : '') + '" data-submit-term="' + yrs + '" style="cursor:pointer;">' +
+        '<div class="tp-tier-label">' + esc(t.commitment.label) + '</div>' +
+        '<div class="tp-tier-row tp-tier-total"><span>TCV</span><span>' + fmt(t.totals.tcvMsrp) + '</span></div>' +
+      '</div>';
+    });
+    tierHeroHtml += '</div>';
+
     return (
       '<h3>Step 4 — Save &amp; Submit</h3>' +
-      '<p class="tp-lede">Submit assigns a proposal ID, downloads the PDF to your browser, and emails you a copy with the PDF attached. Deal Desk is BCC\'d for pipeline tracking.</p>' +
+      '<p class="tp-lede">Choose a commitment term, then submit. The PDF will show the selected term with all pricing. Deal Desk is BCC\'d for pipeline tracking.</p>' +
 
       '<div class="tp-submit-panel">' +
         '<div class="tp-submit-header">' +
-          '<div>' +
-            '<div class="tp-submit-hero-label">MSRP TCV (' + calc.totals.contractYears + 'yr)</div>' +
-            '<div class="tp-submit-hero-value">' + fmt(calc.totals.tcvMsrp) + '</div>' +
+          '<div style="flex:1;">' +
+            '<div class="tp-submit-hero-label">Select commitment term for PDF</div>' +
+            tierHeroHtml +
           '</div>' +
           '<div style="text-align:right;">' +
             '<div class="tp-submit-hero-label">Proposal ID (assigned on submit)</div>' +
@@ -1159,6 +1244,13 @@
       state.draft.ccTo = ccInp.value;
       scheduleAutosave();
     });
+    // Tier selector cards
+    document.querySelectorAll('[data-submit-term]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        state._selectedSubmitTerm = parseInt(el.dataset.submitTerm, 10) || 1;
+        gotoStep(3); // re-render Step 4
+      });
+    });
     var clearBtn = document.getElementById('tp-clear');
     if (clearBtn) clearBtn.addEventListener('click', function () {
       if (!confirm('Clear this proposal and start a new one? This cannot be undone.')) return;
@@ -1176,10 +1268,11 @@
       alert('Please enter a proposal title.');
       return;
     }
+    var selectedTerm = state._selectedSubmitTerm || 1;
     var ccDescription = state.draft.ccTo && state.draft.ccTo.trim()
       ? '. A copy will be emailed to you (CC: ' + state.draft.ccTo.trim() + ')'
       : '. A copy will be emailed to you';
-    if (!confirm('Generate and download the proposal PDF' + ccDescription + '? The draft will be cleared on success.')) return;
+    if (!confirm('Generate and download the ' + selectedTerm + '-year proposal PDF' + ccDescription + '? The draft will be cleared on success.')) return;
 
     var panel = document.getElementById('tp-panel');
     panel.innerHTML =
@@ -1190,9 +1283,10 @@
       '</div>';
 
     try {
-      var calc = state._lastCalc || TrendzactMath.calculateProposal(buildDraftForMathEngine(), state.catalog);
+      var selectedTerm = state._selectedSubmitTerm || 1;
+      var calc = TrendzactMath.calculateProposal(buildDraftForMathEngine(selectedTerm), state.catalog);
       var result = window.TrendzactProposalRender.render({
-        draft: buildDraftForMathEngine(),
+        draft: buildDraftForMathEngine(selectedTerm),
         calculation: calc,
         catalog: state.catalog,
         partnerEmail: (state.user && state.user.email) || '',

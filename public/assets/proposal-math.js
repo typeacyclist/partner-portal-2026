@@ -143,24 +143,25 @@
   function resolveChannelConfig(catalog, subdomain) {
     var subs = catalog.subdomains || {};
     if (subdomain && subs[subdomain]) return subs[subdomain];
-    // Fall back to channelDefaults
-    var defaults = catalog.channelDefaults || {};
+    // No matching subdomain → direct sales channel (no distributor/reseller)
+    // All discounts zero: Trendzact keeps 100% of MSRP
     return {
-      regularDistDiscount: (defaults.regular && defaults.regular.distDiscount) || 0.40,
-      regularResellerDiscount: (defaults.regular && defaults.regular.resellerDiscount) || 0.30,
-      enhDistDiscount: (defaults.enhancement && defaults.enhancement.distDiscount) || 0.50,
-      enhResellerDiscount: (defaults.enhancement && defaults.enhancement.resellerDiscount) || 0.35
+      regularDistDiscount: 0,
+      regularResellerDiscount: 0,
+      enhDistDiscount: 0,
+      enhResellerDiscount: 0,
+      _direct: true
     };
   }
 
   function computeChannelPrices(msrp, discountGroup, channelConfig) {
     var distDiscount, resellerDiscount;
     if (discountGroup === 'enhancement') {
-      distDiscount = channelConfig.enhDistDiscount || 0.50;
-      resellerDiscount = channelConfig.enhResellerDiscount || 0.35;
+      distDiscount = channelConfig.enhDistDiscount != null ? channelConfig.enhDistDiscount : 0;
+      resellerDiscount = channelConfig.enhResellerDiscount != null ? channelConfig.enhResellerDiscount : 0;
     } else {
-      distDiscount = channelConfig.regularDistDiscount || 0.40;
-      resellerDiscount = channelConfig.regularResellerDiscount || 0.30;
+      distDiscount = channelConfig.regularDistDiscount != null ? channelConfig.regularDistDiscount : 0;
+      resellerDiscount = channelConfig.regularResellerDiscount != null ? channelConfig.regularResellerDiscount : 0;
     }
 
     var trendzactNet = msrp * (1 - distDiscount);
