@@ -979,6 +979,7 @@
     return {
       companyName: d.prospectCompany,
       contactName: d.primaryContactName,
+      contactEmail: d.contactEmail,
       proposalTitle: d.proposalTitle,
       primaryUseCase: d.solutionChallenge,
       dealStage: 'Proposal',
@@ -1192,7 +1193,6 @@
     var d = state.draft;
     var fmt = TrendzactMath.formatMoney;
     var userEmail = (state.user && state.user.email) || 'partner.user@example.com';
-    var selectedTerm = state._selectedSubmitTerm || 1;
 
     var defaultTitle = d.proposalTitle || (d.prospectCompany ? 'Proposal for ' + d.prospectCompany : '');
 
@@ -1214,29 +1214,13 @@
                '</div>';
     }
 
-    // TCV tier selector
-    var tierHeroHtml = '<div class="tp-tier-grid" style="margin-bottom:14px;">';
-    allTiers.forEach(function (t) {
-      var yrs = t.totals.contractYears;
-      var active = yrs === selectedTerm;
-      tierHeroHtml += '<div class="tp-tier-card' + (active ? ' tp-tier-active' : '') + '" data-submit-term="' + yrs + '" style="cursor:pointer;">' +
-        '<div class="tp-tier-label">' + esc(t.commitment.label) + '</div>' +
-        '<div class="tp-tier-row tp-tier-total"><span>TCV</span><span>' + fmt(t.totals.tcvMsrp) + '</span></div>' +
-      '</div>';
-    });
-    tierHeroHtml += '</div>';
-
     return (
       '<h3>Step 4 — Save &amp; Submit</h3>' +
-      '<p class="tp-lede">Choose a commitment term, then submit. The PDF will show the selected term with all pricing. Deal Desk is BCC\'d for pipeline tracking.</p>' +
+      '<p class="tp-lede">The PDF includes all three commitment options (1-year, 2-year, 3-year) so the prospect can present them to Procurement. Deal Desk is BCC\'d for pipeline tracking.</p>' +
 
       '<div class="tp-submit-panel">' +
         '<div class="tp-submit-header">' +
           '<div style="flex:1;">' +
-            '<div class="tp-submit-hero-label">Select commitment term for PDF</div>' +
-            tierHeroHtml +
-          '</div>' +
-          '<div style="text-align:right;">' +
             '<div class="tp-submit-hero-label">Proposal ID (assigned on submit)</div>' +
             '<div class="tp-uuid' + (state.submitResult ? '' : ' pending') + '">' +
               esc(state.submitResult ? state.submitResult.proposalId : '— pending —') +
@@ -1283,13 +1267,6 @@
       state.draft.ccTo = ccInp.value;
       scheduleAutosave();
     });
-    // Tier selector cards
-    document.querySelectorAll('[data-submit-term]').forEach(function (el) {
-      el.addEventListener('click', function () {
-        state._selectedSubmitTerm = parseInt(el.dataset.submitTerm, 10) || 1;
-        gotoStep(3); // re-render Step 4
-      });
-    });
     var clearBtn = document.getElementById('tp-clear');
     if (clearBtn) clearBtn.addEventListener('click', function () {
       if (!confirm('Clear this proposal and start a new one? This cannot be undone.')) return;
@@ -1307,11 +1284,10 @@
       alert('Please enter a proposal title.');
       return;
     }
-    var selectedTerm = state._selectedSubmitTerm || 1;
     var ccDescription = state.draft.ccTo && state.draft.ccTo.trim()
       ? '. A copy will be emailed to you (CC: ' + state.draft.ccTo.trim() + ')'
       : '. A copy will be emailed to you';
-    if (!confirm('Generate and download the ' + selectedTerm + '-year proposal PDF' + ccDescription + '? The draft will be cleared on success.')) return;
+    if (!confirm('Generate and download the proposal PDF with all commitment options' + ccDescription + '? The draft will be cleared on success.')) return;
 
     var panel = document.getElementById('tp-panel');
     panel.innerHTML =
@@ -1322,11 +1298,11 @@
       '</div>';
 
     try {
-      var selectedTerm = state._selectedSubmitTerm || 1;
-      var calc = TrendzactMath.calculateProposal(buildDraftForMathEngine(selectedTerm), state.catalog);
+      var draftForEngine = buildDraftForMathEngine(1);
+      var allTiers = TrendzactMath.calculateAllTiers(draftForEngine, state.catalog);
       var result = window.TrendzactProposalRender.render({
-        draft: buildDraftForMathEngine(selectedTerm),
-        calculation: calc,
+        draft: draftForEngine,
+        allTiers: allTiers,
         catalog: state.catalog,
         partnerEmail: (state.user && state.user.email) || '',
         ccTo: state.draft.ccTo || ''

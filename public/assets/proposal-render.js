@@ -1,15 +1,15 @@
 // Trendzact Partners - Proposal PDF Renderer (v7)
 //
-// Takes a draft + calculation + catalog and produces a 3-page PDF using jsPDF.
+// Takes a draft + allTiers (3 commitment options) + catalog and produces a 3-page PDF using jsPDF.
 // v7 changes:
 //   - Module-count pricing with commitment tiers
-//   - Channel pricing: MSRP / Trendzact net / Distributor retains / Reseller retains
+//   - All 3 commitment options (1yr / 2yr / 3yr) shown on cover page
+//   - Line items on page 2 use 1-year base rates
 //   - No bundle discount references
-//   - No multi-year continuity references
 //   - Uses v7 result field names (annualRecurringMsrp, tcvMsrp, msrpLine, etc.)
 //
 // Public API:
-//   window.TrendzactProposalRender.render({ draft, calculation, catalog, partnerEmail })
+//   window.TrendzactProposalRender.render({ draft, allTiers, catalog, partnerEmail, ccTo })
 //     -> { proposalId, filename, emailPromise } and triggers browser download.
 
 (function () {
@@ -79,7 +79,8 @@
 
   function buildPdf(input) {
     var draft = input.draft || {};
-    var calc = input.calculation || {};
+    var allTiers = input.allTiers || [];
+    var calc = allTiers[0] || input.calculation || {};
     var partnerEmail = input.partnerEmail || '';
     var jspdf = window.jspdf;
     if (!jspdf || !jspdf.jsPDF) throw new Error('jsPDF library not loaded');
@@ -90,7 +91,6 @@
     var generatedAt = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     var totalPages = 3;
     var portalDomain = (window.location && window.location.hostname) || 'partner portal';
-    var contractYears = totals.contractYears || draft.contractYears || 1;
     var commitment = calc.commitment || {};
 
     // ============== PAGE 1 - COVER ==============
@@ -139,33 +139,51 @@
       MSRP_NOTE + '. Final pricing, terms, and deployment scope are subject to Trendzact Deal Desk approval.';
     lines(doc, intro, MARGIN, 168, CONTENT_W, { size: 10, color: C.darkGray });
 
-    // Pricing summary hero
-    var page1BoxY = 190;
-    var page1BoxH = 66;
-    var page1LabelColor = [200, 200, 210];
-    var page1ValueColor = C.white;
-    fillRect(doc, MARGIN, page1BoxY, CONTENT_W, page1BoxH, C.darkGray);
-    text(doc, MSRP_SUMMARY_LABEL, MARGIN + 8, page1BoxY + 10, { size: 8, style: 'bold', color: page1LabelColor });
-    text(doc, MSRP_NOTE, MARGIN + 8, page1BoxY + 15, { size: 7, style: 'bold', color: C.tintDark });
+    // ---- Commitment Options — 3-column comparison ----
+    var boxY = 188;
+    var boxH = 70;
+    var colCount = allTiers.length || 1;
+    var colW = CONTENT_W / colCount;
+    var labelColor = [200, 200, 210];
+    var valueColor = C.white;
+    var highlightCol = [0, 180, 170]; // teal accent for best-value column
 
-    var pricingRows = [
-      ['Annual recurring (MSRP)', fmt(totals.annualRecurringMsrp)],
-      ['Commitment', commitment.label || (contractYears + '-year')],
-      ['One-time setup', fmt(totals.oneTimeMsrp)],
-      [MSRP_SUMMARY_LABEL + ': TCV (' + contractYears + 'yr)', fmt(totals.tcvMsrp)]
-    ];
-    pricingRows.forEach(function (row, idx) {
-      var isLast = idx === pricingRows.length - 1;
-      var rowY = page1BoxY + 24 + idx * 8;
-      text(doc, row[0], MARGIN + 8, rowY, { size: isLast ? 9 : 8.5, style: isLast ? 'bold' : 'normal', color: isLast ? C.tintDark : page1LabelColor });
-      text(doc, row[1], PAGE_W - MARGIN - 8, rowY, { size: isLast ? 12 : 10, style: 'bold', color: isLast ? C.tintDark : page1ValueColor, align: 'right' });
-      if (isLast) {
-        text(doc, MSRP_NOTE, MARGIN + 8, rowY + 9, { size: 6.5, style: 'bold', color: page1LabelColor });
+    fillRect(doc, MARGIN, boxY, CONTENT_W, boxH, C.darkGray);
+    text(doc, MSRP_SUMMARY_LABEL, MARGIN + 6, boxY + 8, { size: 8, style: 'bold', color: labelColor });
+    text(doc, MSRP_NOTE, MARGIN + 6, boxY + 13, { size: 7, color: C.tintDark });
+
+    var tierTopY = boxY + 20;
+    allTiers.forEach(function (t, idx) {
+      var tt = t.totals || {};
+      var cx = MARGIN + idx * colW;
+      var midX = cx + colW / 2;
+      var isLast = idx === colCount - 1;
+
+      // Column divider (skip first)
+      if (idx > 0) {
+        doc.setDrawColor(80, 85, 95);
+        doc.setLineWidth(0.3);
+        doc.line(cx, tierTopY - 2, cx, boxY + boxH - 5);
       }
+
+      // Tier label
+      text(doc, (t.commitment && t.commitment.label) || (tt.contractYears + '-year'), midX, tierTopY + 2, { size: 9, style: 'bold', color: isLast ? highlightCol : valueColor, align: 'center' });
+
+      // Annual recurring
+      text(doc, 'Annual recurring', midX, tierTopY + 11, { size: 7, color: labelColor, align: 'center' });
+      text(doc, fmt(tt.annualRecurringMsrp), midX, tierTopY + 17, { size: 11, style: 'bold', color: valueColor, align: 'center' });
+
+      // One-time
+      text(doc, 'One-time setup', midX, tierTopY + 25, { size: 7, color: labelColor, align: 'center' });
+      text(doc, fmt(tt.oneTimeMsrp), midX, tierTopY + 31, { size: 9, style: 'bold', color: valueColor, align: 'center' });
+
+      // TCV highlight
+      text(doc, 'TCV (' + tt.contractYears + 'yr)', midX, tierTopY + 39, { size: 7, color: isLast ? highlightCol : labelColor, align: 'center' });
+      text(doc, fmt(tt.tcvMsrp), midX, tierTopY + 45, { size: 13, style: 'bold', color: isLast ? highlightCol : C.tintDark, align: 'center' });
     });
 
-    text(doc, 'Generated ' + generatedAt, MARGIN, 265, { size: 8, color: C.medGray });
-    if (partnerEmail) text(doc, 'Prepared by ' + partnerEmail, PAGE_W - MARGIN, 265, { size: 8, color: C.medGray, align: 'right' });
+    text(doc, 'Generated ' + generatedAt, MARGIN, 267, { size: 8, color: C.medGray });
+    if (partnerEmail) text(doc, 'Prepared by ' + partnerEmail, PAGE_W - MARGIN, 267, { size: 8, color: C.medGray, align: 'right' });
     pageFooter(doc, 1, totalPages, proposalId, portalDomain);
 
     // ============== PAGE 2 - LINE ITEMS ==============
@@ -186,7 +204,7 @@
     var ctx = formatSectorLabel(draft.sector) + '  |  ' + ((calc.input && calc.input.companySegmentLabel) || '—') +
               '  |  ' + ((calc.input && calc.input.moduleCount) || 0) + ' modules × ' +
               ((calc.input && calc.input.moduleMultiplier) || 0).toFixed(2) +
-              '  |  ' + (commitment.label || '1-year');
+              '  |  1-year base rates (see cover for commitment options)';
     text(doc, ctx, MARGIN, y, { size: 9, color: C.medGray });
     y += 10;
 
@@ -306,8 +324,9 @@
       }
       var endpoint = cfg.sendProposalUrl || '/api/send-proposal';
       var draft = input.draft || {};
-      var calc = input.calculation || {};
-      var totals = calc.totals || {};
+      var allTiers = input.allTiers || [];
+      var calc1 = allTiers[0] || input.calculation || {};
+      var totals = calc1.totals || {};
       var partnerEmail = (input.partnerEmail || '').trim();
       if (!partnerEmail) return { ok: false, code: 'NO_PARTNER_EMAIL', error: 'Partner email not available — email not sent.' };
 
