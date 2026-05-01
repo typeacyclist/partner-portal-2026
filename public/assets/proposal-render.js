@@ -485,7 +485,7 @@
       hRule(doc, tableLeft, tableRight, y + 7, C.border);
       y += 9;
 
-      // Margin rows
+      // Margin rows — annual recurring
       var marginRows = [
         { label: 'MSRP (end-customer)', key: 'annualRecurringMsrp' },
         { label: 'Trendzact net', key: 'annualTrendzactNet' },
@@ -505,12 +505,33 @@
         y += isBold ? 10 : 8;
       });
 
-      // One-time row (same across all tiers)
-      y += 4;
+      // One-time margin rows (same value across all tiers — render once in each column)
+      y += 2;
+      text(doc, 'ONE-TIME', MARGIN + 2, y + 3.5, { size: 7, style: 'bold', color: C.medGray });
+      hRule(doc, tableLeft, tableRight, y + 6, C.border);
+      y += 8;
+
       var t1 = allTiers[0] ? allTiers[0].totals : {};
-      text(doc, 'One-time (all tiers)', MARGIN + 2, y, { size: 8, color: C.medGray });
-      text(doc, 'MSRP ' + fmt(t1.oneTimeMsrp) + '  ·  Trendzact net ' + fmt(t1.oneTimeTrendzactNet) + '  ·  Dist. retains ' + fmt(t1.oneTimeDistRetains) + '  ·  Reseller retains ' + fmt(t1.oneTimeResellerRetains), MARGIN + 2, y + 6, { size: 7.5, color: C.medGray });
-      y += 14;
+      var oneTimeRows = [
+        { label: 'MSRP (one-time)', val: t1.oneTimeMsrp },
+        { label: 'Trendzact net', val: t1.oneTimeTrendzactNet },
+        { label: 'Distributor retains', val: t1.oneTimeDistRetains },
+        { label: 'Reseller retains', val: t1.oneTimeResellerRetains, bold: true }
+      ];
+      oneTimeRows.forEach(function (row) {
+        var isBold = row.bold;
+        if (isBold) fillRect(doc, tableLeft, y - 2, tableWidth, 10, C.tintLight);
+        text(doc, row.label, MARGIN + 2, y + 3.5, { size: 8.5, style: isBold ? 'bold' : 'normal', color: C.darkGray });
+        // Same value in every tier column
+        allTiers.forEach(function (t, idx) {
+          var colCenter = MARGIN + marginLabelW + idx * marginTierColW + marginTierColW / 2;
+          text(doc, fmt(row.val || 0), colCenter, y + 3.5, { size: isBold ? 9 : 8.5, style: 'bold', color: isBold ? C.darkGreen : C.darkGray, align: 'center' });
+        });
+        hRule(doc, tableLeft, tableRight, y + (isBold ? 8 : 6), C.border);
+        y += isBold ? 10 : 8;
+      });
+
+      y += 4;
     }
 
     y += 4;
@@ -590,3 +611,4 @@
 
   window.TrendzactProposalRender = { render: render };
 })();
+

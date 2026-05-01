@@ -130,10 +130,10 @@
     });
 
     var catalogPromise = fetch('/catalog.json', { cache: 'no-cache' })
-      .then(function (r) {
-        if (!r.ok) throw new Error('Catalog HTTP ' + r.status);
-        return r.json();
-      });
+        .then(function (r) {
+          if (!r.ok) throw new Error('Catalog HTTP ' + r.status);
+          return r.json();
+        });
 
     try {
       var pair = await Promise.all([authReadyPromise, catalogPromise]);
@@ -148,7 +148,8 @@
     // Load Firestore module dynamically
     if (state.user && state.db) {
       try {
-        state.fsModule = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
+        var firestoreCdnUrl = 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+        state.fsModule = await import(firestoreCdnUrl);
         state.docRef = state.fsModule.doc(state.db, 'users', state.user.uid, 'activeProposal', 'current');
       } catch (e) {
         console.warn('[TP Wizard] Firestore module load failed; running without persistence', e);
@@ -180,15 +181,15 @@
     var modal = document.createElement('div');
     modal.className = 'tp-modal-backdrop';
     modal.innerHTML =
-      '<div class="tp-modal">' +
+        '<div class="tp-modal">' +
         '<h3>Continue where you left off?</h3>' +
         '<p>You have an in-progress proposal for <strong>' + esc(existing.prospectCompany) + '</strong>' +
-          (existing.updatedAt ? ' (last saved ' + timeAgo(existing.updatedAt) + ')' : '') + '.</p>' +
+        (existing.updatedAt ? ' (last saved ' + timeAgo(existing.updatedAt) + ')' : '') + '.</p>' +
         '<div class="tp-modal-actions">' +
-          '<button type="button" data-act="fresh">Start fresh</button>' +
-          '<button type="button" class="primary" data-act="resume">Continue</button>' +
+        '<button type="button" data-act="fresh">Start fresh</button>' +
+        '<button type="button" class="primary" data-act="resume">Continue</button>' +
         '</div>' +
-      '</div>';
+        '</div>';
     document.body.appendChild(modal);
     modal.addEventListener('click', function (e) {
       var t = e.target;
@@ -300,17 +301,17 @@
     var mount = document.getElementById('wizard-mount');
     if (!mount) return;
     mount.innerHTML =
-      '<div class="tp-wizard">' +
+        '<div class="tp-wizard">' +
         '<div class="tp-stepbar" id="tp-stepbar"></div>' +
         '<div class="tp-panel" id="tp-panel"></div>' +
         '<div class="tp-nav">' +
-          '<button type="button" id="tp-back">← Back</button>' +
-          '<div class="tp-nav-meta">' +
-            '<span class="tp-save-indicator" id="tp-save-indicator"></span>' +
-          '</div>' +
-          '<button type="button" id="tp-next" class="primary">Next →</button>' +
+        '<button type="button" id="tp-back">← Back</button>' +
+        '<div class="tp-nav-meta">' +
+        '<span class="tp-save-indicator" id="tp-save-indicator"></span>' +
         '</div>' +
-      '</div>';
+        '<button type="button" id="tp-next" class="primary">Next →</button>' +
+        '</div>' +
+        '</div>';
 
     document.getElementById('tp-back').addEventListener('click', function () {
       if (state.step > 0) gotoStep(state.step - 1);
@@ -324,9 +325,9 @@
     sb.innerHTML = STEPS.map(function (s, i) {
       var cls = i === state.step ? 'active' : (i < state.step ? 'done' : '');
       return '<div class="tp-step-chip ' + cls + '" data-idx="' + i + '">' +
-               '<span class="tp-step-num">STEP ' + s.num + '</span>' +
-               '<span class="tp-step-name">' + s.name + '</span>' +
-             '</div>';
+          '<span class="tp-step-num">STEP ' + s.num + '</span>' +
+          '<span class="tp-step-name">' + s.name + '</span>' +
+          '</div>';
     }).join('');
     sb.querySelectorAll('.tp-step-chip').forEach(function (el) {
       el.addEventListener('click', function () {
@@ -391,53 +392,64 @@
     }).join('');
 
     return (
-      '<h3>Step 1 — Proposal Fields</h3>' +
-      '<p class="tp-lede">Capture the prospect and company size. All fields are required.</p>' +
-      '<div class="tp-grid-2">' +
+        '<h3>Step 1 — Proposal Fields</h3>' +
+        '<p class="tp-lede">Capture the prospect and company size. All fields are required.</p>' +
+        '<div class="tp-grid-2">' +
         fieldHtml('Prospect Company', 'f-company', 'text', d.prospectCompany,
-                  'Acme Manufacturing', 'Legal or doing-business-as name as it will appear on the proposal PDF.', 'prospectCompany') +
+            'Acme Manufacturing', 'Legal or doing-business-as name as it will appear on the proposal PDF.', 'prospectCompany') +
         fieldHtml('Primary Contact Name', 'f-contact', 'text', d.primaryContactName,
-                  'Jane Doe', 'Whoever receives the emailed proposal.', 'primaryContactName') +
+            'Jane Doe', 'Whoever receives the emailed proposal.', 'primaryContactName') +
         fieldHtml('Primary Contact Role', 'f-role', 'text', d.primaryContactRole,
-                  'CIO / VP Security / Head of HR Ops', 'Free text. Helps position the pitch on the cover page.', 'primaryContactRole') +
+            'CIO / VP Security / Head of HR Ops', 'Free text. Helps position the pitch on the cover page.', 'primaryContactRole') +
         fieldHtml('Contact Email', 'f-email', 'email', d.contactEmail,
-                  'jane@acme.com', 'Used when you submit — this is where the PDF gets emailed.', 'contactEmail') +
+            'jane@acme.com', 'Used when you submit — this is where the PDF gets emailed.', 'contactEmail') +
         selectHtml('Company Size Segment', 'f-seg',
-                   '<option value="">— Select a segment —</option>' + segOptions,
-                   'Drives CARE tier, onboarding tier, and SLA alignment.', 'companySegment') +
+            '<option value="">— Select a segment —</option>' + segOptions,
+            'Drives CARE tier, onboarding tier, and SLA alignment.', 'companySegment') +
         fieldHtml('Monitored Users (annual named user)', 'f-licenses', 'number', d.expectedLicenseCount,
-                  '500', 'Per-named-user annual licensing.', 'expectedLicenseCount', 'min="1"') +
+            '500', 'Per-named-user annual licensing.', 'expectedLicenseCount', 'min="1"') +
         fieldHtml('Est. Decision Date', 'f-decision', 'month', d.estDecisionDate,
-                  '', 'Month-level precision is fine for pipeline.', 'estDecisionDate') +
+            '', 'Month-level precision is fine for pipeline.', 'estDecisionDate') +
         '<div class="tp-field" style="grid-column:1/-1;">' +
-          '<label>Explain Prospective Client Challenge / Pain Points<span class="req">*</span></label>' +
-          '<textarea id="f-challenge" rows="3" class="' + fieldCls('solutionChallenge') + '" ' +
-              'placeholder="e.g., BPO client under audit pressure for clear-desk compliance across 800 remote agents...">' +
-                esc(d.solutionChallenge) + '</textarea>' +
-          '<p class="tp-hint">Appears on the proposal cover page. 2–4 sentences works best.</p>' +
-          fieldErrHtml('solutionChallenge') +
+        '<label>Explain Prospective Client Challenge / Pain Points<span class="req">*</span></label>' +
+        '<textarea id="f-challenge" rows="3" class="' + fieldCls('solutionChallenge') + '" ' +
+        'placeholder="e.g., BPO client under audit pressure for clear-desk compliance across 800 remote agents...">' +
+        esc(d.solutionChallenge) + '</textarea>' +
+        '<p class="tp-hint">Appears on the proposal cover page. 2–4 sentences works best.</p>' +
+        fieldErrHtml('solutionChallenge') +
         '</div>' +
-      '</div>'
+        '</div>'
     );
   }
 
   function fieldHtml(label, id, type, val, ph, hint, key, extra) {
     extra = extra || '';
+    var commonAttrs = ' id="' + id + '" value="' + esc(val) + '" placeholder="' + esc(ph) + '" class="' + fieldCls(key) + '" ' + extra + '/>';
+    var inputHtml;
+    if (type === 'email') {
+      inputHtml = '<input type="email"' + commonAttrs;
+    } else if (type === 'number') {
+      inputHtml = '<input type="number"' + commonAttrs;
+    } else if (type === 'month') {
+      inputHtml = '<input type="month"' + commonAttrs;
+    } else {
+      inputHtml = '<input type="text"' + commonAttrs;
+    }
     return '<div class="tp-field">' +
-           '<label>' + label + '<span class="req">*</span></label>' +
-           '<input type="' + type + '" id="' + id + '" value="' + esc(val) + '" placeholder="' + esc(ph) + '" class="' + fieldCls(key) + '" ' + extra + '/>' +
-           '<p class="tp-hint">' + esc(hint) + '</p>' +
-           fieldErrHtml(key) +
-           '</div>';
+        '<label>' + label + '<span class="req">*</span></label>' +
+        inputHtml +
+        '<p class="tp-hint">' + esc(hint) + '</p>' +
+        fieldErrHtml(key) +
+        '</div>';
   }
 
   function selectHtml(label, id, optionsHtml, hint, key) {
     return '<div class="tp-field">' +
-           '<label>' + label + '<span class="req">*</span></label>' +
-           '<select id="' + id + '" class="' + fieldCls(key) + '">' + optionsHtml + '</select>' +
-           '<p class="tp-hint">' + esc(hint) + '</p>' +
-           fieldErrHtml(key) +
-           '</div>';
+        '<label>' + label + '<span class="req">*</span></label>' +
+        '<select id="' + id + '" class="' + fieldCls(key) + '">' + optionsHtml + '</select>' +
+        '<p class="tp-hint">' + esc(hint) + '</p>' +
+        fieldErrHtml(key) +
+        '</div>';
   }
 
   function fieldCls(key) {
@@ -589,23 +601,23 @@
     // Required core services
     var coreHtml = groups.required.map(function (s) {
       return '<div class="tp-required-card">' +
-               '<span class="tp-required-badge">REQUIRED</span>' +
-               '<div>' +
-                 '<p class="tp-required-title"><span class="tp-sku-code">' + esc(s.code) + '</span> ' + esc(s.name) + '</p>' +
-                 '<p class="tp-required-desc">' + esc(s.description || '') + '</p>' +
-               '</div>' +
-             '</div>';
+          '<span class="tp-required-badge">REQUIRED</span>' +
+          '<div>' +
+          '<p class="tp-required-title"><span class="tp-sku-code">' + esc(s.code) + '</span> ' + esc(s.name) + '</p>' +
+          '<p class="tp-required-desc">' + esc(s.description || '') + '</p>' +
+          '</div>' +
+          '</div>';
     }).join('');
 
     // Modules section
     var modCount = d.selectedModules.length;
     var modulesNone =
-      '<div class="tp-none-row">' +
+        '<div class="tp-none-row">' +
         '<input type="checkbox" id="none-modules" ' +
-          (d.sectionNone.modules ? 'checked' : '') +
-          (modCount > 0 ? ' disabled' : '') + '/>' +
+        (d.sectionNone.modules ? 'checked' : '') +
+        (modCount > 0 ? ' disabled' : '') + '/>' +
         '<label for="none-modules">None needed for this opportunity (acknowledge to proceed)</label>' +
-      '</div>';
+        '</div>';
 
     var modulesHtml = groups.modules.map(function (m) {
       var selected = d.selectedModules.indexOf(m.code) !== -1;
@@ -634,10 +646,10 @@
         var featsHtml = '';
         if (incl.length) {
           featsHtml =
-            '<div class="tp-feature-head">Included Detections</div>' +
-            '<div class="tp-feature-list">' +
+              '<div class="tp-feature-head">Included Detections</div>' +
+              '<div class="tp-feature-list">' +
               incl.map(function (f) { return '<span class="inc">' + esc(f) + '</span>'; }).join('') +
-            '</div>';
+              '</div>';
         }
 
         var optsHtml = '';
@@ -646,19 +658,19 @@
           var visibleChildren = children.filter(function (c) { return !isBeta(c); });
           if (visibleChildren.length) {
             optsHtml =
-              '<div class="tp-feature-head">Enhancements</div>' +
-              visibleChildren.map(function (o) {
-                var oSel = d.selectedModuleOptions.indexOf(o.code) !== -1;
-                var oDisabled = !selected;
-                return '<div class="tp-opt-row">' +
-                         '<input type="checkbox" data-mopt="' + esc(o.code) + '" ' +
-                           (oSel ? 'checked' : '') + (oDisabled ? ' disabled' : '') + '/>' +
-                         '<label>' +
-                           '<span class="tp-sku-code">' + esc(o.code) + '</span> ' + esc(o.name) +
-                           ' <span class="tp-opt-price">' + esc(priceLabel(o)) + '</span>' +
-                         '</label>' +
-                       '</div>';
-              }).join('');
+                '<div class="tp-feature-head">Enhancements</div>' +
+                visibleChildren.map(function (o) {
+                  var oSel = d.selectedModuleOptions.indexOf(o.code) !== -1;
+                  var oDisabled = !selected;
+                  return '<div class="tp-opt-row">' +
+                      '<input type="checkbox" data-mopt="' + esc(o.code) + '" ' +
+                      (oSel ? 'checked' : '') + (oDisabled ? ' disabled' : '') + '/>' +
+                      '<label>' +
+                      '<span class="tp-sku-code">' + esc(o.code) + '</span> ' + esc(o.name) +
+                      ' <span class="tp-opt-price">' + esc(priceLabel(o)) + '</span>' +
+                      '</label>' +
+                      '</div>';
+                }).join('');
             if (!selected) {
               optsHtml += '<p class="tp-hint" style="margin-top:6px;">Select the parent coverage to enable these enhancements.</p>';
             }
@@ -676,34 +688,34 @@
       var headStyle = disabled ? 'opacity:0.5;' : '';
 
       return '<div class="' + classes + '" data-module="' + esc(m.code) + '">' +
-               '<div class="tp-accordion-head" style="' + headStyle + '" data-accordion-head="' + esc(m.code) + '">' +
-                 '<span class="tp-caret">▶</span>' +
-                 '<input type="checkbox" data-module-check="' + esc(m.code) + '" ' +
-                   (selected && !beta ? 'checked' : '') +
-                   (beta || disabled ? ' disabled' : '') + '/>' +
-                 '<div class="tp-sku-body">' +
-                   '<div class="tp-sku-line">' +
-                     '<span class="tp-sku-code">' + esc(m.code) + '</span>' +
-                     '<span class="tp-sku-name">' + esc(m.name) + '</span>' +
-                     badgeHtml +
-                     rightSide +
-                   '</div>' +
-                   '<p class="tp-sku-desc">' + esc(m.description || '') + '</p>' +
-                 '</div>' +
-               '</div>' +
-               accordionBody +
-             '</div>';
+          '<div class="tp-accordion-head" style="' + headStyle + '" data-accordion-head="' + esc(m.code) + '">' +
+          '<span class="tp-caret">▶</span>' +
+          '<input type="checkbox" data-module-check="' + esc(m.code) + '" ' +
+          (selected && !beta ? 'checked' : '') +
+          (beta || disabled ? ' disabled' : '') + '/>' +
+          '<div class="tp-sku-body">' +
+          '<div class="tp-sku-line">' +
+          '<span class="tp-sku-code">' + esc(m.code) + '</span>' +
+          '<span class="tp-sku-name">' + esc(m.name) + '</span>' +
+          badgeHtml +
+          rightSide +
+          '</div>' +
+          '<p class="tp-sku-desc">' + esc(m.description || '') + '</p>' +
+          '</div>' +
+          '</div>' +
+          accordionBody +
+          '</div>';
     }).join('');
 
     // Enhancements section (standalone — not nested under modules)
     var enhCount = d.selectedModuleOptions.length;
     var enhNone =
-      '<div class="tp-none-row">' +
+        '<div class="tp-none-row">' +
         '<input type="checkbox" id="none-enhancements" ' +
-          (d.sectionNone.enhancements ? 'checked' : '') +
-          (enhCount > 0 ? ' disabled' : '') + '/>' +
+        (d.sectionNone.enhancements ? 'checked' : '') +
+        (enhCount > 0 ? ' disabled' : '') + '/>' +
         '<label for="none-enhancements">None needed for this opportunity (acknowledge to proceed)</label>' +
-      '</div>';
+        '</div>';
 
     var enhHtml = groups.enhancements.map(function (e) {
       var sel = d.selectedModuleOptions.indexOf(e.code) !== -1;
@@ -713,30 +725,30 @@
       var parentMissing = parentCheck && !e.selection.parentCodes.some(function (p) { return d.selectedModules.indexOf(p) !== -1; });
       if (parentMissing) disabled = true;
       var parentNote = parentMissing && parentCheck
-        ? '<p class="tp-hint" style="margin-top:4px;">Requires parent module: ' + esc(e.selection.parentCodes.join(' or ')) + '</p>'
-        : '';
+          ? '<p class="tp-hint" style="margin-top:4px;">Requires parent module: ' + esc(e.selection.parentCodes.join(' or ')) + '</p>'
+          : '';
       return '<div class="tp-sku-row' + (sel ? ' selected' : '') + (disabled ? ' disabled' : '') + '" data-enhancement="' + esc(e.code) + '">' +
-               '<input type="checkbox" ' + (sel ? 'checked' : '') + (disabled ? ' disabled' : '') + '/>' +
-               '<div class="tp-sku-body">' +
-                 '<div class="tp-sku-line">' +
-                   '<span class="tp-sku-code">' + esc(e.code) + '</span>' +
-                   '<span class="tp-sku-name">' + esc(e.name) + '</span>' +
-                 '</div>' +
-                 '<p class="tp-sku-desc">' + esc(e.description || '') + '</p>' +
-                 parentNote +
-               '</div>' +
-             '</div>';
+          '<input type="checkbox" ' + (sel ? 'checked' : '') + (disabled ? ' disabled' : '') + '/>' +
+          '<div class="tp-sku-body">' +
+          '<div class="tp-sku-line">' +
+          '<span class="tp-sku-code">' + esc(e.code) + '</span>' +
+          '<span class="tp-sku-name">' + esc(e.name) + '</span>' +
+          '</div>' +
+          '<p class="tp-sku-desc">' + esc(e.description || '') + '</p>' +
+          parentNote +
+          '</div>' +
+          '</div>';
     }).join('');
 
     // One-Time section — INIT-ONBRD is required/always selected
     var optionalOneTimeCount = d.selectedOneTime.filter(function (c) { return c !== 'INIT-ONBRD'; }).length;
     var oneTimeNone =
-      '<div class="tp-none-row">' +
+        '<div class="tp-none-row">' +
         '<input type="checkbox" id="none-onetime" ' +
-          (d.sectionNone.oneTime ? 'checked' : '') +
-          (optionalOneTimeCount > 0 ? ' disabled' : '') + '/>' +
+        (d.sectionNone.oneTime ? 'checked' : '') +
+        (optionalOneTimeCount > 0 ? ' disabled' : '') + '/>' +
         '<label for="none-onetime">No additional integrations or assessments needed (acknowledge to proceed)</label>' +
-      '</div>';
+        '</div>';
 
     var oneTimeHtml = groups.oneTime.map(function (o) {
       var sel = d.selectedOneTime.indexOf(o.code) !== -1;
@@ -744,16 +756,16 @@
       var disabled = !req && d.sectionNone.oneTime && !sel;
       var requiredBadge = req ? '<span class="tp-badge tp-badge-required" style="margin-left:auto;">REQUIRED</span>' : '';
       return '<div class="tp-sku-row' + (sel ? ' selected' : '') + (disabled ? ' disabled' : '') + '" data-onetime="' + esc(o.code) + '">' +
-               '<input type="checkbox" ' + (sel ? 'checked' : '') + (req || disabled ? ' disabled' : '') + '/>' +
-               '<div class="tp-sku-body">' +
-                 '<div class="tp-sku-line">' +
-                   '<span class="tp-sku-code">' + esc(o.code) + '</span>' +
-                   '<span class="tp-sku-name">' + esc(o.name) + '</span>' +
-                   requiredBadge +
-                 '</div>' +
-                 '<p class="tp-sku-desc">' + esc(o.description || '') + '</p>' +
-               '</div>' +
-             '</div>';
+          '<input type="checkbox" ' + (sel ? 'checked' : '') + (req || disabled ? ' disabled' : '') + '/>' +
+          '<div class="tp-sku-body">' +
+          '<div class="tp-sku-line">' +
+          '<span class="tp-sku-code">' + esc(o.code) + '</span>' +
+          '<span class="tp-sku-name">' + esc(o.name) + '</span>' +
+          requiredBadge +
+          '</div>' +
+          '<p class="tp-sku-desc">' + esc(o.description || '') + '</p>' +
+          '</div>' +
+          '</div>';
     }).join('');
 
     // Helper to render a section
@@ -764,17 +776,17 @@
       if (d.sectionOpen[id]) classes += ' open';
       if (invalid) classes += ' invalid';
       var subtextHtml = subtext
-        ? '<span class="tp-section-subtext">' + esc(subtext) + '</span>'
-        : '';
+          ? '<span class="tp-section-subtext">' + esc(subtext) + '</span>'
+          : '';
       return '<div class="' + classes + '" data-section="' + id + '">' +
-               '<div class="tp-section-toggle" data-section-toggle="' + id + '">' +
-                 '<span class="tp-section-caret">▶</span>' +
-                 '<span class="tp-section-title">' + esc(title) + '</span>' +
-                 subtextHtml +
-                 '<span class="tp-section-count ' + (st.klass || '') + '">' + esc(st.label) + '</span>' +
-               '</div>' +
-               (d.sectionOpen[id] ? '<div class="tp-section-body">' + bodyInnerHtml + '</div>' : '') +
-             '</div>';
+          '<div class="tp-section-toggle" data-section-toggle="' + id + '">' +
+          '<span class="tp-section-caret">▶</span>' +
+          '<span class="tp-section-title">' + esc(title) + '</span>' +
+          subtextHtml +
+          '<span class="tp-section-count ' + (st.klass || '') + '">' + esc(st.label) + '</span>' +
+          '</div>' +
+          (d.sectionOpen[id] ? '<div class="tp-section-body">' + bodyInnerHtml + '</div>' : '') +
+          '</div>';
     }
 
     var blocker = '';
@@ -783,20 +795,20 @@
     }
 
     return (
-      '<h3>Step 2 — Solution Selectors</h3>' +
-      '<p class="tp-lede">Pick what the prospect needs in each section. If a section doesn\'t apply, check "None needed" to acknowledge.</p>' +
+        '<h3>Step 2 — Solution Selectors</h3>' +
+        '<p class="tp-lede">Pick what the prospect needs in each section. If a section doesn\'t apply, check "None needed" to acknowledge.</p>' +
 
-      sectionHtml('core', 'Core Services', coreHtml) +
-      sectionHtml(
-        'modules',
-        'Select Your Data Exposure Coverage',
-        modulesNone + modulesHtml,
-        'Define where sensitive data is exposed — and apply real-time protection'
-      ) +
-      sectionHtml('enhancements', 'Enhancements', enhNone + enhHtml,
-        'Per-user and connector enhancements for selected modules') +
-      sectionHtml('oneTime', 'One-Time Setup & Integrations', oneTimeNone + oneTimeHtml) +
-      blocker
+        sectionHtml('core', 'Core Services', coreHtml) +
+        sectionHtml(
+            'modules',
+            'Select Your Data Exposure Coverage',
+            modulesNone + modulesHtml,
+            'Define where sensitive data is exposed — and apply real-time protection'
+        ) +
+        sectionHtml('enhancements', 'Enhancements', enhNone + enhHtml,
+            'Per-user and connector enhancements for selected modules') +
+        sectionHtml('oneTime', 'One-Time Setup & Integrations', oneTimeNone + oneTimeHtml) +
+        blocker
     );
   }
 
@@ -973,9 +985,9 @@
     var d = state.draft;
     // Aggregate all selections into the draft format the math engine expects
     var selected = []
-      .concat(d.selectedModules)
-      .concat(d.selectedModuleOptions)
-      .concat(d.selectedOneTime);
+        .concat(d.selectedModules)
+        .concat(d.selectedModuleOptions)
+        .concat(d.selectedOneTime);
     return {
       companyName: d.prospectCompany,
       contactName: d.primaryContactName,
@@ -1030,7 +1042,6 @@
 
     // --- Included SKU sections ---
     var groups = catalogByCategory();
-    var requiredCodes = groups.required.map(function (s) { return s.code; });
 
     // Find line prices from 1yr calc
     var findLine = function (code) {
@@ -1043,12 +1054,9 @@
 
     // Module total — sum all module lines from the calc (already correctly split per-line)
     var moduleTotalAnnual = 0;
-    var modulePerUser = 0;
     (calc1.lines || []).forEach(function (l) {
       if (l.isModule) moduleTotalAnnual += l.msrpLine;
     });
-    // The total per-user rate for all modules combined
-    modulePerUser = calc1.input.bracketMsrpBase * calc1.input.moduleMultiplier;
 
     // Enhancement lines
     var enhTotal = 0;
@@ -1075,101 +1083,101 @@
     // We use the allTiers calc which already has the commitment baked in
 
     return (
-      '<h3>Step 3 — Review &amp; Calculate</h3>' +
-      '<p class="tp-lede">MSRP pricing summary for prospect review. Click "Edit →" to adjust selections.</p>' +
+        '<h3>Step 3 — Review &amp; Calculate</h3>' +
+        '<p class="tp-lede">MSRP pricing summary for prospect review. Click "Edit →" to adjust selections.</p>' +
 
-      errorsHtml +
+        errorsHtml +
 
-      // --- Pricing Inputs ---
-      '<div class="tp-review-section">' +
+        // --- Pricing Inputs ---
+        '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
-          '<span class="tp-review-title">Pricing Inputs</span>' +
-          '<button class="tp-review-edit" data-goto="0">Edit →</button>' +
+        '<span class="tp-review-title">Pricing Inputs</span>' +
+        '<button class="tp-review-edit" data-goto="0">Edit →</button>' +
         '</div>' +
         '<div style="margin-top:8px; font-size:13px;">' +
-          '<div class="tp-summary-row"><span class="tp-pricing-label">Company size</span><span>' + esc(segLabel) + '</span></div>' +
-          '<div class="tp-summary-row"><span class="tp-pricing-label">Licenses</span><span>' + licenseCount.toLocaleString('en-US') + '</span></div>' +
+        '<div class="tp-summary-row"><span class="tp-pricing-label">Company size</span><span>' + esc(segLabel) + '</span></div>' +
+        '<div class="tp-summary-row"><span class="tp-pricing-label">Licenses</span><span>' + licenseCount.toLocaleString('en-US') + '</span></div>' +
         '</div>' +
-      '</div>' +
+        '</div>' +
 
-      // --- Included SKUs ---
-      '<div class="tp-review-section">' +
+        // --- Included SKUs ---
+        '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
-          '<span class="tp-review-title">Core Services</span>' +
-          '<span class="tp-review-count">' + groups.required.length + ' included</span>' +
+        '<span class="tp-review-title">Core Services</span>' +
+        '<span class="tp-review-count">' + groups.required.length + ' included</span>' +
         '</div>' +
         '<ul class="tp-review-items">' +
-          groups.required.map(function (s) {
-            return '<li><code>' + esc(s.code) + '</code> — ' + esc(s.name) + '</li>';
-          }).join('') +
+        groups.required.map(function (s) {
+          return '<li><code>' + esc(s.code) + '</code> — ' + esc(s.name) + '</li>';
+        }).join('') +
         '</ul>' +
-      '</div>' +
+        '</div>' +
 
-      '<div class="tp-review-section">' +
+        '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
-          '<span class="tp-review-title">Data Exposure Coverage</span>' +
-          '<span class="tp-review-count">' + mods.length + ' selected</span>' +
-          '<button class="tp-review-edit" data-goto="1">Edit →</button>' +
+        '<span class="tp-review-title">Data Exposure Coverage</span>' +
+        '<span class="tp-review-count">' + mods.length + ' selected</span>' +
+        '<button class="tp-review-edit" data-goto="1">Edit →</button>' +
         '</div>' +
         '<ul class="tp-review-items">' + itemList(mods, 'None needed') + '</ul>' +
-      '</div>' +
+        '</div>' +
 
-      '<div class="tp-review-section">' +
+        '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
-          '<span class="tp-review-title">Data Exposure Coverage Enhancements</span>' +
-          '<span class="tp-review-count">' + modOpts.length + ' selected</span>' +
-          '<button class="tp-review-edit" data-goto="1">Edit →</button>' +
+        '<span class="tp-review-title">Data Exposure Coverage Enhancements</span>' +
+        '<span class="tp-review-count">' + modOpts.length + ' selected</span>' +
+        '<button class="tp-review-edit" data-goto="1">Edit →</button>' +
         '</div>' +
         '<ul class="tp-review-items">' + itemList(modOpts, 'None needed') + '</ul>' +
-      '</div>' +
+        '</div>' +
 
-      '<div class="tp-review-section">' +
+        '<div class="tp-review-section">' +
         '<div class="tp-review-head">' +
-          '<span class="tp-review-title">One-Time Setup</span>' +
-          '<span class="tp-review-count">' + (1 + oneOptional.length) + ' included</span>' +
+        '<span class="tp-review-title">One-Time Setup</span>' +
+        '<span class="tp-review-count">' + (1 + oneOptional.length) + ' included</span>' +
         '</div>' +
         '<ul class="tp-review-items">' +
-          '<li><code>INIT-ONBRD</code> — Initialization and Client Champions Onboarding</li>' +
-          itemList(oneOptional, '').replace(/<li style="[^"]+">.*?<\/li>/, '') +
+        '<li><code>INIT-ONBRD</code> — Initialization and Client Champions Onboarding</li>' +
+        itemList(oneOptional, '').replace(/<li style="[^"]+">.*?<\/li>/, '') +
         '</ul>' +
-      '</div>' +
+        '</div>' +
 
-      // --- MSRP Base Pricing ---
-      '<div class="tp-summary">' +
+        // --- MSRP Base Pricing ---
+        '<div class="tp-summary">' +
         '<div class="tp-summary-row subgroup">MSRP base pricing</div>' +
 
         '<div class="tp-summary-row">' +
-          '<span class="tp-pricing-label">Core Services<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">SLA for ' + esc(segLabel) + '</span></span>' +
-          '<span>' + fmt(carePrice) + '</span>' +
+        '<span class="tp-pricing-label">Core Services<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">SLA for ' + esc(segLabel) + '</span></span>' +
+        '<span>' + fmt(carePrice) + '</span>' +
         '</div>' +
 
         '<div class="tp-summary-row">' +
-          '<span class="tp-pricing-label">Named User License' + (modOpts.length > 0 ? ' (includes Enhancements)' : '') + '<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + fmt(Math.round(namedUserPerUser)) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + mods.length + ' module' + (mods.length !== 1 ? 's' : '') + ')</span></span>' +
-          '<span>' + fmt(namedUserTotal) + '</span>' +
+        '<span class="tp-pricing-label">Named User License' + (modOpts.length > 0 ? ' (includes Enhancements)' : '') + '<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + fmt(Math.round(namedUserPerUser)) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + mods.length + ' module' + (mods.length !== 1 ? 's' : '') + ')</span></span>' +
+        '<span>' + fmt(namedUserTotal) + '</span>' +
         '</div>' +
 
         '<div class="tp-summary-row">' +
-          '<span class="tp-pricing-label">One-Time<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + esc(segLabel) + ' Onboarding' + (otherOneTimeTotal > 0 ? ' + integrations' : '') + '</span></span>' +
-          '<span>' + fmt(onbrdPrice + otherOneTimeTotal) + '</span>' +
+        '<span class="tp-pricing-label">One-Time<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + esc(segLabel) + ' Onboarding' + (otherOneTimeTotal > 0 ? ' + integrations' : '') + '</span></span>' +
+        '<span>' + fmt(onbrdPrice + otherOneTimeTotal) + '</span>' +
         '</div>' +
 
         '<div class="tp-summary-row subgroup">Annual commitment</div>' +
 
         '<div class="tp-tier-grid">' +
-          allTiers.map(function (t) {
-            var yrs = t.totals.contractYears;
-            var pctLabel = Math.round((1 - t.commitment.factor) * 100);
-            var tierLabel = yrs + '-year' + (pctLabel > 0 ? ' (' + pctLabel + '% off)' : '');
-            return '<div class="tp-tier-card' + (yrs > 1 ? ' tp-tier-discount' : '') + '">' +
+        allTiers.map(function (t) {
+          var yrs = t.totals.contractYears;
+          var pctLabel = Math.round((1 - t.commitment.factor) * 100);
+          var tierLabel = yrs + '-year' + (pctLabel > 0 ? ' (' + pctLabel + '% off)' : '');
+          return '<div class="tp-tier-card' + (yrs > 1 ? ' tp-tier-discount' : '') + '">' +
               '<div class="tp-tier-label">' + esc(tierLabel) + '</div>' +
               '<div class="tp-tier-row"><span>Annual recurring</span><span>' + fmt(t.totals.annualRecurringMsrp) + '</span></div>' +
               '<div class="tp-tier-row"><span>One-time</span><span>' + fmt(t.totals.oneTimeMsrp) + '</span></div>' +
               '<div class="tp-tier-row tp-tier-total"><span>TCV</span><span>' + fmt(t.totals.tcvMsrp) + '</span></div>' +
-            '</div>';
-          }).join('') +
+              '</div>';
+        }).join('') +
         '</div>' +
 
-      '</div>'
+        '</div>'
     );
   }
 
@@ -1183,13 +1191,88 @@
   }
 
   // ==============================================================
+  // Channel Worksheet (rendered inline in Step 4)
+  // ==============================================================
+  function renderChannelWorksheet(allTiers, fmt) {
+    var subdomain = detectSubdomain();
+    var channelConfig = TrendzactMath.resolveChannelConfig(state.catalog, subdomain);
+    var isDirectSale = !subdomain;
+    var channelLabel = subdomain ? subdomain.toUpperCase() : 'DIRECT';
+    var calc1 = allTiers[0] || {};
+    var t1 = calc1.totals || {};
+
+    var html = '<div class="tp-channel-worksheet">';
+    html += '<div class="tp-channel-head">';
+    html += '<span class="tp-channel-title">Distributor\u2013Reseller Worksheet</span>';
+    html += '<span class="tp-channel-label">' + esc(channelLabel) + '</span>';
+    html += '</div>';
+
+    if (isDirectSale) {
+      html += '<p class="tp-hint" style="margin:8px 0;">Direct sale \u2014 no distributor or reseller discounts applied. Trendzact retains 100% of MSRP.</p>';
+    } else {
+      html += '<div class="tp-channel-discounts">';
+      html += '<span>Distributor discount (regular): <strong>' + Math.round(channelConfig.regularDistDiscount * 100) + '%</strong></span>';
+      html += '<span>Reseller discount (regular): <strong>' + Math.round(channelConfig.regularResellerDiscount * 100) + '%</strong></span>';
+      html += '<span>Distributor discount (enhancement): <strong>' + Math.round(channelConfig.enhDistDiscount * 100) + '%</strong></span>';
+      html += '<span>Reseller discount (enhancement): <strong>' + Math.round(channelConfig.enhResellerDiscount * 100) + '%</strong></span>';
+      html += '</div>';
+
+      // Margin summary table — all 3 tiers
+      html += '<div class="tp-channel-margin-title">MARGIN SUMMARY WITH ANNUAL COMMITMENT OPTIONS</div>';
+      html += '<table class="tp-channel-table"><thead><tr><th></th>';
+      allTiers.forEach(function (t) {
+        var pctOff = Math.round((1 - t.commitment.factor) * 100);
+        html += '<th>' + t.totals.contractYears + '-year' + (pctOff > 0 ? ' (' + pctOff + '% off)' : '') + '</th>';
+      });
+      html += '</tr></thead><tbody>';
+
+      // Annual recurring rows
+      var recurringRows = [
+        { label: 'MSRP (end-customer)', key: 'annualRecurringMsrp' },
+        { label: 'Trendzact net', key: 'annualTrendzactNet' },
+        { label: 'Distributor retains', key: 'annualDistRetains' },
+        { label: 'Reseller retains', key: 'annualResellerRetains', bold: true }
+      ];
+      recurringRows.forEach(function (row) {
+        html += '<tr' + (row.bold ? ' class="tp-channel-highlight"' : '') + '><td>' + esc(row.label) + '</td>';
+        allTiers.forEach(function (t) {
+          html += '<td>' + fmt(t.totals[row.key] || 0) + '</td>';
+        });
+        html += '</tr>';
+      });
+
+      // One-time subheader
+      html += '<tr class="tp-channel-subhead"><td colspan="' + (allTiers.length + 1) + '">ONE-TIME</td></tr>';
+
+      var oneTimeRows = [
+        { label: 'MSRP (one-time)', val: t1.oneTimeMsrp },
+        { label: 'Trendzact net', val: t1.oneTimeTrendzactNet },
+        { label: 'Distributor retains', val: t1.oneTimeDistRetains },
+        { label: 'Reseller retains', val: t1.oneTimeResellerRetains, bold: true }
+      ];
+      oneTimeRows.forEach(function (row) {
+        html += '<tr' + (row.bold ? ' class="tp-channel-highlight"' : '') + '><td>' + esc(row.label) + '</td>';
+        allTiers.forEach(function () {
+          html += '<td>' + fmt(row.val || 0) + '</td>';
+        });
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+    }
+
+    html += '<p class="tp-hint" style="margin-top:8px;font-style:italic;">Partner internal use \u2014 not included in prospect-facing pages.</p>';
+    html += '</div>';
+    return html;
+  }
+
+  // ==============================================================
   // STEP 4 — Save & Submit
   // ==============================================================
   function renderSubmit() {
     var allTiers = state._allTiers || TrendzactMath.calculateAllTiers(buildDraftForMathEngine(1), state.catalog);
     state._allTiers = allTiers;
-    var calc1 = allTiers[0];
-    state._lastCalc = calc1;
+    state._lastCalc = allTiers[0];
     var d = state.draft;
     var fmt = TrendzactMath.formatMoney;
     var userEmail = (state.user && state.user.email) || 'partner.user@example.com';
@@ -1199,7 +1282,7 @@
     var banner = '';
     if (state.submitResult) {
       var er = state.submitResult.emailResult || {};
-      var emailLine = '';
+      var emailLine;
       if (er.ok) {
         var ccPart = (d.ccTo && d.ccTo.trim()) ? ' and CC\'d to ' + esc(d.ccTo.trim()) : '';
         emailLine = '<br/>Email copy sent to <code>' + esc(state.user && state.user.email || 'you') + '</code>' + ccPart + '.';
@@ -1207,52 +1290,54 @@
         emailLine = '<br/><span style="color:#B45309;">Email could not be sent (' + esc(er.code || 'unknown') + '): ' + esc(er.error || 'unknown error') + '. Your PDF downloaded successfully; the proposal ID is saved.</span>';
       }
       banner = '<div class="tp-banner tp-banner-success">' +
-                 'Submitted. Proposal <code>' + esc(state.submitResult.proposalId) + '</code> downloaded as ' +
-                 '<strong>' + esc(state.submitResult.filename) + '</strong>.' +
-                 emailLine +
-                 '<br/>Draft has been cleared.' +
-               '</div>';
+          'Submitted. Proposal <code>' + esc(state.submitResult.proposalId) + '</code> downloaded as ' +
+          '<strong>' + esc(state.submitResult.filename) + '</strong>.' +
+          emailLine +
+          '<br/>Draft has been cleared.' +
+          '</div>';
     }
 
     return (
-      '<h3>Step 4 — Save &amp; Submit</h3>' +
-      '<p class="tp-lede">The PDF includes all three commitment options (1-year, 2-year, 3-year) so the prospect can present them to Procurement. Deal Desk is BCC\'d for pipeline tracking.</p>' +
+        '<h3>Step 4 — Save &amp; Submit</h3>' +
+        '<p class="tp-lede">The PDF includes all three commitment options (1-year, 2-year, 3-year) so the prospect can present them to Procurement. Deal Desk is BCC\'d for pipeline tracking.</p>' +
 
-      '<div class="tp-submit-panel">' +
+        '<div class="tp-submit-panel">' +
         '<div class="tp-submit-header">' +
-          '<div style="flex:1;">' +
-            '<div class="tp-submit-hero-label">Proposal ID (assigned on submit)</div>' +
-            '<div class="tp-uuid' + (state.submitResult ? '' : ' pending') + '">' +
-              esc(state.submitResult ? state.submitResult.proposalId : '— pending —') +
-            '</div>' +
-          '</div>' +
+        '<div style="flex:1;">' +
+        '<div class="tp-submit-hero-label">Proposal ID (assigned on submit)</div>' +
+        '<div class="tp-uuid' + (state.submitResult ? '' : ' pending') + '">' +
+        esc(state.submitResult ? state.submitResult.proposalId : '— pending —') +
+        '</div>' +
+        '</div>' +
         '</div>' +
 
         '<div class="tp-submit-field">' +
-          '<label>Proposal Title<span class="req">*</span></label>' +
-          '<input type="text" id="sf-title" value="' + esc(defaultTitle) + '" placeholder="e.g., Proposal for Acme Manufacturing"/>' +
-          '<p class="tp-hint" style="margin-top:4px;">Appears on the PDF cover.</p>' +
+        '<label>Proposal Title<span class="req">*</span></label>' +
+        '<input type="text" id="sf-title" value="' + esc(defaultTitle) + '" placeholder="e.g., Proposal for Acme Manufacturing"/>' +
+        '<p class="tp-hint" style="margin-top:4px;">Appears on the PDF cover.</p>' +
         '</div>' +
 
         '<div class="tp-submit-field">' +
-          '<label>Generated By</label>' +
-          '<div class="tp-text-display">' + esc(userEmail) + '</div>' +
-          '<p class="tp-hint" style="margin-top:4px;">Partner email is stamped on the PDF footer.</p>' +
+        '<label>Generated By</label>' +
+        '<div class="tp-text-display">' + esc(userEmail) + '</div>' +
+        '<p class="tp-hint" style="margin-top:4px;">Partner email is stamped on the PDF footer.</p>' +
         '</div>' +
 
         '<div class="tp-submit-field">' +
-          '<label>CC To (optional)</label>' +
-          '<input type="text" id="sf-cc" value="' + esc(d.ccTo) + '" placeholder="colleague@yourco.com, team@yourco.com"/>' +
-          '<p class="tp-hint" style="margin-top:4px;">Comma- or semicolon-separated. These addresses will be CC\'d on the email copy of this proposal.</p>' +
+        '<label>CC To (optional)</label>' +
+        '<input type="text" id="sf-cc" value="' + esc(d.ccTo) + '" placeholder="colleague@yourco.com, team@yourco.com"/>' +
+        '<p class="tp-hint" style="margin-top:4px;">Comma- or semicolon-separated. These addresses will be CC\'d on the email copy of this proposal.</p>' +
         '</div>' +
+
+        renderChannelWorksheet(allTiers, fmt) +
 
         '<div class="tp-submit-row">' +
-          '<button type="button" class="danger" id="tp-clear">Clear — Start Over</button>' +
-          '<button type="button" class="primary" id="tp-submit"' + (state.submitResult ? ' disabled' : '') + '>Submit, Download &amp; Email</button>' +
+        '<button type="button" class="danger" id="tp-clear">Clear — Start Over</button>' +
+        '<button type="button" class="primary" id="tp-submit"' + (state.submitResult ? ' disabled' : '') + '>Submit, Download &amp; Email</button>' +
         '</div>' +
 
         banner +
-      '</div>'
+        '</div>'
     );
   }
 
@@ -1285,17 +1370,17 @@
       return;
     }
     var ccDescription = state.draft.ccTo && state.draft.ccTo.trim()
-      ? '. A copy will be emailed to you (CC: ' + state.draft.ccTo.trim() + ')'
-      : '. A copy will be emailed to you';
+        ? '. A copy will be emailed to you (CC: ' + state.draft.ccTo.trim() + ')'
+        : '. A copy will be emailed to you';
     if (!confirm('Generate and download the proposal PDF with all commitment options' + ccDescription + '? The draft will be cleared on success.')) return;
 
     var panel = document.getElementById('tp-panel');
     panel.innerHTML =
-      '<div style="text-align:center; padding: 60px 20px;">' +
+        '<div style="text-align:center; padding: 60px 20px;">' +
         '<div class="tp-spinner"></div>' +
         '<h3>Generating proposal…</h3>' +
         '<p class="tp-lede">Building PDF for ' + esc(state.draft.prospectCompany) + ' and sending email.</p>' +
-      '</div>';
+        '</div>';
 
     try {
       var draftForEngine = buildDraftForMathEngine(1);
@@ -1320,11 +1405,11 @@
     } catch (e) {
       console.error('[TP Wizard] submit failed', e);
       panel.innerHTML =
-        '<div style="text-align:center; padding: 60px 20px;">' +
+          '<div style="text-align:center; padding: 60px 20px;">' +
           '<h3>Could not generate proposal</h3>' +
           '<p class="tp-lede">' + esc(e.message || String(e)) + '</p>' +
           '<button type="button" class="primary" onclick="location.reload()">Reload</button>' +
-        '</div>';
+          '</div>';
     }
   }
 
@@ -1344,8 +1429,8 @@
   // --------------------------------------------------------------
   function esc(s) {
     return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   function timeAgo(iso) {
@@ -1365,10 +1450,10 @@
     var mount = document.getElementById('wizard-mount');
     if (!mount) return;
     mount.innerHTML =
-      '<div class="tp-section-blocker" style="font-size:14px; padding: 20px;">' +
+        '<div class="tp-section-blocker" style="font-size:14px; padding: 20px;">' +
         '<strong>Could not start the Proposal Builder.</strong>' +
         '<p style="margin-top:8px;">' + esc(msg) + '</p>' +
-      '</div>';
+        '</div>';
   }
 
   // --------------------------------------------------------------
@@ -1378,3 +1463,4 @@
     init: init
   };
 })();
+
