@@ -485,6 +485,7 @@
     calculateAllTiers: calculateAllTiers,
     formatMoney: formatMoney,
     shortUuid: shortUuid,
+    resolveChannelConfig: resolveChannelConfig,
     _internals: {
       resolveSegment: resolveSegment,
       resolveBracket: resolveBracket,
