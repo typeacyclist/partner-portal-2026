@@ -485,50 +485,77 @@
       hRule(doc, tableLeft, tableRight, y + 7, C.border);
       y += 9;
 
-      // Margin rows — annual recurring
-      var marginRows = [
-        { label: 'MSRP (end-customer)', key: 'annualRecurringMsrp' },
-        { label: 'Trendzact net', key: 'annualTrendzactNet' },
-        { label: 'Distributor retains', key: 'annualDistRetains' },
-        { label: 'Reseller retains', key: 'annualResellerRetains', bold: true }
-      ];
-      marginRows.forEach(function (row) {
-        var isBold = row.bold;
+      // Margin rows — RECURRING
+      y += 1;
+      text(doc, 'RECURRING', MARGIN + 2, y + 3.5, { size: 7, style: 'bold', color: C.medGray });
+      hRule(doc, tableLeft, tableRight, y + 6, C.border);
+      y += 8;
+
+      // Channel % calculations (regular SKUs)
+      var distPctR = Math.round(channelConfig.regularDistDiscount * 100);
+      var resellerPctR = Math.round(channelConfig.regularResellerDiscount * 100);
+      var tzNetPctR = 100 - distPctR;
+      var distRetainsPctR = distPctR - resellerPctR;
+      var resellerRetainsPctR = resellerPctR;
+
+      // MSRP per Year
+      function marginRow(label, isBold, valueFn) {
         if (isBold) fillRect(doc, tableLeft, y - 2, tableWidth, 10, C.tintLight);
-        text(doc, row.label, MARGIN + 2, y + 3.5, { size: 8.5, style: isBold ? 'bold' : 'normal', color: C.darkGray });
+        text(doc, label, MARGIN + 2, y + 3.5, { size: 8.5, style: isBold ? 'bold' : 'normal', color: C.darkGray });
         allTiers.forEach(function (t, idx) {
           var colCenter = MARGIN + marginLabelW + idx * marginTierColW + marginTierColW / 2;
-          var val = t.totals[row.key] || 0;
-          text(doc, fmt(val), colCenter, y + 3.5, { size: isBold ? 9 : 8.5, style: 'bold', color: isBold ? C.darkGreen : C.darkGray, align: 'center' });
+          text(doc, fmt(valueFn(t)), colCenter, y + 3.5, { size: isBold ? 9 : 8.5, style: 'bold', color: isBold ? C.darkGreen : C.darkGray, align: 'center' });
         });
         hRule(doc, tableLeft, tableRight, y + (isBold ? 8 : 6), C.border);
         y += isBold ? 10 : 8;
+      }
+
+      marginRow('MSRP per Year', false, function (t) { return t.totals.annualRecurringMsrp || 0; });
+      marginRow('MSRP Commitment', true, function (t) { return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1); });
+      marginRow('Trendzact net (' + tzNetPctR + '%)', false, function (t) {
+        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (tzNetPctR / 100);
+      });
+      marginRow('Distributor retains (' + distRetainsPctR + '%)', false, function (t) {
+        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (distRetainsPctR / 100);
+      });
+      marginRow('Reseller retains (' + resellerRetainsPctR + '%)', false, function (t) {
+        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (resellerRetainsPctR / 100);
       });
 
-      // One-time margin rows (same value across all tiers — render once in each column)
+      // ONE-TIME
       y += 2;
       text(doc, 'ONE-TIME', MARGIN + 2, y + 3.5, { size: 7, style: 'bold', color: C.medGray });
       hRule(doc, tableLeft, tableRight, y + 6, C.border);
       y += 8;
 
       var t1 = allTiers[0] ? allTiers[0].totals : {};
-      var oneTimeRows = [
-        { label: 'MSRP (one-time)', val: t1.oneTimeMsrp },
-        { label: 'Trendzact net', val: t1.oneTimeTrendzactNet },
-        { label: 'Distributor retains', val: t1.oneTimeDistRetains },
-        { label: 'Reseller retains', val: t1.oneTimeResellerRetains, bold: true }
-      ];
-      oneTimeRows.forEach(function (row) {
-        var isBold = row.bold;
-        if (isBold) fillRect(doc, tableLeft, y - 2, tableWidth, 10, C.tintLight);
-        text(doc, row.label, MARGIN + 2, y + 3.5, { size: 8.5, style: isBold ? 'bold' : 'normal', color: C.darkGray });
-        // Same value in every tier column
-        allTiers.forEach(function (t, idx) {
-          var colCenter = MARGIN + marginLabelW + idx * marginTierColW + marginTierColW / 2;
-          text(doc, fmt(row.val || 0), colCenter, y + 3.5, { size: isBold ? 9 : 8.5, style: 'bold', color: isBold ? C.darkGreen : C.darkGray, align: 'center' });
-        });
-        hRule(doc, tableLeft, tableRight, y + (isBold ? 8 : 6), C.border);
-        y += isBold ? 10 : 8;
+      var otMsrp = t1.oneTimeMsrp || 0;
+      var otTzNet = t1.oneTimeTrendzactNet || 0;
+      var otDistRetains = t1.oneTimeDistRetains || 0;
+      var otResellerRetains = t1.oneTimeResellerRetains || 0;
+      var otTzPct = otMsrp > 0 ? Math.round((otTzNet / otMsrp) * 100) : 0;
+      var otDistPct = otMsrp > 0 ? Math.round((otDistRetains / otMsrp) * 100) : 0;
+      var otResellerPct = otMsrp > 0 ? Math.round((otResellerRetains / otMsrp) * 100) : 0;
+
+      marginRow('MSRP', true, function () { return otMsrp; });
+      marginRow('Trendzact net (' + otTzPct + '%)', false, function () { return otTzNet; });
+      marginRow('Distributor retains (' + otDistPct + '%)', false, function () { return otDistRetains; });
+      marginRow('Reseller retains (' + otResellerPct + '%)', false, function () { return otResellerRetains; });
+
+      // TOTAL (recurring commitment + one-time)
+      y += 2;
+      text(doc, 'TOTAL (RECURRING + ONE-TIME)', MARGIN + 2, y + 3.5, { size: 7, style: 'bold', color: C.medGray });
+      hRule(doc, tableLeft, tableRight, y + 6, C.border);
+      y += 8;
+
+      marginRow('Trendzact net total', true, function (t) {
+        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (tzNetPctR / 100) + otTzNet;
+      });
+      marginRow('Distributor retains total', true, function (t) {
+        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (distRetainsPctR / 100) + otDistRetains;
+      });
+      marginRow('Reseller retains total', true, function (t) {
+        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (resellerRetainsPctR / 100) + otResellerRetains;
       });
 
       y += 4;
@@ -611,4 +638,3 @@
 
   window.TrendzactProposalRender = { render: render };
 })();
-

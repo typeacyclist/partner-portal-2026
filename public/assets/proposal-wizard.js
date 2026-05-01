@@ -424,20 +424,10 @@
 
   function fieldHtml(label, id, type, val, ph, hint, key, extra) {
     extra = extra || '';
-    var commonAttrs = ' id="' + id + '" value="' + esc(val) + '" placeholder="' + esc(ph) + '" class="' + fieldCls(key) + '" ' + extra + '/>';
-    var inputHtml;
-    if (type === 'email') {
-      inputHtml = '<input type="email"' + commonAttrs;
-    } else if (type === 'number') {
-      inputHtml = '<input type="number"' + commonAttrs;
-    } else if (type === 'month') {
-      inputHtml = '<input type="month"' + commonAttrs;
-    } else {
-      inputHtml = '<input type="text"' + commonAttrs;
-    }
+    // noinspection HtmlWrongAttributeValue
     return '<div class="tp-field">' +
         '<label>' + label + '<span class="req">*</span></label>' +
-        inputHtml +
+        '<input type="' + type + '" id="' + id + '" value="' + esc(val) + '" placeholder="' + esc(ph) + '" class="' + fieldCls(key) + '" ' + extra + '/>' +
         '<p class="tp-hint">' + esc(hint) + '</p>' +
         fieldErrHtml(key) +
         '</div>';
@@ -1226,37 +1216,102 @@
       });
       html += '</tr></thead><tbody>';
 
-      // Annual recurring rows
-      var recurringRows = [
-        { label: 'MSRP (end-customer)', key: 'annualRecurringMsrp' },
-        { label: 'Trendzact net', key: 'annualTrendzactNet' },
-        { label: 'Distributor retains', key: 'annualDistRetains' },
-        { label: 'Reseller retains', key: 'annualResellerRetains', bold: true }
-      ];
-      recurringRows.forEach(function (row) {
-        html += '<tr' + (row.bold ? ' class="tp-channel-highlight"' : '') + '><td>' + esc(row.label) + '</td>';
-        allTiers.forEach(function (t) {
-          html += '<td>' + fmt(t.totals[row.key] || 0) + '</td>';
-        });
-        html += '</tr>';
-      });
+      // --- RECURRING ---
+      html += '<tr class="tp-channel-subhead"><td colspan="' + (allTiers.length + 1) + '">RECURRING</td></tr>';
 
-      // One-time subheader
+      // MSRP per Year (annual recurring for each tier)
+      html += '<tr><td>MSRP per Year</td>';
+      allTiers.forEach(function (t) {
+        html += '<td>' + fmt(t.totals.annualRecurringMsrp || 0) + '</td>';
+      });
+      html += '</tr>';
+
+      // MSRP Commitment (annual × years)
+      html += '<tr class="tp-channel-highlight"><td>MSRP Commitment</td>';
+      allTiers.forEach(function (t) {
+        var msrpCommit = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1);
+        html += '<td>' + fmt(msrpCommit) + '</td>';
+      });
+      html += '</tr>';
+
+      // Channel splits on MSRP Commitment
+      var distPctR = Math.round(channelConfig.regularDistDiscount * 100);
+      var resellerPctR = Math.round(channelConfig.regularResellerDiscount * 100);
+      var tzNetPctR = 100 - distPctR;
+      var distRetainsPctR = distPctR - resellerPctR;
+      var resellerRetainsPctR = resellerPctR;
+
+      html += '<tr><td>Trendzact net (' + tzNetPctR + '%)</td>';
+      allTiers.forEach(function (t) {
+        var msrpCommit = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1);
+        html += '<td>' + fmt(msrpCommit * (tzNetPctR / 100)) + '</td>';
+      });
+      html += '</tr>';
+
+      html += '<tr><td>Distributor retains (' + distRetainsPctR + '%)</td>';
+      allTiers.forEach(function (t) {
+        var msrpCommit = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1);
+        html += '<td>' + fmt(msrpCommit * (distRetainsPctR / 100)) + '</td>';
+      });
+      html += '</tr>';
+
+      html += '<tr><td>Reseller retains (' + resellerRetainsPctR + '%)</td>';
+      allTiers.forEach(function (t) {
+        var msrpCommit = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1);
+        html += '<td>' + fmt(msrpCommit * (resellerRetainsPctR / 100)) + '</td>';
+      });
+      html += '</tr>';
+
+      // --- ONE-TIME ---
       html += '<tr class="tp-channel-subhead"><td colspan="' + (allTiers.length + 1) + '">ONE-TIME</td></tr>';
 
-      var oneTimeRows = [
-        { label: 'MSRP (one-time)', val: t1.oneTimeMsrp },
-        { label: 'Trendzact net', val: t1.oneTimeTrendzactNet },
-        { label: 'Distributor retains', val: t1.oneTimeDistRetains },
-        { label: 'Reseller retains', val: t1.oneTimeResellerRetains, bold: true }
-      ];
-      oneTimeRows.forEach(function (row) {
-        html += '<tr' + (row.bold ? ' class="tp-channel-highlight"' : '') + '><td>' + esc(row.label) + '</td>';
-        allTiers.forEach(function () {
-          html += '<td>' + fmt(row.val || 0) + '</td>';
-        });
-        html += '</tr>';
+      var otMsrp = t1.oneTimeMsrp || 0;
+      var otTzNet = t1.oneTimeTrendzactNet || 0;
+      var otDistRetains = t1.oneTimeDistRetains || 0;
+      var otResellerRetains = t1.oneTimeResellerRetains || 0;
+      var otTzPct = otMsrp > 0 ? Math.round((otTzNet / otMsrp) * 100) : 0;
+      var otDistPct = otMsrp > 0 ? Math.round((otDistRetains / otMsrp) * 100) : 0;
+      var otResellerPct = otMsrp > 0 ? Math.round((otResellerRetains / otMsrp) * 100) : 0;
+
+      html += '<tr class="tp-channel-highlight"><td>MSRP</td>';
+      allTiers.forEach(function () { html += '<td>' + fmt(otMsrp) + '</td>'; });
+      html += '</tr>';
+
+      html += '<tr><td>Trendzact net (' + otTzPct + '%)</td>';
+      allTiers.forEach(function () { html += '<td>' + fmt(otTzNet) + '</td>'; });
+      html += '</tr>';
+
+      html += '<tr><td>Distributor retains (' + otDistPct + '%)</td>';
+      allTiers.forEach(function () { html += '<td>' + fmt(otDistRetains) + '</td>'; });
+      html += '</tr>';
+
+      html += '<tr><td>Reseller retains (' + otResellerPct + '%)</td>';
+      allTiers.forEach(function () { html += '<td>' + fmt(otResellerRetains) + '</td>'; });
+      html += '</tr>';
+
+      // --- TOTAL (recurring commitment + one-time) ---
+      html += '<tr class="tp-channel-subhead"><td colspan="' + (allTiers.length + 1) + '">TOTAL (RECURRING + ONE-TIME)</td></tr>';
+
+      html += '<tr class="tp-channel-highlight"><td>Trendzact net total</td>';
+      allTiers.forEach(function (t) {
+        var recCommitTzNet = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (tzNetPctR / 100);
+        html += '<td>' + fmt(recCommitTzNet + otTzNet) + '</td>';
       });
+      html += '</tr>';
+
+      html += '<tr class="tp-channel-highlight"><td>Distributor retains total</td>';
+      allTiers.forEach(function (t) {
+        var recCommitDistRetains = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (distRetainsPctR / 100);
+        html += '<td>' + fmt(recCommitDistRetains + otDistRetains) + '</td>';
+      });
+      html += '</tr>';
+
+      html += '<tr class="tp-channel-highlight"><td>Reseller retains total</td>';
+      allTiers.forEach(function (t) {
+        var recCommitResellerRetains = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (resellerRetainsPctR / 100);
+        html += '<td>' + fmt(recCommitResellerRetains + otResellerRetains) + '</td>';
+      });
+      html += '</tr>';
 
       html += '</tbody></table>';
     }
@@ -1463,4 +1518,3 @@
     init: init
   };
 })();
-
