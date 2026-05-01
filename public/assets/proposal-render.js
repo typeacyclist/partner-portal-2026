@@ -354,8 +354,7 @@
     fillRect(doc, tableLeft, y, tableWidth, lineHeaderH, C.tintLight);
     text(doc, 'SKU', MARGIN + 2, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
     text(doc, 'Description', MARGIN + 28, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
-    text(doc, 'Timing', PAGE_W - MARGIN - 42, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'center' });
-    text(doc, 'MSRP', PAGE_W - MARGIN - 3, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
+    text(doc, 'Timing', PAGE_W - MARGIN - 3, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
     hRule(doc, tableLeft, tableRight, y + lineHeaderH, C.border);
     y += lineHeaderH;
 
@@ -370,8 +369,7 @@
         fillRect(doc, tableLeft, y, tableWidth, lineHeaderH, C.tintLight);
         text(doc, 'SKU', MARGIN + 2, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
         text(doc, 'Description', MARGIN + 28, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
-        text(doc, 'Timing', PAGE_W - MARGIN - 42, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'center' });
-        text(doc, 'MSRP', PAGE_W - MARGIN - 3, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
+        text(doc, 'Timing', PAGE_W - MARGIN - 3, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
         hRule(doc, tableLeft, tableRight, y + lineHeaderH, C.border);
         y += lineHeaderH;
       }
@@ -380,8 +378,7 @@
       if (name.length > 65) name = name.slice(0, 64) + '\u2026';
       text(doc, l.code, MARGIN + 2, y + 5, { size: 8, color: C.darkGray });
       text(doc, name, MARGIN + 28, y + 5, { size: 8, color: C.darkGray });
-      text(doc, l.timing === 'oneTime' ? 'One-time' : 'Annual', PAGE_W - MARGIN - 42, y + 5, { size: 7.5, color: C.medGray, align: 'center' });
-      text(doc, fmt(l.msrpLine), PAGE_W - MARGIN - 3, y + 5, { size: 8, color: C.darkGray, align: 'right' });
+      text(doc, l.timing === 'oneTime' ? 'One-time' : 'Annual', PAGE_W - MARGIN - 3, y + 5, { size: 7.5, color: C.medGray, align: 'right' });
       hRule(doc, tableLeft, tableRight, y + lineRowH, C.border);
       y += lineRowH;
     });
@@ -465,97 +462,55 @@
     hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
     y += 6;
 
-    // Channel line-item table
-    var chColSku = MARGIN + 2;
-    var chColDesc = MARGIN + 26;
-    var chColMsrp = MARGIN + CONTENT_W * 0.52;
-    var chColDist = MARGIN + CONTENT_W * 0.70;
-    var chColResell = MARGIN + CONTENT_W * 0.88;
-
-    var chHeaderH = 8;
-    fillRect(doc, tableLeft, y, tableWidth, chHeaderH, C.tintLight);
-    text(doc, 'SKU', chColSku, y + 5.5, { size: 7, style: 'bold', color: C.darkGray });
-    text(doc, 'Description', chColDesc, y + 5.5, { size: 7, style: 'bold', color: C.darkGray });
-    text(doc, 'MSRP', chColMsrp, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
-    text(doc, 'Dist. Cost', chColDist, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
-    text(doc, 'Reseller Cost', chColResell, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
-    hRule(doc, tableLeft, tableRight, y + chHeaderH, C.border);
-    y += chHeaderH;
-
-    var chRowH = 7;
-    var chRecMsrp = 0, chRecDist = 0, chRecResell = 0;
-    var chOnceMsrp = 0, chOnceDist = 0, chOnceResell = 0;
-
-    calcLines.forEach(function (l, i) {
-      if (y > PAGE_H - 40) {
-        pageFooter(doc, proposalId, portalDomain);
-        doc.addPage();
-        pageHeader(doc, 'Distributor\u2013Reseller Worksheet (continued)', proposalId);
-        y = 24;
-        fillRect(doc, tableLeft, y, tableWidth, chHeaderH, C.tintLight);
-        text(doc, 'SKU', chColSku, y + 5.5, { size: 7, style: 'bold', color: C.darkGray });
-        text(doc, 'Description', chColDesc, y + 5.5, { size: 7, style: 'bold', color: C.darkGray });
-        text(doc, 'MSRP', chColMsrp, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
-        text(doc, 'Dist. Cost', chColDist, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
-        text(doc, 'Reseller Cost', chColResell, y + 5.5, { size: 7, style: 'bold', color: C.darkGray, align: 'right' });
-        hRule(doc, tableLeft, tableRight, y + chHeaderH, C.border);
-        y += chHeaderH;
-      }
-
-      if (i % 2 === 1) fillRect(doc, tableLeft, y, tableWidth, chRowH, [250, 250, 251]);
-      var ch = l.channel || {};
-      var distCost = ch.trendzactNet != null ? ch.trendzactNet : l.msrpLine;
-      var resellerCost = ch.distributorPrice != null ? ch.distributorPrice : l.msrpLine;
-
-      var name = l.name;
-      if (name.length > 40) name = name.slice(0, 39) + '\u2026';
-      text(doc, l.code, chColSku, y + 5, { size: 7.5, color: C.darkGray });
-      text(doc, name, chColDesc, y + 5, { size: 7.5, color: C.darkGray });
-      text(doc, fmt(l.msrpLine), chColMsrp, y + 5, { size: 7.5, color: C.darkGray, align: 'right' });
-      text(doc, fmt(distCost), chColDist, y + 5, { size: 7.5, color: C.darkGray, align: 'right' });
-      text(doc, fmt(resellerCost), chColResell, y + 5, { size: 7.5, color: C.darkGray, align: 'right' });
-      hRule(doc, tableLeft, tableRight, y + chRowH, C.border);
-
-      if (l.timing === 'recurring') {
-        chRecMsrp += l.msrpLine; chRecDist += distCost; chRecResell += resellerCost;
-      } else {
-        chOnceMsrp += l.msrpLine; chOnceDist += distCost; chOnceResell += resellerCost;
-      }
-      y += chRowH;
-    });
-
-    // Totals
-    y += 2;
-    fillRect(doc, tableLeft, y, tableWidth, 9, C.tintLight);
-    text(doc, 'Annual Recurring', chColDesc, y + 6, { size: 8, style: 'bold', color: C.darkGray });
-    text(doc, fmt(chRecMsrp), chColMsrp, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
-    text(doc, fmt(chRecDist), chColDist, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
-    text(doc, fmt(chRecResell), chColResell, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
-    y += 10;
-
-    fillRect(doc, tableLeft, y, tableWidth, 9, [250, 250, 251]);
-    text(doc, 'One-Time', chColDesc, y + 6, { size: 8, style: 'bold', color: C.darkGray });
-    text(doc, fmt(chOnceMsrp), chColMsrp, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
-    text(doc, fmt(chOnceDist), chColDist, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
-    text(doc, fmt(chOnceResell), chColResell, y + 6, { size: 8, style: 'bold', color: C.darkGray, align: 'right' });
-    y += 14;
-
-    // Margin summary
-    if (!isDirectSale) {
-      text(doc, 'MARGIN SUMMARY (1-YEAR ANNUAL RECURRING)', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
+    // Margin summary for all commitment tiers
+    if (isDirectSale) {
+      text(doc, 'Direct sale — Trendzact retains 100% of MSRP. No channel margin breakdown applicable.', MARGIN, y, { size: 9, color: C.medGray });
+      y += 10;
+    } else {
+      text(doc, 'MARGIN SUMMARY WITH ANNUAL COMMITMENT OPTIONS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
       y += 8;
-      var t1 = allTiers[0] ? allTiers[0].totals : {};
-      var marginItems = [
-        ['MSRP (end-customer price)',  fmt(t1.annualRecurringMsrp)],
-        ['Trendzact net',              fmt(t1.annualTrendzactNet)],
-        ['Distributor retains',        fmt(t1.annualDistRetains)],
-        ['Reseller retains',           fmt(t1.annualResellerRetains)]
-      ];
-      marginItems.forEach(function (row) {
-        text(doc, row[0], MARGIN + 2, y, { size: 8.5, color: C.darkGray });
-        text(doc, row[1], MARGIN + CONTENT_W / 2, y, { size: 9, style: 'bold', color: C.darkGray, align: 'right' });
-        y += 7;
+
+      // Column layout: label column + one column per tier
+      var marginLabelW = 56;
+      var marginTierColW = (CONTENT_W - marginLabelW) / colCount;
+
+      // Header row
+      fillRect(doc, tableLeft, y - 2, tableWidth, 9, C.tintLight);
+      allTiers.forEach(function (t, idx) {
+        var colCenter = MARGIN + marginLabelW + idx * marginTierColW + marginTierColW / 2;
+        var pctOff = Math.round((1 - t.commitment.factor) * 100);
+        var hdr = t.totals.contractYears + '-year' + (pctOff > 0 ? ' (' + pctOff + '% off)' : '');
+        text(doc, hdr, colCenter, y + 3.5, { size: 8, style: 'bold', color: C.darkGray, align: 'center' });
       });
+      hRule(doc, tableLeft, tableRight, y + 7, C.border);
+      y += 9;
+
+      // Margin rows
+      var marginRows = [
+        { label: 'MSRP (end-customer)', key: 'annualRecurringMsrp' },
+        { label: 'Trendzact net', key: 'annualTrendzactNet' },
+        { label: 'Distributor retains', key: 'annualDistRetains' },
+        { label: 'Reseller retains', key: 'annualResellerRetains', bold: true }
+      ];
+      marginRows.forEach(function (row) {
+        var isBold = row.bold;
+        if (isBold) fillRect(doc, tableLeft, y - 2, tableWidth, 10, C.tintLight);
+        text(doc, row.label, MARGIN + 2, y + 3.5, { size: 8.5, style: isBold ? 'bold' : 'normal', color: C.darkGray });
+        allTiers.forEach(function (t, idx) {
+          var colCenter = MARGIN + marginLabelW + idx * marginTierColW + marginTierColW / 2;
+          var val = t.totals[row.key] || 0;
+          text(doc, fmt(val), colCenter, y + 3.5, { size: isBold ? 9 : 8.5, style: 'bold', color: isBold ? C.darkGreen : C.darkGray, align: 'center' });
+        });
+        hRule(doc, tableLeft, tableRight, y + (isBold ? 8 : 6), C.border);
+        y += isBold ? 10 : 8;
+      });
+
+      // One-time row (same across all tiers)
+      y += 4;
+      var t1 = allTiers[0] ? allTiers[0].totals : {};
+      text(doc, 'One-time (all tiers)', MARGIN + 2, y, { size: 8, color: C.medGray });
+      text(doc, 'MSRP ' + fmt(t1.oneTimeMsrp) + '  ·  Trendzact net ' + fmt(t1.oneTimeTrendzactNet) + '  ·  Dist. retains ' + fmt(t1.oneTimeDistRetains) + '  ·  Reseller retains ' + fmt(t1.oneTimeResellerRetains), MARGIN + 2, y + 6, { size: 7.5, color: C.medGray });
+      y += 14;
     }
 
     y += 4;
