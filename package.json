@@ -3,8 +3,11 @@
   "private": true,
   "scripts": {
     "deploy:hosting": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 -Target hosting",
+    "deploy:hosting:no-pull": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 -Target hosting -SkipGitPull",
     "deploy:functions": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 -Target functions",
+    "deploy:functions:no-pull": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 -Target functions -SkipGitPull",
     "deploy:all": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 -Target all",
+    "deploy:all:no-pull": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 -Target all -SkipGitPull",
     "deploy:hosting:dry": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 -Target hosting -DryRun"
   }
 }

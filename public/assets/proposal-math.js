@@ -138,14 +138,27 @@
   function resolveChannelConfig(catalog, subdomain) {
     var subs = catalog.subdomains || {};
     if (subdomain && subs[subdomain]) return subs[subdomain];
-    // No matching subdomain → direct sales channel (no distributor/reseller)
-    // All discounts zero: Trendzact keeps 100% of MSRP
+    // No matching subdomain → fall back to the catalog's defaultChannel
+    // (INDIRECT two-tier model with standard distributor + reseller margins).
+    if (catalog.defaultChannel) {
+      var d = catalog.defaultChannel;
+      return {
+        label: d.label || 'INDIRECT',
+        regularDistDiscount: d.regularDistDiscount || 0,
+        regularResellerDiscount: d.regularResellerDiscount || 0,
+        enhDistDiscount: d.enhDistDiscount || 0,
+        enhResellerDiscount: d.enhResellerDiscount || 0,
+        _default: true
+      };
+    }
+    // Final hardcoded safety net if catalog.defaultChannel is missing.
     return {
-      regularDistDiscount: 0,
-      regularResellerDiscount: 0,
-      enhDistDiscount: 0,
-      enhResellerDiscount: 0,
-      _direct: true
+      label: 'INDIRECT',
+      regularDistDiscount: 0.4,
+      regularResellerDiscount: 0.3,
+      enhDistDiscount: 0.5,
+      enhResellerDiscount: 0.35,
+      _default: true
     };
   }
 

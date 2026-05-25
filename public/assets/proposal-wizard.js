@@ -10,9 +10,9 @@
 //   - Step 4 = Submit panel with proposal title, CC-to, UUID chip
 //
 // v7 changes:
-//   - Module-count pricing (uniform MSRP base × moduleMultiplier × commitFactor)
+//   - Module-count pricing (uniform List Price base × moduleMultiplier × commitFactor)
 //   - Commitment tiers (1yr/2yr/3yr) replace multi-year continuity
-//   - Channel pricing: MSRP / Trendzact net / Distributor retains / Reseller retains
+//   - Channel pricing: List Price / Trendzact wholesale price / Distributor retains / Reseller retains
 //   - Platform Options section removed (all omitted in v7)
 //   - CORE SKU removed (absorbed into CARE)
 //   - Subdomain selector added for channel discount lookup
@@ -45,8 +45,8 @@
 
   // Derive subdomain from current hostname (e.g. jlead.trendzact-partners-001.web.app → jlead).
   // Only returns a value if the candidate is a known key in catalog.subdomains —
-  // so previews like www.* or staging.* fall through to direct sales channel
-  // instead of being looked up (and silently missing) as a partner subdomain.
+  // so previews like www.* or staging.* fall through to the catalog's
+  // defaultChannel (INDIRECT) instead of being silently treated as a partner.
   function detectSubdomain() {
     try {
       var host = window.location.hostname || '';
@@ -1102,7 +1102,7 @@
 
     return (
         '<h3>Step 3 — Review &amp; Calculate</h3>' +
-        '<p class="tp-lede">MSRP pricing summary for prospect review. Click "Edit →" to adjust selections.</p>' +
+        '<p class="tp-lede">List Price pricing summary for prospect review. Actual Retail Price at the discretion of the Distributor and their Resellers. Click "Edit →" to adjust selections.</p>' +
 
         errorsHtml +
 
@@ -1171,9 +1171,9 @@
         '</ul>' +
         '</div>' +
 
-        // --- MSRP Base Pricing ---
+        // --- List Price Base Pricing ---
         '<div class="tp-summary">' +
-        '<div class="tp-summary-row subgroup">MSRP base pricing</div>' +
+        '<div class="tp-summary-row subgroup">List Price base pricing</div>' +
 
         '<div class="tp-summary-row">' +
         '<span class="tp-pricing-label">Core Services<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">SLA for ' + esc(segLabel) + '</span></span>' +
@@ -1272,8 +1272,9 @@
   function renderChannelWorksheet(allTiers, fmt) {
     var subdomain = detectSubdomain();
     var channelConfig = TrendzactMath.resolveChannelConfig(state.catalog, subdomain);
-    var isDirectSale = !subdomain;
-    var channelLabel = subdomain ? subdomain.toUpperCase() : 'DIRECT';
+    var channelLabel = subdomain
+      ? subdomain.toUpperCase()
+      : (channelConfig.label || 'INDIRECT').toUpperCase();
     var calc1 = allTiers[0] || {};
     var t1 = calc1.totals || {};
 
@@ -1283,15 +1284,26 @@
     html += '<span class="tp-channel-label">' + esc(channelLabel) + '</span>';
     html += '</div>';
 
-    if (isDirectSale) {
-      html += '<p class="tp-hint" style="margin:8px 0;">Direct sale \u2014 no distributor or reseller discounts applied. Trendzact retains 100% of MSRP.</p>';
-    } else {
-      html += '<div class="tp-channel-discounts">';
-      html += '<span>Distributor discount (regular): <strong>' + Math.round(channelConfig.regularDistDiscount * 100) + '%</strong></span>';
-      html += '<span>Reseller discount (regular): <strong>' + Math.round(channelConfig.regularResellerDiscount * 100) + '%</strong></span>';
-      html += '<span>Distributor discount (enhancement): <strong>' + Math.round(channelConfig.enhDistDiscount * 100) + '%</strong></span>';
-      html += '<span>Reseller discount (enhancement): <strong>' + Math.round(channelConfig.enhResellerDiscount * 100) + '%</strong></span>';
-      html += '</div>';
+    // Display derived margin percentages instead of raw catalog discounts.
+    //   trendzactNet% = 1 - distDiscount      (what Trendzact retains)
+    //   distMargin%   = distDiscount - resellerDiscount   (what distributor retains)
+    //   resellerMargin% = resellerDiscount    (what reseller retains)
+    // These three sum to 100% and match the per-line math in computeChannelPrices.
+    var regTzPct = Math.round((1 - channelConfig.regularDistDiscount) * 100);
+    var regDistPct = Math.round((channelConfig.regularDistDiscount - channelConfig.regularResellerDiscount) * 100);
+    var regResellerPct = Math.round(channelConfig.regularResellerDiscount * 100);
+    var enhTzPct = Math.round((1 - channelConfig.enhDistDiscount) * 100);
+    var enhDistPct = Math.round((channelConfig.enhDistDiscount - channelConfig.enhResellerDiscount) * 100);
+    var enhResellerPct = Math.round(channelConfig.enhResellerDiscount * 100);
+
+    html += '<div class="tp-channel-discounts">';
+    html += '<span>Trendzact wholesale (regular): <strong>' + regTzPct + '%</strong></span>';
+    html += '<span>Distributor margin (regular): <strong>' + regDistPct + '%</strong></span>';
+    html += '<span>Reseller margin (regular): <strong>' + regResellerPct + '%</strong></span>';
+    html += '<span>Trendzact wholesale (enhancement): <strong>' + enhTzPct + '%</strong></span>';
+    html += '<span>Distributor margin (enhancement): <strong>' + enhDistPct + '%</strong></span>';
+    html += '<span>Reseller margin (enhancement): <strong>' + enhResellerPct + '%</strong></span>';
+    html += '</div>';
 
       // Margin summary table — all 3 tiers
       html += '<div class="tp-channel-margin-title">MARGIN SUMMARY WITH ANNUAL COMMITMENT OPTIONS</div>';
@@ -1305,22 +1317,22 @@
       // --- RECURRING ---
       html += '<tr class="tp-channel-subhead"><td colspan="' + (allTiers.length + 1) + '">RECURRING</td></tr>';
 
-      // MSRP per Year (annual recurring for each tier)
-      html += '<tr><td>MSRP per Year</td>';
+      // List Price per Year (annual recurring for each tier)
+      html += '<tr><td>List Price per Year</td>';
       allTiers.forEach(function (t) {
         html += '<td>' + fmt(t.totals.annualRecurringMsrp || 0) + '</td>';
       });
       html += '</tr>';
 
-      // MSRP Commitment (annual × years)
-      html += '<tr class="tp-channel-highlight"><td>MSRP Commitment</td>';
+      // List Price Commitment (annual × years)
+      html += '<tr class="tp-channel-highlight"><td>List Price Commitment</td>';
       allTiers.forEach(function (t) {
         var msrpCommit = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1);
         html += '<td>' + fmt(msrpCommit) + '</td>';
       });
       html += '</tr>';
 
-      // Channel splits on MSRP Commitment — use precomputed per-line totals
+      // Channel splits on List Price Commitment — use precomputed per-line totals
       // from the math engine so enhancement SKUs (deeper discount) blend in
       // correctly. Commit factor scales both sides equally, so % is tier-independent.
       var t0 = (allTiers[0] && allTiers[0].totals) || {};
@@ -1329,7 +1341,7 @@
       var blendedDistPct = t0AnnualMsrp > 0 ? Math.round((t0.annualDistRetains || 0) / t0AnnualMsrp * 100) : 0;
       var blendedResellerPct = t0AnnualMsrp > 0 ? Math.round((t0.annualResellerRetains || 0) / t0AnnualMsrp * 100) : 0;
 
-      html += '<tr><td>Trendzact net (' + blendedTzNetPct + '%)</td>';
+      html += '<tr><td>Trendzact wholesale price (' + blendedTzNetPct + '%)</td>';
       allTiers.forEach(function (t) {
         html += '<td>' + fmt((t.totals.annualTrendzactNet || 0) * (t.totals.contractYears || 1)) + '</td>';
       });
@@ -1358,11 +1370,11 @@
       var otDistPct = otMsrp > 0 ? Math.round((otDistRetains / otMsrp) * 100) : 0;
       var otResellerPct = otMsrp > 0 ? Math.round((otResellerRetains / otMsrp) * 100) : 0;
 
-      html += '<tr class="tp-channel-highlight"><td>MSRP</td>';
+      html += '<tr class="tp-channel-highlight"><td>List Price</td>';
       allTiers.forEach(function () { html += '<td>' + fmt(otMsrp) + '</td>'; });
       html += '</tr>';
 
-      html += '<tr><td>Trendzact net (' + otTzPct + '%)</td>';
+      html += '<tr><td>Trendzact wholesale price (' + otTzPct + '%)</td>';
       allTiers.forEach(function () { html += '<td>' + fmt(otTzNet) + '</td>'; });
       html += '</tr>';
 
@@ -1377,7 +1389,7 @@
       // --- TOTAL (recurring commitment + one-time) ---
       html += '<tr class="tp-channel-subhead"><td colspan="' + (allTiers.length + 1) + '">TOTAL (RECURRING + ONE-TIME)</td></tr>';
 
-      html += '<tr class="tp-channel-highlight"><td>Trendzact net total</td>';
+      html += '<tr class="tp-channel-highlight"><td>Trendzact wholesale price total</td>';
       allTiers.forEach(function (t) {
         var recCommitTzNet = (t.totals.annualTrendzactNet || 0) * (t.totals.contractYears || 1);
         html += '<td>' + fmt(recCommitTzNet + otTzNet) + '</td>';
@@ -1398,8 +1410,7 @@
       });
       html += '</tr>';
 
-      html += '</tbody></table>';
-    }
+    html += '</tbody></table>';
 
     html += '<p class="tp-hint" style="margin-top:8px;font-style:italic;">Partner internal use \u2014 not included in prospect-facing pages.</p>';
     html += '</div>';

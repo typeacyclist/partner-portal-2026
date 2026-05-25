@@ -1,8 +1,8 @@
 // Trendzact Partners - Proposal PDF Renderer (v7)
 //
 // Produces a 4-page PDF (prospect gets pages 1-3, partner keeps page 4):
-//   Page 1 — Cover: prospect details + MSRP commitment options
-//   Page 2 — Scope & MSRP Pricing: pricing inputs, base pricing, commitment tiers
+//   Page 1 — Cover: prospect details + List Price commitment options
+//   Page 2 — Scope & List Price Pricing: pricing inputs, base pricing, commitment tiers
 //   Page 3 — Next Steps + disclaimer + contact
 //   Page 4 — Distributor-Reseller Worksheet (channel pricing with subdomain discounts)
 //
@@ -95,12 +95,12 @@
     var generatedAt = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     var portalDomain = (window.location && window.location.hostname) || 'partner portal';
     var subdomain = inp.subdomain || '';
-    var isDirectSale = !subdomain;
 
-    // Resolve channel config for page 4
+    // Resolve channel config for page 4. resolveChannelConfig falls back to
+    // catalog.defaultChannel (INDIRECT two-tier) when subdomain doesn't match.
     var channelConfig = window.TrendzactMath
         ? window.TrendzactMath.resolveChannelConfig(catalog, subdomain)
-        : { regularDistDiscount: 0, regularResellerDiscount: 0, enhDistDiscount: 0, enhResellerDiscount: 0, _direct: true };
+        : (catalog.defaultChannel || { label: 'INDIRECT', regularDistDiscount: 0.4, regularResellerDiscount: 0.3, enhDistDiscount: 0.5, enhResellerDiscount: 0.35 });
 
     var tableLeft = MARGIN;
     var tableRight = PAGE_W - MARGIN;
@@ -169,10 +169,10 @@
     // Scope paragraph
     var paraY = divY + 6;
     var scopeNote = 'This proposal outlines a Trendzact GRC One deployment sized for the organization described above. ' +
-        'MSRP pricing (USD) is included for planning purposes. Final pricing, scope, and deployment terms are subject to Trendzact Deal Desk approval.';
+        'List Price pricing (USD) is included for planning purposes. Actual Retail Price at the discretion of the Distributor and their Resellers. Final pricing, scope, and deployment terms are subject to Trendzact Deal Desk approval.';
     var paraLineCount = lines(doc, scopeNote, MARGIN, paraY, CONTENT_W, { size: 9, color: C.medGray });
 
-    // --- MSRP Commitment Options ---
+    // --- List Price Commitment Options ---
     var boxY = paraY + paraLineCount * 4.5 + 10;
     var boxH = 72;
     var colW = CONTENT_W / colCount;
@@ -180,7 +180,7 @@
     var valueColor = C.white;
     var highlightCol = [0, 180, 170];
 
-    text(doc, 'MSRP PRICING SUMMARY USD($)', MARGIN, boxY - 4, { size: 8, style: 'bold', color: C.darkGreen });
+    text(doc, 'List Price PRICING SUMMARY USD($)', MARGIN, boxY - 4, { size: 8, style: 'bold', color: C.darkGreen });
 
     fillRect(doc, MARGIN, boxY, CONTENT_W, boxH, C.darkGray);
 
@@ -221,10 +221,10 @@
 
 
     // ================================================================
-    //  PAGE 2 \u2014 SCOPE & MSRP PRICING
+    //  PAGE 2 \u2014 SCOPE & List Price PRICING
     // ================================================================
     doc.addPage();
-    pageHeader(doc, 'Scope & MSRP Pricing USD($)', proposalId);
+    pageHeader(doc, 'Scope & List Price Pricing USD($)', proposalId);
 
     var y = 24;
 
@@ -252,8 +252,8 @@
     hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
     y += 8;
 
-    // --- MSRP Base Pricing ---
-    text(doc, 'MSRP BASE PRICING (1-YEAR)', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
+    // --- List Price Base Pricing ---
+    text(doc, 'List Price BASE PRICING (1-YEAR)', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
     y += 8;
 
     // Summary row helper. `sublabel` may be a string OR an array of strings
@@ -337,7 +337,7 @@
     y += 8;
 
     // --- Commitment Options Table ---
-    text(doc, 'MSRP WITH ANNUAL COMMITMENT OPTIONS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
+    text(doc, 'List Price WITH ANNUAL COMMITMENT OPTIONS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
     y += 7;
 
     // Header row — use the commitment label from catalog so a single source of
@@ -410,7 +410,7 @@
       if (y > pageBreakAt) {
         pageFooter(doc, proposalId, portalDomain);
         doc.addPage();
-        pageHeader(doc, 'Scope & MSRP Pricing (continued)', proposalId);
+        pageHeader(doc, 'Scope & List Price Pricing (continued)', proposalId);
         y = 24;
         renderLineItemsHeader();
       }
@@ -433,7 +433,7 @@
     var expiresAt = new Date(issuedAt.getTime());
     expiresAt.setUTCDate(expiresAt.getUTCDate() + 90);
     var dateFmt = { year: 'numeric', month: 'long', day: 'numeric' };
-    text(doc, 'MSRP pricing valid for 90 days. Issued ' + issuedAt.toLocaleDateString('en-US', dateFmt) + '  \u00b7  Expires ' + expiresAt.toLocaleDateString('en-US', dateFmt) + '.', MARGIN, y + 3, { size: 7.5, style: 'italic', color: C.medGray });
+    text(doc, 'List Price pricing valid for 90 days. Issued ' + issuedAt.toLocaleDateString('en-US', dateFmt) + '  \u00b7  Expires ' + expiresAt.toLocaleDateString('en-US', dateFmt) + '.', MARGIN, y + 3, { size: 7.5, style: 'italic', color: C.medGray });
 
     pageFooter(doc, proposalId, portalDomain);
 
@@ -466,7 +466,8 @@
     y += 4;
     fillRect(doc, MARGIN, y, CONTENT_W, 34, C.tintLight);
     text(doc, 'Disclaimer', MARGIN + 5, y + 8, { size: 9, style: 'bold', color: C.darkGray });
-    var disc = 'MSRP pricing shown is based on information provided at the time of generation. ' +
+    var disc = 'List Price pricing shown is based on information provided at the time of generation. ' +
+        'Actual Retail Price at the discretion of the Distributor and their Resellers. ' +
         'Final pricing is subject to Trendzact Deal Desk review, volume tier approval, deployment scope, and executed terms. ' +
         'This document is confidential and intended only for the named partner and prospect.';
     lines(doc, disc, MARGIN + 5, y + 14, CONTENT_W - 10, { size: 8, color: C.medGray });
@@ -489,30 +490,35 @@
 
     y = 24;
 
-    // Channel info
-    var channelLabel = subdomain ? subdomain.toUpperCase() : 'DIRECT';
+    // Channel info \u2014 label comes from the subdomain (if matched) or the
+    // catalog's defaultChannel.label (INDIRECT for the two-tier fallback).
+    var channelLabel = subdomain
+      ? subdomain.toUpperCase()
+      : (channelConfig.label || 'INDIRECT').toUpperCase();
     text(doc, 'CHANNEL: ' + channelLabel, MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
     y += 6;
 
-    if (isDirectSale) {
-      text(doc, 'Direct sale \u2014 no distributor or reseller discounts applied. Trendzact retains 100% of MSRP.', MARGIN, y, { size: 9, color: C.medGray });
-      y += 8;
-    } else {
-      text(doc, 'Distributor discount (regular): ' + pct(channelConfig.regularDistDiscount) + '    Reseller discount (regular): ' + pct(channelConfig.regularResellerDiscount), MARGIN, y, { size: 8, color: C.medGray });
-      y += 5;
-      text(doc, 'Distributor discount (enhancement): ' + pct(channelConfig.enhDistDiscount) + '    Reseller discount (enhancement): ' + pct(channelConfig.enhResellerDiscount), MARGIN, y, { size: 8, color: C.medGray });
-      y += 8;
-    }
+    // Derived margin percentages (sum to 100% per row).
+    //   Trendzact wholesale = 1 - distDiscount
+    //   Distributor margin  = distDiscount - resellerDiscount
+    //   Reseller margin     = resellerDiscount
+    var regTzWholesale = 1 - channelConfig.regularDistDiscount;
+    var regDistMargin = channelConfig.regularDistDiscount - channelConfig.regularResellerDiscount;
+    var regResellerMargin = channelConfig.regularResellerDiscount;
+    var enhTzWholesale = 1 - channelConfig.enhDistDiscount;
+    var enhDistMargin = channelConfig.enhDistDiscount - channelConfig.enhResellerDiscount;
+    var enhResellerMargin = channelConfig.enhResellerDiscount;
+
+    text(doc, 'Regular: Trendzact wholesale ' + pct(regTzWholesale) + '    Distributor margin ' + pct(regDistMargin) + '    Reseller margin ' + pct(regResellerMargin), MARGIN, y, { size: 8, color: C.medGray });
+    y += 5;
+    text(doc, 'Enhancement: Trendzact wholesale ' + pct(enhTzWholesale) + '    Distributor margin ' + pct(enhDistMargin) + '    Reseller margin ' + pct(enhResellerMargin), MARGIN, y, { size: 8, color: C.medGray });
+    y += 8;
 
     hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
     y += 6;
 
     // Margin summary for all commitment tiers
-    if (isDirectSale) {
-      text(doc, 'Direct sale — Trendzact retains 100% of MSRP. No channel margin breakdown applicable.', MARGIN, y, { size: 9, color: C.medGray });
-      y += 10;
-    } else {
-      text(doc, 'MARGIN SUMMARY WITH ANNUAL COMMITMENT OPTIONS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
+    text(doc, 'MARGIN SUMMARY WITH ANNUAL COMMITMENT OPTIONS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
       y += 8;
 
       // Column layout: label column + one column per tier
@@ -545,7 +551,7 @@
       var blendedDistPct = t0AnnualMsrp > 0 ? Math.round((t0Totals.annualDistRetains || 0) / t0AnnualMsrp * 100) : 0;
       var blendedResellerPct = t0AnnualMsrp > 0 ? Math.round((t0Totals.annualResellerRetains || 0) / t0AnnualMsrp * 100) : 0;
 
-      // MSRP per Year
+      // List Price per Year
       function marginRow(label, isBold, valueFn) {
         if (isBold) fillRect(doc, tableLeft, y - 2, tableWidth, 10, C.tintLight);
         text(doc, label, MARGIN + 2, y + 3.5, { size: 8.5, style: isBold ? 'bold' : 'normal', color: C.darkGray });
@@ -557,9 +563,9 @@
         y += isBold ? 10 : 8;
       }
 
-      marginRow('MSRP per Year', false, function (t) { return t.totals.annualRecurringMsrp || 0; });
-      marginRow('MSRP Commitment', true, function (t) { return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1); });
-      marginRow('Trendzact net (' + blendedTzNetPct + '%)', false, function (t) {
+      marginRow('List Price per Year', false, function (t) { return t.totals.annualRecurringMsrp || 0; });
+      marginRow('List Price Commitment', true, function (t) { return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1); });
+      marginRow('Trendzact wholesale price (' + blendedTzNetPct + '%)', false, function (t) {
         return (t.totals.annualTrendzactNet || 0) * (t.totals.contractYears || 1);
       });
       marginRow('Distributor retains (' + blendedDistPct + '%)', false, function (t) {
@@ -584,8 +590,8 @@
       var otDistPct = otMsrp > 0 ? Math.round((otDistRetains / otMsrp) * 100) : 0;
       var otResellerPct = otMsrp > 0 ? Math.round((otResellerRetains / otMsrp) * 100) : 0;
 
-      marginRow('MSRP', true, function () { return otMsrp; });
-      marginRow('Trendzact net (' + otTzPct + '%)', false, function () { return otTzNet; });
+      marginRow('List Price', true, function () { return otMsrp; });
+      marginRow('Trendzact wholesale price (' + otTzPct + '%)', false, function () { return otTzNet; });
       marginRow('Distributor retains (' + otDistPct + '%)', false, function () { return otDistRetains; });
       marginRow('Reseller retains (' + otResellerPct + '%)', false, function () { return otResellerRetains; });
 
@@ -595,7 +601,7 @@
       hRule(doc, tableLeft, tableRight, y + 6, C.border);
       y += 8;
 
-      marginRow('Trendzact net total', true, function (t) {
+      marginRow('Trendzact wholesale price total', true, function (t) {
         return (t.totals.annualTrendzactNet || 0) * (t.totals.contractYears || 1) + otTzNet;
       });
       marginRow('Distributor retains total', true, function (t) {
@@ -605,8 +611,7 @@
         return (t.totals.annualResellerRetains || 0) * (t.totals.contractYears || 1) + otResellerRetains;
       });
 
-      y += 4;
-    }
+    y += 4;
 
     y += 4;
     text(doc, 'This page is for partner internal use and should not be shared with the end customer.', MARGIN, y, { size: 7.5, style: 'italic', color: C.medGray });
