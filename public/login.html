@@ -162,12 +162,32 @@
       document.getElementById('email').focus();
       return;
     }
+
+    if (!window.TrendzactAuth || typeof window.TrendzactAuth.sendResetEmail !== 'function') {
+      show('error', 'Auth is still loading. Please wait a moment and try again.');
+      return;
+    }
+
     try {
       await window.TrendzactAuth.sendResetEmail(email);
       show('info', 'If an account exists for ' + email + ', a password reset email is on the way.');
     } catch (err) {
-      // Don't reveal whether the email exists — show generic success anyway
-      show('info', 'If an account exists for ' + email + ', a password reset email is on the way.');
+      // Keep anti-enumeration behavior only for unknown users.
+      if (err && err.code === 'auth/user-not-found') {
+        show('info', 'If an account exists for ' + email + ', a password reset email is on the way.');
+        return;
+      }
+
+      const friendly = {
+        'auth/invalid-email': 'That email address looks invalid.',
+        'auth/missing-email': 'Enter an email address first.',
+        'auth/too-many-requests': 'Too many requests - please wait a few minutes and try again.',
+        'auth/network-request-failed': 'Network error. Check your connection and try again.',
+        'auth/unauthorized-continue-uri': 'Password reset is not configured for this domain yet. Contact Trendzact.',
+        'auth/invalid-continue-uri': 'Password reset redirect URL is invalid. Contact Trendzact.'
+      }[err && err.code] || ('Could not send password reset email: ' + ((err && err.message) || (err && err.code) || 'unknown error'));
+
+      show('error', friendly);
     }
   });
 
