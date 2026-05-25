@@ -1,8 +1,8 @@
 // Trendzact Partners — Signals Finder
 //
 // Loads the GRC1 signals catalog (signals-catalog.json), exposes a search
-// bar that resolves matches across id, name, field_name, path, description,
-// and sample_data, and renders ranked result cards.
+// bar + namespace filter that narrow the result set, and renders one
+// matching record at a time with prev/next navigation.
 //
 // Catalog shape:
 //   {
@@ -16,14 +16,13 @@
   'use strict';
 
   var CATALOG_URL = '/assets/signals-catalog.json';
-  var MAX_VISIBLE = 50; // cap initial results; user can refine to narrow
   var DEBOUNCE_MS = 120;
 
   var state = {
     catalog: null,
     query: '',
     namespace: 'all',
-    expandedIds: {}
+    currentIndex: 0
   };
 
   function escapeHtml(value) {
@@ -55,10 +54,8 @@
     return out;
   }
 
-  // Score a record against a query. Higher = better match.
-  // Returns 0 if no match at all.
   function scoreRecord(rec, q) {
-    if (!q) return 1; // unfiltered list — keep stable order
+    if (!q) return 1;
     var s = 0;
     var fields = [
       ['id', 100],
@@ -117,8 +114,7 @@
     return parts.join('');
   }
 
-  function renderResultCard(rec, query) {
-    var expanded = !!state.expandedIds[rec.id];
+  function renderRecordCard(rec, query) {
     var meta = [];
     if (rec.sample_data_type) meta.push('<span class="signals-tag">' + escapeHtml(rec.sample_data_type) + '</span>');
     if (rec.legacy_id) meta.push('<span class="signals-tag signals-tag-muted">legacy: ' + escapeHtml(rec.legacy_id) + '</span>');
@@ -157,57 +153,72 @@
     }
 
     return '' +
-      '<article class="signals-result' + (expanded ? ' is-expanded' : '') + '" data-id="' + escapeHtml(rec.id) + '">' +
-        '<header class="signals-result-head" data-toggle="' + escapeHtml(rec.id) + '">' +
-          '<div class="signals-result-id">' + highlight(rec.id, query) + '</div>' +
-          '<div class="signals-result-title">' +
-            '<h3>' + highlight(rec.name || rec.field_name || rec.id, query) + '</h3>' +
-            '<code class="signals-mono signals-result-field">' + highlight(rec.field_name || '', query) + '</code>' +
-          '</div>' +
-          '<div class="signals-result-meta">' + meta.join('') + '</div>' +
-          '<button type="button" class="signals-result-toggle" aria-label="' + (expanded ? 'Collapse' : 'Expand') + '">' + (expanded ? '−' : '+') + '</button>' +
+      '<article class="signals-record" data-id="' + escapeHtml(rec.id) + '">' +
+        '<header class="signals-record-head">' +
+          '<div class="signals-record-id">' + highlight(rec.id, query) + '</div>' +
+          '<h3 class="signals-record-title">' + highlight(rec.name || rec.field_name || rec.id, query) + '</h3>' +
+          '<code class="signals-mono signals-record-field">' + highlight(rec.field_name || '', query) + '</code>' +
+          (meta.length ? '<div class="signals-record-meta">' + meta.join('') + '</div>' : '') +
         '</header>' +
-        (expanded
-          ? '<div class="signals-result-body">' + detailRows.join('') + '</div>'
-          : '<p class="signals-result-preview">' + highlight((rec.description || '').slice(0, 180), query) + '</p>') +
+        '<div class="signals-record-body">' + detailRows.join('') + '</div>' +
       '</article>';
   }
 
   function renderResults() {
     var results = filterRecords();
     var q = state.query.trim();
-    var visible = results.slice(0, MAX_VISIBLE);
-    var hidden = results.length - visible.length;
+    var total = results.length;
 
-    var resultsHtml;
-    if (results.length === 0) {
-      resultsHtml = '<div class="signals-empty">' +
+    // Clamp currentIndex to valid range
+    if (state.currentIndex < 0) state.currentIndex = 0;
+    if (state.currentIndex >= total) state.currentIndex = Math.max(0, total - 1);
+
+    var bodyHtml;
+    var navHtml = '';
+    if (total === 0) {
+      bodyHtml = '<div class="signals-empty">' +
         (q
           ? 'No fields matched <strong>' + escapeHtml(q) + '</strong>' + (state.namespace !== 'all' ? ' in <strong>' + escapeHtml(state.namespace) + '</strong>' : '') + '.'
           : 'No records in this namespace.') +
         '</div>';
     } else {
-      resultsHtml = visible.map(function (r) { return renderResultCard(r, q.toLowerCase()); }).join('');
-      if (hidden > 0) {
-        resultsHtml += '<div class="signals-truncated">Showing first ' + MAX_VISIBLE + ' of ' + results.length + ' matches. Refine your search or pick a namespace to narrow.</div>';
-      }
+      var rec = results[state.currentIndex];
+      bodyHtml = renderRecordCard(rec, q.toLowerCase());
+
+      var prevDisabled = state.currentIndex <= 0 ? ' disabled' : '';
+      var nextDisabled = state.currentIndex >= total - 1 ? ' disabled' : '';
+      navHtml = '' +
+        '<div class="signals-nav">' +
+          '<button type="button" class="signals-nav-btn" id="signals-prev" aria-label="Previous record"' + prevDisabled + '>' +
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>' +
+          '</button>' +
+          '<div class="signals-nav-position">' +
+            '<span class="signals-nav-current">' + (state.currentIndex + 1) + '</span>' +
+            '<span class="signals-nav-sep">/</span>' +
+            '<span class="signals-nav-total">' + total + '</span>' +
+          '</div>' +
+          '<button type="button" class="signals-nav-btn" id="signals-next" aria-label="Next record"' + nextDisabled + '>' +
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>' +
+          '</button>' +
+        '</div>';
     }
 
-    var countLabel = results.length === 1 ? '1 match' : results.length.toLocaleString() + ' matches';
+    var countLabel = total === 1 ? '1 match' : total.toLocaleString() + ' matches';
 
     return '' +
       '<div class="signals-finder-count">' + countLabel +
         (q ? ' for <strong>' + escapeHtml(q) + '</strong>' : '') +
         (state.namespace !== 'all' ? ' &middot; <strong>' + escapeHtml(state.namespace) + '</strong>' : '') +
       '</div>' +
-      '<div class="signals-results">' + resultsHtml + '</div>';
+      '<div class="signals-results">' + bodyHtml + '</div>' +
+      navHtml;
   }
 
   function renderControls(catalog) {
     return '' +
       '<div class="signals-finder-controls">' +
         '<div class="signals-search-wrap">' +
-          '<svg class="signals-search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
+          '<svg class="signals-search-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
           '<input type="search" id="signals-search-input" class="signals-search-input" placeholder="Search by ID, name, field, path, description, or sample data&hellip;" autocomplete="off" spellcheck="false" value="' + escapeHtml(state.query) + '" />' +
           (state.query ? '<button type="button" id="signals-clear" class="signals-clear" aria-label="Clear">×</button>' : '') +
         '</div>' +
@@ -224,21 +235,14 @@
     if (!mount) return;
 
     if (!catalog) {
-      mount.innerHTML = '<p style="color: var(--med-gray); font-size: 14px; padding: 20px 0;">Loading signals catalog&hellip;</p>';
+      mount.innerHTML = '<p style="color: var(--med-gray); font-size: 13px;">Loading catalog&hellip;</p>';
       return;
     }
 
     mount.innerHTML = renderControls(catalog) + renderResults();
 
-    // Restore selected option on the namespace dropdown after re-render
     var nsSel = document.getElementById('signals-namespace-select');
     if (nsSel) nsSel.value = state.namespace;
-
-    // Re-focus search input after re-render and put caret at end
-    var input = document.getElementById('signals-search-input');
-    if (input && document.activeElement !== input && state.query) {
-      // Don't steal focus away from other elements on initial render
-    }
 
     wireEvents();
   }
@@ -255,17 +259,23 @@
   function rerenderResultsOnly() {
     var mount = document.getElementById('signals-finder-mount');
     if (!mount) return;
-    var existing = mount.querySelector('.signals-finder-count');
+    var existingCount = mount.querySelector('.signals-finder-count');
     var existingResults = mount.querySelector('.signals-results');
+    var existingNav = mount.querySelector('.signals-nav');
     var html = renderResults();
     var tmp = document.createElement('div');
     tmp.innerHTML = html;
     var newCount = tmp.querySelector('.signals-finder-count');
     var newResults = tmp.querySelector('.signals-results');
-    if (existing && newCount) existing.replaceWith(newCount);
+    var newNav = tmp.querySelector('.signals-nav');
+
+    if (existingCount && newCount) existingCount.replaceWith(newCount);
     if (existingResults && newResults) existingResults.replaceWith(newResults);
 
-    // Manage clear button visibility & wire toggles
+    if (existingNav && newNav) existingNav.replaceWith(newNav);
+    else if (existingNav && !newNav) existingNav.remove();
+    else if (!existingNav && newNav) mount.appendChild(newNav);
+
     var controls = mount.querySelector('.signals-finder-controls');
     if (controls) {
       var clearBtn = controls.querySelector('#signals-clear');
@@ -283,19 +293,22 @@
         clearBtn.remove();
       }
     }
-    wireToggleEvents();
+    wireNavEvents();
   }
 
   function onSearchInput(e) {
     state.query = e.target.value;
+    state.currentIndex = 0;
     debouncedRerender();
   }
   function onNamespaceChange(e) {
     state.namespace = e.target.value;
+    state.currentIndex = 0;
     rerenderResultsOnly();
   }
   function onClearClick() {
     state.query = '';
+    state.currentIndex = 0;
     var input = document.getElementById('signals-search-input');
     if (input) {
       input.value = '';
@@ -303,20 +316,43 @@
     }
     rerenderResultsOnly();
   }
-  function onResultClick(e) {
-    var head = e.target.closest('[data-toggle]');
-    if (!head) return;
-    var id = head.getAttribute('data-toggle');
-    if (!id) return;
-    state.expandedIds[id] = !state.expandedIds[id];
-    rerenderResultsOnly();
+  function onPrevClick() {
+    if (state.currentIndex > 0) {
+      state.currentIndex--;
+      rerenderResultsOnly();
+    }
+  }
+  function onNextClick() {
+    var total = filterRecords().length;
+    if (state.currentIndex < total - 1) {
+      state.currentIndex++;
+      rerenderResultsOnly();
+    }
+  }
+  function onKeyDown(e) {
+    var input = document.getElementById('signals-search-input');
+    var active = document.activeElement;
+    if (active === input) return; // don't hijack arrows while typing
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      onNextClick();
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      onPrevClick();
+    }
   }
 
-  function wireToggleEvents() {
-    var results = document.querySelector('.signals-results');
-    if (!results) return;
-    results.removeEventListener('click', onResultClick);
-    results.addEventListener('click', onResultClick);
+  function wireNavEvents() {
+    var prev = document.getElementById('signals-prev');
+    var next = document.getElementById('signals-next');
+    if (prev) {
+      prev.removeEventListener('click', onPrevClick);
+      prev.addEventListener('click', onPrevClick);
+    }
+    if (next) {
+      next.removeEventListener('click', onNextClick);
+      next.addEventListener('click', onNextClick);
+    }
   }
 
   function wireEvents() {
@@ -332,7 +368,17 @@
     if (clearBtn) {
       clearBtn.addEventListener('click', onClearClick);
     }
-    wireToggleEvents();
+    wireNavEvents();
+
+    // Bind keyboard arrows scoped to the finder card so they only fire
+    // when the user interacts with it (clicks anywhere inside, hovers,
+    // or focuses a nav button).
+    var card = document.querySelector('.signals-finder-card');
+    if (card) {
+      card.removeEventListener('keydown', onKeyDown);
+      card.addEventListener('keydown', onKeyDown);
+      card.setAttribute('tabindex', '-1');
+    }
   }
 
   function showError(msg) {
