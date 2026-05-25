@@ -10,9 +10,9 @@
 //   - Step 4 = Submit panel with proposal title, CC-to, UUID chip
 //
 // v7 changes:
-//   - Module-count pricing (uniform Suggested (Not for Release) base × moduleMultiplier × commitFactor)
+//   - Module-count pricing (uniform List Price base × moduleMultiplier × commitFactor)
 //   - Commitment tiers (1yr/2yr/3yr) replace multi-year continuity
-//   - Channel pricing: Suggested (Not for Release) / Trendzact wholesale price / Distributor retains / Reseller retains
+//   - Channel pricing: List Price / Trendzact wholesale price / Distributor retains / Reseller retains
 //   - Platform Options section removed (all omitted in v7)
 //   - CORE SKU removed (absorbed into CARE)
 //   - Subdomain selector added for channel discount lookup
@@ -1102,7 +1102,7 @@
 
     return (
         '<h3>Step 3 — Review &amp; Calculate</h3>' +
-        '<p class="tp-lede">Suggested (Not for Release) pricing summary for prospect review. Actual Retail Price at the discretion of the Distributor and their Resellers. Click "Edit →" to adjust selections.</p>' +
+        '<p class="tp-lede">List Price pricing summary for prospect review. Actual Retail Price at the discretion of the Distributor and their Resellers. Click "Edit →" to adjust selections.</p>' +
 
         errorsHtml +
 
@@ -1171,9 +1171,9 @@
         '</ul>' +
         '</div>' +
 
-        // --- Suggested (Not for Release) Base Pricing ---
+        // --- List Price Base Pricing ---
         '<div class="tp-summary">' +
-        '<div class="tp-summary-row subgroup">Suggested (Not for Release) base pricing</div>' +
+        '<div class="tp-summary-row subgroup">List Price base pricing</div>' +
 
         '<div class="tp-summary-row">' +
         '<span class="tp-pricing-label">Core Services<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">SLA for ' + esc(segLabel) + '</span></span>' +
@@ -1317,22 +1317,22 @@
       // --- RECURRING ---
       html += '<tr class="tp-channel-subhead"><td colspan="' + (allTiers.length + 1) + '">RECURRING</td></tr>';
 
-      // Suggested (Not for Release) per Year (annual recurring for each tier)
-      html += '<tr><td>Suggested (Not for Release) per Year</td>';
+      // List Price per Year (annual recurring for each tier)
+      html += '<tr><td>List Price per Year</td>';
       allTiers.forEach(function (t) {
         html += '<td>' + fmt(t.totals.annualRecurringMsrp || 0) + '</td>';
       });
       html += '</tr>';
 
-      // Suggested (Not for Release) Commitment (annual × years)
-      html += '<tr class="tp-channel-highlight"><td>Suggested (Not for Release) Commitment</td>';
+      // List Price Commitment (annual × years)
+      html += '<tr class="tp-channel-highlight"><td>List Price Commitment</td>';
       allTiers.forEach(function (t) {
         var msrpCommit = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1);
         html += '<td>' + fmt(msrpCommit) + '</td>';
       });
       html += '</tr>';
 
-      // Channel splits on Suggested (Not for Release) Commitment — use precomputed per-line totals
+      // Channel splits on List Price Commitment — use precomputed per-line totals
       // from the math engine so enhancement SKUs (deeper discount) blend in
       // correctly. Commit factor scales both sides equally, so % is tier-independent.
       var t0 = (allTiers[0] && allTiers[0].totals) || {};
@@ -1370,7 +1370,7 @@
       var otDistPct = otMsrp > 0 ? Math.round((otDistRetains / otMsrp) * 100) : 0;
       var otResellerPct = otMsrp > 0 ? Math.round((otResellerRetains / otMsrp) * 100) : 0;
 
-      html += '<tr class="tp-channel-highlight"><td>Suggested (Not for Release)</td>';
+      html += '<tr class="tp-channel-highlight"><td>List Price</td>';
       allTiers.forEach(function () { html += '<td>' + fmt(otMsrp) + '</td>'; });
       html += '</tr>';
 
