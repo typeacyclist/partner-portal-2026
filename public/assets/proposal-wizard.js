@@ -1180,10 +1180,23 @@
         '<span>' + fmt(carePrice) + '</span>' +
         '</div>' +
 
-        '<div class="tp-summary-row">' +
-        '<span class="tp-pricing-label">Named User License<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + fmt(Math.round(namedUserPerUser)) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + (perUserEnhNames.length > 0 ? ' + ' + perUserEnhNames.length + ' enh.' : '') + ')</span></span>' +
-        '<span>' + fmt(namedUserTotal) + '</span>' +
-        '</div>' +
+        // Named User License — one sub-line for the modules block, then one
+        // per per-user enhancement so the prospect can see exactly what each
+        // $/user component contributes to the row total.
+        (function () {
+          var modulePerUser = licenseCount > 0 ? moduleTotalAnnual / licenseCount : 0;
+          var subLines = [];
+          subLines.push(fmt(Math.round(modulePerUser)) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + ')');
+          (calc1.lines || []).forEach(function (l) {
+            if (l.discountGroup === 'enhancement') {
+              subLines.push('+ ' + esc(l.code) + ' ' + fmt(Math.round(l.msrpPerUser)) + '/user × ' + licenseCount.toLocaleString('en-US'));
+            }
+          });
+          return '<div class="tp-summary-row">' +
+              '<span class="tp-pricing-label">Named User License<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;line-height:1.6;">' + subLines.join('<br/>') + '</span></span>' +
+              '<span>' + fmt(namedUserTotal) + '</span>' +
+              '</div>';
+        })() +
 
         (connectorTotal > 0
             ? '<div class="tp-summary-row">' +
@@ -1213,18 +1226,26 @@
         '</div>' +
 
         // --- Line Items (mirrors PDF page 2 LINE ITEMS table) ---
+        // Per-unit column shows $/user for per-user pricing (modules + per-user
+        // enhancements). Flat-priced lines (CARE, INIT-ONBRD, connectors) get
+        // an em-dash since "per unit" doesn't apply — the Line total IS the price.
         '<div class="tp-summary-row subgroup">Line items</div>' +
         '<table class="tp-line-items">' +
-        '<thead><tr><th>SKU</th><th>Description</th><th>Timing</th></tr></thead>' +
+        '<thead><tr><th>SKU</th><th>Description</th><th class="num">Unit price</th><th class="num">Line total</th><th class="num">Timing</th></tr></thead>' +
         '<tbody>' +
         (calc1.lines || []).map(function (l) {
           var nm = l.name || '';
-          if (nm.length > 65) nm = nm.slice(0, 64) + '…';
+          if (nm.length > 50) nm = nm.slice(0, 49) + '…';
           var timingLabel = l.timing === 'oneTime' ? 'One-time' : 'Annual';
+          var unitCell = (l.msrpPerUser && l.msrpPerUser > 0)
+              ? fmt(Math.round(l.msrpPerUser)) + '/user'
+              : '—';
           return '<tr>' +
               '<td><code>' + esc(l.code) + '</code></td>' +
               '<td>' + esc(nm) + '</td>' +
-              '<td style="text-align:right;color:var(--med-gray);">' + esc(timingLabel) + '</td>' +
+              '<td class="num">' + esc(unitCell) + '</td>' +
+              '<td class="num">' + fmt(l.msrpLine) + '</td>' +
+              '<td class="num" style="color:var(--med-gray);">' + esc(timingLabel) + '</td>' +
               '</tr>';
         }).join('') +
         '</tbody>' +

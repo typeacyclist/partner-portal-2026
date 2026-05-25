@@ -2150,6 +2150,11 @@ p { margin: 0 0 1em; color: var(--dark-gray); }
   border-bottom: 1px solid var(--border-soft);
   text-align: left;
 }
+.tp-line-items th.num,
+.tp-line-items td.num {
+  text-align: right;
+  white-space: nowrap;
+}
 .tp-line-items th {
   font-family: var(--ff-mono), monospace;
   font-size: 10px;
