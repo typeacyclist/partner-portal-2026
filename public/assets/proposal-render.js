@@ -306,11 +306,14 @@
     });
     var namedUserTotal = moduleMsrp + enhMsrp;
     var modulePerUser = licenseCount > 0 ? moduleMsrp / licenseCount : 0;
+    // Per-user values rendered with cent precision (formatPerUser) so the
+    // visual math "$X/user \u00d7 N" reconciles with the displayed line total.
+    var pu = (window.TrendzactMath && window.TrendzactMath.formatPerUser) || function (n) { return fmt(n); };
     var namedUserSubLines = [];
-    namedUserSubLines.push(fmt(Math.round(modulePerUser)) + '/user  \u00d7  ' + licenseCount.toLocaleString('en-US') + ' licenses  (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + ')');
+    namedUserSubLines.push(pu(modulePerUser) + '/user  \u00d7  ' + licenseCount.toLocaleString('en-US') + ' licenses  (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + ')');
     calcLines.forEach(function (l) {
       if (l.discountGroup === 'enhancement') {
-        namedUserSubLines.push('+ ' + l.code + '  ' + fmt(Math.round(l.msrpPerUser)) + '/user  \u00d7  ' + licenseCount.toLocaleString('en-US'));
+        namedUserSubLines.push('+ ' + l.code + '  ' + pu(l.msrpPerUser) + '/user  \u00d7  ' + licenseCount.toLocaleString('en-US'));
       }
     });
     summaryRow('Named User License', namedUserSubLines, fmt(namedUserTotal));
@@ -414,7 +417,7 @@
       if (i % 2 === 1) fillRect(doc, tableLeft, y, tableWidth, lineRowH, [250, 250, 251]);
       var name = l.name || '';
       if (name.length > descCharCap) name = name.slice(0, descCharCap - 1) + '\u2026';
-      var unitCell = (l.msrpPerUser && l.msrpPerUser > 0) ? fmt(Math.round(l.msrpPerUser)) + '/user' : '\u2014';
+      var unitCell = (l.msrpPerUser && l.msrpPerUser > 0) ? pu(l.msrpPerUser) + '/user' : '\u2014';
       text(doc, l.code, MARGIN + 2, y + 5, { size: 8, color: C.darkGray });
       text(doc, name, MARGIN + 28, y + 5, { size: 8, color: C.darkGray });
       text(doc, unitCell, colUnitX, y + 5, { size: 7.5, color: C.darkGray, align: 'right' });

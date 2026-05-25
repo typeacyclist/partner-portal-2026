@@ -40,6 +40,19 @@
     return '$' + rounded.toLocaleString('en-US');
   }
 
+  // Per-unit prices need cent precision so "$X/user × N" visually reconciles
+  // with the line total. Integer values stay clean ($96); any non-integer
+  // gets exactly two decimals ($79.41 / $25.50) so currency looks complete.
+  function formatPerUser(n) {
+    if (n == null || isNaN(n)) return '$0';
+    var num = Number(n);
+    var hasFraction = Math.abs(num - Math.round(num)) > 0.005;
+    return '$' + num.toLocaleString('en-US', {
+      minimumFractionDigits: hasFraction ? 2 : 0,
+      maximumFractionDigits: 2
+    });
+  }
+
   function shortUuid() {
     // Display-only proposal ID — 36^8 ≈ 2.8T possible values, so collisions are
     // unlikely at portal volume but this is NOT cryptographically unique.
@@ -475,6 +488,7 @@
     calculateProposal: calculateProposal,
     calculateAllTiers: calculateAllTiers,
     formatMoney: formatMoney,
+    formatPerUser: formatPerUser,
     shortUuid: shortUuid,
     resolveChannelConfig: resolveChannelConfig,
     _internals: {
