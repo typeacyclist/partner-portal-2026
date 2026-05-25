@@ -632,7 +632,13 @@
 
   function render(input) {
     var built = buildPdf(input);
-    var safeCo = (input.draft.companyName || 'prospect').replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 30);
+    // Decompose unicode then strip diacritical marks so "Société Générale" →
+    // "societe-generale" instead of an empty string after the ASCII filter.
+    var safeCo = String(input.draft.companyName || 'prospect')
+        .normalize('NFD').replace(/[^\x00-\x7f]/g, '')
+        .replace(/[^a-z0-9]+/gi, '-').toLowerCase()
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 30) || 'prospect';
     var filename = 'trendzact-proposal-' + safeCo + '-' + built.proposalId + '.pdf';
     var dataUri = built.doc.output('datauristring');
     var commaIdx = dataUri.indexOf(',');

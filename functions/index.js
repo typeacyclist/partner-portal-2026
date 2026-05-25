@@ -1,6 +1,7 @@
 const { onRequest } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
+const crypto = require('crypto');
 const { Resend } = require('resend');
 
 admin.initializeApp();
@@ -163,7 +164,11 @@ exports.sendContact = onRequest(
 
 function isAuthorized(req) {
   const providedSecret = req.headers['x-portal-secret'];
-  return !!providedSecret && providedSecret === portalSecret.value();
+  if (!providedSecret) return false;
+  const provided = Buffer.from(String(providedSecret));
+  const expected = Buffer.from(portalSecret.value());
+  if (provided.length !== expected.length) return false;
+  return crypto.timingSafeEqual(provided, expected);
 }
 
 function escapeHtml(s) {

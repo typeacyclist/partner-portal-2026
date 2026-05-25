@@ -43,15 +43,19 @@
     'estDecisionDate', 'solutionChallenge'
   ];
 
-  // Derive subdomain from current hostname (e.g. jlead.trendzact-partners-001.web.app → jlead)
-  // If no matching subdomain, returns '' → direct sales channel (no discounts).
+  // Derive subdomain from current hostname (e.g. jlead.trendzact-partners-001.web.app → jlead).
+  // Only returns a value if the candidate is a known key in catalog.subdomains —
+  // so previews like www.* or staging.* fall through to direct sales channel
+  // instead of being looked up (and silently missing) as a partner subdomain.
   function detectSubdomain() {
     try {
       var host = window.location.hostname || '';
       var parts = host.split('.');
-      if (parts.length > 1 && parts[0] !== 'trendzact-partners-001' && parts[0] !== 'localhost') {
-        return parts[0].toLowerCase();
-      }
+      if (parts.length <= 1) return '';
+      var candidate = parts[0].toLowerCase();
+      if (candidate === 'trendzact-partners-001' || candidate === 'localhost') return '';
+      var subdomains = (state.catalog && state.catalog.subdomains) || {};
+      return subdomains[candidate] ? candidate : '';
     } catch (e) { /* ignore */ }
     return '';
   }
@@ -167,7 +171,9 @@
       }
     }
 
-    if (existingDraft && existingDraft.prospectCompany) {
+    // v6 drafts stored the prospect under `companyName`; v7 uses `prospectCompany`.
+    // Treat either as evidence of a resumable draft.
+    if (existingDraft && (existingDraft.prospectCompany || existingDraft.companyName)) {
       showResumeModal(existingDraft);
     } else {
       startFresh();
@@ -180,10 +186,11 @@
   function showResumeModal(existing) {
     var modal = document.createElement('div');
     modal.className = 'tp-modal-backdrop';
+    var existingCompany = existing.prospectCompany || existing.companyName || '';
     modal.innerHTML =
         '<div class="tp-modal">' +
         '<h3>Continue where you left off?</h3>' +
-        '<p>You have an in-progress proposal for <strong>' + esc(existing.prospectCompany) + '</strong>' +
+        '<p>You have an in-progress proposal for <strong>' + esc(existingCompany) + '</strong>' +
         (existing.updatedAt ? ' (last saved ' + timeAgo(existing.updatedAt) + ')' : '') + '.</p>' +
         '<div class="tp-modal-actions">' +
         '<button type="button" data-act="fresh">Start fresh</button>' +
@@ -208,6 +215,10 @@
             }
           }
         });
+        // Migrate v6 → v7: company-name field rename
+        if (!merged.prospectCompany && existing.companyName) {
+          merged.prospectCompany = existing.companyName;
+        }
         // Migrate v6 → v7: if platform keys exist but enhancements don't, copy the state
         if (merged.sectionNone.platform !== undefined && merged.sectionNone.enhancements === undefined) {
           merged.sectionNone.enhancements = merged.sectionNone.platform;
@@ -1127,7 +1138,7 @@
         '</div>' +
         '<ul class="tp-review-items">' +
         '<li><code>INIT-ONBRD</code> — Initialization and Client Champions Onboarding</li>' +
-        itemList(oneOptional, '').replace(/<li style="[^"]+">.*?<\/li>/, '') +
+        (oneOptional.length ? itemList(oneOptional, '') : '') +
         '</ul>' +
         '</div>' +
 

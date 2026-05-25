@@ -11,7 +11,8 @@
 // v7 Pricing Model:
 //   1. Module-count pricing: uniform per-user MSRP base × moduleMultiplier[count] × commitFactor
 //   2. Volume brackets: 6 tiers with MSRP bases (not multipliers off a single base)
-//   3. Commitment tiers: 1yr=100%, 2yr=92.5%, 3yr=85% (flat annual, same price every year)
+//   3. Commitment tiers: flat annual, same price every year of term — factors
+//      come from catalog.commitmentTiers (currently 1yr=100%, 2yr=90%, 3yr=80%).
 //   4. CARE: direct MSRP lookup by segment (msrpBySegment), not multiplier-based
 //   5. INIT-ONBRD: $10K base × presaleMultiplier (MSRP)
 //   6. Per-user enhancements (UVA-WEBCAM, PRIVSCR): own MSRP bases with same volume ratios + commit tiers
@@ -40,11 +41,19 @@
   }
 
   function shortUuid() {
+    // Display-only proposal ID — 36^8 ≈ 2.8T possible values, so collisions are
+    // unlikely at portal volume but this is NOT cryptographically unique.
+    // Don't use the ID as an authorization token.
+    var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     var s = '';
-    for (var i = 0; i < 8; i++) {
-      s += Math.floor(Math.random() * 36).toString(36);
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+      var bytes = new Uint8Array(8);
+      window.crypto.getRandomValues(bytes);
+      for (var i = 0; i < 8; i++) s += alphabet[bytes[i] % alphabet.length];
+    } else {
+      for (var j = 0; j < 8; j++) s += alphabet[Math.floor(Math.random() * alphabet.length)];
     }
-    return 'TZ-' + s.toUpperCase();
+    return 'TZ-' + s;
   }
 
   function findSku(catalog, code) {
@@ -87,33 +96,6 @@
       }
     }
     return brackets.length > 0 ? brackets[brackets.length - 1] : { msrpBase: 0, label: 'unknown' };
-  }
-
-  // ----------------------------------------------------------
-  // Resolve volume ratio for per-user enhancements
-  // The enhancement uses its own msrpBase at the 501-2500 reference bracket.
-  // We scale it by the same ratio as module brackets.
-  // ----------------------------------------------------------
-  function resolveEnhancementMsrp(catalog, bracket, enhMsrpBase, enhRefBracketMsrp) {
-    // enhMsrpBase is the MSRP at the reference bracket (e.g. $67 for WEBCAM at 501-2.5K)
-    // We need to scale proportionally to the actual bracket
-    // Ratio = bracket.msrpBase / refBracket.msrpBase (from module brackets)
-    // Enhancement MSRP = enhMsrpBase × ratio
-    if (!enhRefBracketMsrp || !bracket.msrpBase) return enhMsrpBase;
-
-    // Find the reference bracket MSRP from the module volume brackets
-    var refBracket = null;
-    var brackets = catalog.volumeBrackets || [];
-    for (var i = 0; i < brackets.length; i++) {
-      if (brackets[i].msrpBase === enhRefBracketMsrp) {
-        refBracket = brackets[i];
-        break;
-      }
-    }
-    if (!refBracket) return enhMsrpBase;
-
-    var ratio = bracket.msrpBase / refBracket.msrpBase;
-    return enhMsrpBase * ratio;
   }
 
   // ----------------------------------------------------------
@@ -207,12 +189,21 @@
       }
 
       case 'perUserVolume': {
-        // Per-user enhancement: own MSRP base at reference bracket, scaled by volume ratio × commitFactor
-        // Catalog fields: msrpBaseAtRef (MSRP at the 501-2.5K reference bracket)
-        // Reference bracket is 501-2500 with msrpBase=81
+        // Per-user enhancement: own MSRP base at a reference bracket, scaled by
+        // (current bracket msrpBase / reference bracket msrpBase) × commitFactor.
+        // The reference bracket label lives on the SKU at pricing._refBracket
+        // (e.g. "501-2,500 users"); we look up that bracket's msrpBase here.
+        // If anything is missing or the bracket can't be matched, fall through
+        // to the unscaled msrpBaseAtRef so a missing field doesn't zero the line.
         var enhMsrpAtRef = p.msrpBaseAtRef || p.msrpBase || 0;
-        var refBracketMsrpBase = 81; // 501-2,500 bracket msrpBase (the reference tier)
-        var volRatio = bracket.msrpBase / refBracketMsrpBase;
+        var refBracket = null;
+        if (p._refBracket) {
+          var allBrackets = catalog.volumeBrackets || [];
+          for (var bi = 0; bi < allBrackets.length; bi++) {
+            if (allBrackets[bi].label === p._refBracket) { refBracket = allBrackets[bi]; break; }
+          }
+        }
+        var volRatio = (refBracket && refBracket.msrpBase) ? (bracket.msrpBase / refBracket.msrpBase) : 1;
         var enhMsrpScaled = enhMsrpAtRef * volRatio;
         var enhPerUser = enhMsrpScaled * commitFactor;
         return {
@@ -493,7 +484,6 @@
       resolveCommitFactor: resolveCommitFactor,
       resolveChannelConfig: resolveChannelConfig,
       computeChannelPrices: computeChannelPrices,
-      resolveEnhancementMsrp: resolveEnhancementMsrp,
       priceLine: priceLine
     }
   };
