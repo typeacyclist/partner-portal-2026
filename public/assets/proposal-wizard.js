@@ -1284,12 +1284,26 @@
     html += '<span class="tp-channel-label">' + esc(channelLabel) + '</span>';
     html += '</div>';
 
+    // Display derived margin percentages instead of raw catalog discounts.
+    //   trendzactNet% = 1 - distDiscount      (what Trendzact retains)
+    //   distMargin%   = distDiscount - resellerDiscount   (what distributor retains)
+    //   resellerMargin% = resellerDiscount    (what reseller retains)
+    // These three sum to 100% and match the per-line math in computeChannelPrices.
+    var regTzPct = Math.round((1 - channelConfig.regularDistDiscount) * 100);
+    var regDistPct = Math.round((channelConfig.regularDistDiscount - channelConfig.regularResellerDiscount) * 100);
+    var regResellerPct = Math.round(channelConfig.regularResellerDiscount * 100);
+    var enhTzPct = Math.round((1 - channelConfig.enhDistDiscount) * 100);
+    var enhDistPct = Math.round((channelConfig.enhDistDiscount - channelConfig.enhResellerDiscount) * 100);
+    var enhResellerPct = Math.round(channelConfig.enhResellerDiscount * 100);
+
     html += '<div class="tp-channel-discounts">';
-      html += '<span>Distributor discount (regular): <strong>' + Math.round(channelConfig.regularDistDiscount * 100) + '%</strong></span>';
-      html += '<span>Reseller discount (regular): <strong>' + Math.round(channelConfig.regularResellerDiscount * 100) + '%</strong></span>';
-      html += '<span>Distributor discount (enhancement): <strong>' + Math.round(channelConfig.enhDistDiscount * 100) + '%</strong></span>';
-      html += '<span>Reseller discount (enhancement): <strong>' + Math.round(channelConfig.enhResellerDiscount * 100) + '%</strong></span>';
-      html += '</div>';
+    html += '<span>Trendzact wholesale (regular): <strong>' + regTzPct + '%</strong></span>';
+    html += '<span>Distributor margin (regular): <strong>' + regDistPct + '%</strong></span>';
+    html += '<span>Reseller margin (regular): <strong>' + regResellerPct + '%</strong></span>';
+    html += '<span>Trendzact wholesale (enhancement): <strong>' + enhTzPct + '%</strong></span>';
+    html += '<span>Distributor margin (enhancement): <strong>' + enhDistPct + '%</strong></span>';
+    html += '<span>Reseller margin (enhancement): <strong>' + enhResellerPct + '%</strong></span>';
+    html += '</div>';
 
       // Margin summary table — all 3 tiers
       html += '<div class="tp-channel-margin-title">MARGIN SUMMARY WITH ANNUAL COMMITMENT OPTIONS</div>';

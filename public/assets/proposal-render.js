@@ -497,9 +497,20 @@
     text(doc, 'CHANNEL: ' + channelLabel, MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
     y += 6;
 
-    text(doc, 'Distributor discount (regular): ' + pct(channelConfig.regularDistDiscount) + '    Reseller discount (regular): ' + pct(channelConfig.regularResellerDiscount), MARGIN, y, { size: 8, color: C.medGray });
+    // Derived margin percentages (sum to 100% per row).
+    //   Trendzact wholesale = 1 - distDiscount
+    //   Distributor margin  = distDiscount - resellerDiscount
+    //   Reseller margin     = resellerDiscount
+    var regTzWholesale = 1 - channelConfig.regularDistDiscount;
+    var regDistMargin = channelConfig.regularDistDiscount - channelConfig.regularResellerDiscount;
+    var regResellerMargin = channelConfig.regularResellerDiscount;
+    var enhTzWholesale = 1 - channelConfig.enhDistDiscount;
+    var enhDistMargin = channelConfig.enhDistDiscount - channelConfig.enhResellerDiscount;
+    var enhResellerMargin = channelConfig.enhResellerDiscount;
+
+    text(doc, 'Regular: Trendzact wholesale ' + pct(regTzWholesale) + '    Distributor margin ' + pct(regDistMargin) + '    Reseller margin ' + pct(regResellerMargin), MARGIN, y, { size: 8, color: C.medGray });
     y += 5;
-    text(doc, 'Distributor discount (enhancement): ' + pct(channelConfig.enhDistDiscount) + '    Reseller discount (enhancement): ' + pct(channelConfig.enhResellerDiscount), MARGIN, y, { size: 8, color: C.medGray });
+    text(doc, 'Enhancement: Trendzact wholesale ' + pct(enhTzWholesale) + '    Distributor margin ' + pct(enhDistMargin) + '    Reseller margin ' + pct(enhResellerMargin), MARGIN, y, { size: 8, color: C.medGray });
     y += 8;
 
     hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
