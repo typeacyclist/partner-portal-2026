@@ -1182,14 +1182,16 @@
 
         // Named User License — one sub-line for the modules block, then one
         // per per-user enhancement so the prospect can see exactly what each
-        // $/user component contributes to the row total.
+        // $/user component contributes to the row total. Per-user values use
+        // cent precision so "$X/user × N" reconciles with the line total.
         (function () {
+          var pu = TrendzactMath.formatPerUser;
           var modulePerUser = licenseCount > 0 ? moduleTotalAnnual / licenseCount : 0;
           var subLines = [];
-          subLines.push(fmt(Math.round(modulePerUser)) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + ')');
+          subLines.push(pu(modulePerUser) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + ')');
           (calc1.lines || []).forEach(function (l) {
             if (l.discountGroup === 'enhancement') {
-              subLines.push('+ ' + esc(l.code) + ' ' + fmt(Math.round(l.msrpPerUser)) + '/user × ' + licenseCount.toLocaleString('en-US'));
+              subLines.push('+ ' + esc(l.code) + ' ' + pu(l.msrpPerUser) + '/user × ' + licenseCount.toLocaleString('en-US'));
             }
           });
           return '<div class="tp-summary-row">' +
@@ -1238,7 +1240,7 @@
           if (nm.length > 50) nm = nm.slice(0, 49) + '…';
           var timingLabel = l.timing === 'oneTime' ? 'One-time' : 'Annual';
           var unitCell = (l.msrpPerUser && l.msrpPerUser > 0)
-              ? fmt(Math.round(l.msrpPerUser)) + '/user'
+              ? TrendzactMath.formatPerUser(l.msrpPerUser) + '/user'
               : '—';
           return '<tr>' +
               '<td><code>' + esc(l.code) + '</code></td>' +
