@@ -55,7 +55,7 @@ function Invoke-Checked {
 
   Invoke-Expression $CommandText
   if ($LASTEXITCODE -ne 0) {
-    throw "Command failed with exit code $LASTEXITCODE: $CommandText"
+    throw "Command failed with exit code ${LASTEXITCODE}: $CommandText"
   }
 }
 
