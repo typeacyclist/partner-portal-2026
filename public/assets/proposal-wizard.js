@@ -1052,19 +1052,23 @@
     var careLine = findLine('CARE');
     var carePrice = careLine ? careLine.msrpLine : 0;
 
-    // Module total — sum all module lines from the calc (already correctly split per-line)
+    // Categorize priced lines using the same predicates as the PDF renderer
+    // so the two surfaces never disagree about which row money lands in.
+    // - Modules → Named User License (per-user)
+    // - Per-user enhancements (discountGroup='enhancement') → Named User License
+    // - Flat connectors (recurring, regular discount group, not CARE) → separate Connectors row
     var moduleTotalAnnual = 0;
+    var perUserEnhTotal = 0;
+    var connectorTotal = 0;
+    var moduleNames = [];
+    var perUserEnhNames = [];
+    var connectorNames = [];
     (calc1.lines || []).forEach(function (l) {
-      if (l.isModule) moduleTotalAnnual += l.msrpLine;
+      if (l.isModule) { moduleTotalAnnual += l.msrpLine; moduleNames.push(l.code); }
+      else if (l.discountGroup === 'enhancement') { perUserEnhTotal += l.msrpLine; perUserEnhNames.push(l.code); }
+      else if (l.timing === 'recurring' && l.code !== 'CARE') { connectorTotal += l.msrpLine; connectorNames.push(l.code); }
     });
-
-    // Enhancement lines
-    var enhTotal = 0;
-    modOpts.forEach(function (code) {
-      var line = findLine(code);
-      if (line) enhTotal += line.msrpLine;
-    });
-    var namedUserTotal = moduleTotalAnnual + enhTotal;
+    var namedUserTotal = moduleTotalAnnual + perUserEnhTotal;
     var namedUserPerUser = licenseCount > 0 ? namedUserTotal / licenseCount : 0;
 
     // INIT-ONBRD line
@@ -1082,11 +1086,34 @@
     // Commitment factor only applies to per-user items
     // We use the allTiers calc which already has the commitment baked in
 
+    // --- Prospect Summary (mirrors PDF page 1's PREPARED FOR / PROPOSAL DETAILS) ---
+    var inp = calc1.input || {};
+    var prospectRows = [
+      ['Company', d.prospectCompany || '—'],
+      ['Contact', d.primaryContactName || '—'],
+      ['Email', d.contactEmail || '—'],
+      ['Use Case', d.solutionChallenge ? (d.solutionChallenge.length > 80 ? d.solutionChallenge.slice(0, 79) + '…' : d.solutionChallenge) : '—'],
+      ['Est. Decision', d.estDecisionDate || '—'],
+      ['Proposal Title', d.proposalTitle || '— (set in Step 4)']
+    ];
+    var prospectHtml = prospectRows.map(function (r) {
+      return '<div class="tp-summary-row"><span class="tp-pricing-label">' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>';
+    }).join('');
+
     return (
         '<h3>Step 3 — Review &amp; Calculate</h3>' +
         '<p class="tp-lede">MSRP pricing summary for prospect review. Click "Edit →" to adjust selections.</p>' +
 
         errorsHtml +
+
+        // --- Prospect Summary ---
+        '<div class="tp-review-section">' +
+        '<div class="tp-review-head">' +
+        '<span class="tp-review-title">Prospect</span>' +
+        '<button class="tp-review-edit" data-goto="0">Edit →</button>' +
+        '</div>' +
+        '<div style="margin-top:8px; font-size:13px;">' + prospectHtml + '</div>' +
+        '</div>' +
 
         // --- Pricing Inputs ---
         '<div class="tp-review-section">' +
@@ -1096,7 +1123,9 @@
         '</div>' +
         '<div style="margin-top:8px; font-size:13px;">' +
         '<div class="tp-summary-row"><span class="tp-pricing-label">Company size</span><span>' + esc(segLabel) + '</span></div>' +
+        '<div class="tp-summary-row"><span class="tp-pricing-label">Volume bracket</span><span>' + esc(inp.bracket || '—') + '</span></div>' +
         '<div class="tp-summary-row"><span class="tp-pricing-label">Licenses</span><span>' + licenseCount.toLocaleString('en-US') + '</span></div>' +
+        '<div class="tp-summary-row"><span class="tp-pricing-label">Module count</span><span>' + (inp.moduleCount || 0) + ' modules × ' + (inp.moduleMultiplier || 0).toFixed(2) + ' multiplier</span></div>' +
         '</div>' +
         '</div>' +
 
@@ -1151,13 +1180,33 @@
         '<span>' + fmt(carePrice) + '</span>' +
         '</div>' +
 
-        '<div class="tp-summary-row">' +
-        '<span class="tp-pricing-label">Named User License' + (modOpts.length > 0 ? ' (includes Enhancements)' : '') + '<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + fmt(Math.round(namedUserPerUser)) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + mods.length + ' module' + (mods.length !== 1 ? 's' : '') + ')</span></span>' +
-        '<span>' + fmt(namedUserTotal) + '</span>' +
-        '</div>' +
+        // Named User License — one sub-line for the modules block, then one
+        // per per-user enhancement so the prospect can see exactly what each
+        // $/user component contributes to the row total.
+        (function () {
+          var modulePerUser = licenseCount > 0 ? moduleTotalAnnual / licenseCount : 0;
+          var subLines = [];
+          subLines.push(fmt(Math.round(modulePerUser)) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + ')');
+          (calc1.lines || []).forEach(function (l) {
+            if (l.discountGroup === 'enhancement') {
+              subLines.push('+ ' + esc(l.code) + ' ' + fmt(Math.round(l.msrpPerUser)) + '/user × ' + licenseCount.toLocaleString('en-US'));
+            }
+          });
+          return '<div class="tp-summary-row">' +
+              '<span class="tp-pricing-label">Named User License<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;line-height:1.6;">' + subLines.join('<br/>') + '</span></span>' +
+              '<span>' + fmt(namedUserTotal) + '</span>' +
+              '</div>';
+        })() +
+
+        (connectorTotal > 0
+            ? '<div class="tp-summary-row">' +
+              '<span class="tp-pricing-label">Connectors<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + esc(connectorNames.join(', ')) + ' (flat annual)</span></span>' +
+              '<span>' + fmt(connectorTotal) + '</span>' +
+              '</div>'
+            : '') +
 
         '<div class="tp-summary-row">' +
-        '<span class="tp-pricing-label">One-Time<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + esc(segLabel) + ' Onboarding' + (otherOneTimeTotal > 0 ? ' + integrations' : '') + '</span></span>' +
+        '<span class="tp-pricing-label">One-Time Setup<br/><span style="font-size:11px;color:var(--med-gray);font-weight:400;">' + esc(segLabel) + ' Onboarding' + (otherOneTimeTotal > 0 ? ' + integrations' : '') + '</span></span>' +
         '<span>' + fmt(onbrdPrice + otherOneTimeTotal) + '</span>' +
         '</div>' +
 
@@ -1166,16 +1215,41 @@
         '<div class="tp-tier-grid">' +
         allTiers.map(function (t) {
           var yrs = t.totals.contractYears;
-          var pctLabel = Math.round((1 - t.commitment.factor) * 100);
-          var tierLabel = yrs + '-year' + (pctLabel > 0 ? ' (' + pctLabel + '% off)' : '');
+          var tierLabel = (t.commitment && t.commitment.label) || (yrs + '-year');
           return '<div class="tp-tier-card' + (yrs > 1 ? ' tp-tier-discount' : '') + '">' +
               '<div class="tp-tier-label">' + esc(tierLabel) + '</div>' +
               '<div class="tp-tier-row"><span>Annual recurring</span><span>' + fmt(t.totals.annualRecurringMsrp) + '</span></div>' +
-              '<div class="tp-tier-row"><span>One-time</span><span>' + fmt(t.totals.oneTimeMsrp) + '</span></div>' +
+              '<div class="tp-tier-row"><span>One-time setup</span><span>' + fmt(t.totals.oneTimeMsrp) + '</span></div>' +
               '<div class="tp-tier-row tp-tier-total"><span>TCV</span><span>' + fmt(t.totals.tcvMsrp) + '</span></div>' +
               '</div>';
         }).join('') +
         '</div>' +
+
+        // --- Line Items (mirrors PDF page 2 LINE ITEMS table) ---
+        // Per-unit column shows $/user for per-user pricing (modules + per-user
+        // enhancements). Flat-priced lines (CARE, INIT-ONBRD, connectors) get
+        // an em-dash since "per unit" doesn't apply — the Line total IS the price.
+        '<div class="tp-summary-row subgroup">Line items</div>' +
+        '<table class="tp-line-items">' +
+        '<thead><tr><th>SKU</th><th>Description</th><th class="num">Unit price</th><th class="num">Line total</th><th class="num">Timing</th></tr></thead>' +
+        '<tbody>' +
+        (calc1.lines || []).map(function (l) {
+          var nm = l.name || '';
+          if (nm.length > 50) nm = nm.slice(0, 49) + '…';
+          var timingLabel = l.timing === 'oneTime' ? 'One-time' : 'Annual';
+          var unitCell = (l.msrpPerUser && l.msrpPerUser > 0)
+              ? fmt(Math.round(l.msrpPerUser)) + '/user'
+              : '—';
+          return '<tr>' +
+              '<td><code>' + esc(l.code) + '</code></td>' +
+              '<td>' + esc(nm) + '</td>' +
+              '<td class="num">' + esc(unitCell) + '</td>' +
+              '<td class="num">' + fmt(l.msrpLine) + '</td>' +
+              '<td class="num" style="color:var(--med-gray);">' + esc(timingLabel) + '</td>' +
+              '</tr>';
+        }).join('') +
+        '</tbody>' +
+        '</table>' +
 
         '</div>'
     );
@@ -1431,6 +1505,14 @@
   async function onSubmit() {
     if (!state.draft.proposalTitle || !state.draft.proposalTitle.trim()) {
       alert('Please enter a proposal title.');
+      return;
+    }
+    // Re-verify the math engine has no blocking errors. The Step 3 review
+    // already surfaces these inline, but the user can still navigate to
+    // Step 4 via the chip — refuse to render a PDF that wouldn't reconcile.
+    var preflight = TrendzactMath.calculateAllTiers(buildDraftForMathEngine(1), state.catalog);
+    if (preflight[0] && preflight[0].hasErrors) {
+      alert('Cannot submit — pricing has errors:\n  · ' + (preflight[0].errors || []).join('\n  · ') + '\n\nReturn to Review (Step 3) to fix.');
       return;
     }
     var ccDescription = state.draft.ccTo && state.draft.ccTo.trim()

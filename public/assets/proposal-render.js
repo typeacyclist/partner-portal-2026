@@ -198,7 +198,7 @@
         doc.line(cx, tierTopY, cx, boxY + boxH - 4);
       }
 
-      // Tier label
+      // Tier label — single source of truth: catalog commitmentTiers[].label
       text(doc, (t.commitment && t.commitment.label) || (tt.contractYears + '-year'), midX, tierTopY + 4, { size: 10, style: 'bold', color: isLast ? highlightCol : valueColor, align: 'center' });
 
       // Annual recurring
@@ -209,8 +209,8 @@
       text(doc, 'One-time setup', midX, tierTopY + 30, { size: 7, color: labelColor, align: 'center' });
       text(doc, fmt(tt.oneTimeMsrp), midX, tierTopY + 36, { size: 9, style: 'bold', color: valueColor, align: 'center' });
 
-      // TCV
-      text(doc, 'TCV (' + tt.contractYears + 'yr)', midX, tierTopY + 46, { size: 7, color: isLast ? highlightCol : labelColor, align: 'center' });
+      // TCV — column header already gives the tier
+      text(doc, 'TCV', midX, tierTopY + 46, { size: 7, color: isLast ? highlightCol : labelColor, align: 'center' });
       text(doc, fmt(tt.tcvMsrp), midX, tierTopY + 53, { size: 14, style: 'bold', color: isLast ? highlightCol : C.tintDark, align: 'center' });
     });
 
@@ -256,13 +256,19 @@
     text(doc, 'MSRP BASE PRICING (1-YEAR)', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
     y += 8;
 
-    // Summary row helper
+    // Summary row helper. `sublabel` may be a string OR an array of strings
+    // (multi-line, e.g. one per per-user enhancement). Row height grows to
+    // fit; the value cell stays right-aligned to the label row.
     function summaryRow(label, sublabel, value, opts) {
       opts = opts || {};
-      var rowH = sublabel ? 12 : 8;
+      var subLines = sublabel == null ? [] : (Array.isArray(sublabel) ? sublabel : [sublabel]);
+      var subLineH = 4;
+      var rowH = subLines.length ? (8 + subLines.length * subLineH) : 8;
       if (opts.bg) fillRect(doc, tableLeft, y - 1, tableWidth, rowH, opts.bg);
       text(doc, label, MARGIN + 2, y + 3.5, { size: opts.labelSize || 9, style: opts.labelStyle || 'normal', color: opts.labelColor || C.darkGray });
-      if (sublabel) text(doc, sublabel, MARGIN + 2, y + 8.5, { size: 7.5, color: C.medGray });
+      subLines.forEach(function (line, i) {
+        text(doc, line, MARGIN + 2, y + 8.5 + i * subLineH, { size: 7.5, color: C.medGray });
+      });
       text(doc, value, PAGE_W - MARGIN - 3, y + 3.5, { size: opts.valueSize || 9, style: 'bold', color: opts.valueColor || C.darkGray, align: 'right' });
       hRule(doc, tableLeft, tableRight, y + rowH, C.border);
       y += rowH + 1;
@@ -282,22 +288,37 @@
     var carePrice = careLine ? careLine.msrpLine : 0;
     summaryRow('Core Services', 'SLA for ' + segLabel, fmt(carePrice));
 
-    // Named User License (modules + enhancements)
+    // Named User License (modules + per-user enhancements) + separate Connectors row
+    // - Per-user enhancements (UVA-WEBCAM, PRIVSCR) carry discountGroup='enhancement'
+    //   and scale with user count \u2192 fold into Named User License.
+    // - Flat connectors (CONN-TEAMS, CONN-PURVIEW) are recurring annual but not
+    //   per-user, so they get their own subtotal row when present.
     var moduleMsrp = 0;
     var enhMsrp = 0;
+    var connectorMsrp = 0;
     var moduleNames = [];
     var enhNames = [];
-    // Per-user enhancements (UVA-WEBCAM, PRIVSCR) carry discountGroup='enhancement'.
-    // Flat connectors share the same category but aren't per-user, so they stay
-    // out of the Named User License subtotal.
+    var connectorNames = [];
     calcLines.forEach(function (l) {
       if (l.isModule) { moduleMsrp += l.msrpLine; moduleNames.push(l.code); }
       else if (l.discountGroup === 'enhancement') { enhMsrp += l.msrpLine; enhNames.push(l.code); }
+      else if (l.timing === 'recurring' && l.code !== 'CARE') { connectorMsrp += l.msrpLine; connectorNames.push(l.code); }
     });
     var namedUserTotal = moduleMsrp + enhMsrp;
-    var namedUserPerUser = licenseCount > 0 ? namedUserTotal / licenseCount : 0;
-    var namedUserSub = fmt(Math.round(namedUserPerUser)) + '/user  \u00d7  ' + licenseCount.toLocaleString('en-US') + ' licenses  (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + (enhNames.length > 0 ? ' + ' + enhNames.length + ' enh.' : '') + ')';
-    summaryRow('Named User License', namedUserSub, fmt(namedUserTotal));
+    var modulePerUser = licenseCount > 0 ? moduleMsrp / licenseCount : 0;
+    var namedUserSubLines = [];
+    namedUserSubLines.push(fmt(Math.round(modulePerUser)) + '/user  \u00d7  ' + licenseCount.toLocaleString('en-US') + ' licenses  (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + ')');
+    calcLines.forEach(function (l) {
+      if (l.discountGroup === 'enhancement') {
+        namedUserSubLines.push('+ ' + l.code + '  ' + fmt(Math.round(l.msrpPerUser)) + '/user  \u00d7  ' + licenseCount.toLocaleString('en-US'));
+      }
+    });
+    summaryRow('Named User License', namedUserSubLines, fmt(namedUserTotal));
+
+    // Connectors (flat annual) \u2014 only render when present
+    if (connectorMsrp > 0) {
+      summaryRow('Connectors', connectorNames.join(', ') + ' (flat annual)', fmt(connectorMsrp));
+    }
 
     // One-time
     var onbrdLine = findLine('INIT-ONBRD');
@@ -316,23 +337,23 @@
     text(doc, 'MSRP WITH ANNUAL COMMITMENT OPTIONS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
     y += 7;
 
-    // Header row
+    // Header row — use the commitment label from catalog so a single source of
+    // truth drives the column header on both page 1 and page 2.
     var tierColW = (CONTENT_W - 44) / colCount;
     fillRect(doc, tableLeft, y - 2, tableWidth, 9, C.tintLight);
     allTiers.forEach(function (t, idx) {
       var colCenter = MARGIN + 44 + idx * tierColW + tierColW / 2;
-      var pctOff = Math.round((1 - t.commitment.factor) * 100);
-      var hdr = t.totals.contractYears + '-year' + (pctOff > 0 ? ' (' + pctOff + '% off)' : '');
+      var hdr = (t.commitment && t.commitment.label) || (t.totals.contractYears + '-year');
       text(doc, hdr, colCenter, y + 3.5, { size: 8, style: 'bold', color: C.darkGray, align: 'center' });
     });
     hRule(doc, tableLeft, tableRight, y + 7, C.border);
     y += 9;
 
-    // Data rows
+    // Data rows — "TCV" is the agreed shorthand; column header already gives the tier.
     var commitRows = [
       { label: 'Annual recurring', key: 'annualRecurringMsrp' },
       { label: 'One-time setup', key: 'oneTimeMsrp' },
-      { label: 'Total Contract Value', key: 'tcvMsrp', bold: true }
+      { label: 'TCV', key: 'tcvMsrp', bold: true }
     ];
     commitRows.forEach(function (row) {
       var isBold = row.bold;
@@ -353,45 +374,63 @@
     text(doc, 'LINE ITEMS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
     y += 7;
 
+    // Column positions (mm). SKU left, Description, then 3 right-aligned
+    // numeric columns ending at the page margin. Numbers right-anchored to:
+    //   timing  = PAGE_W - MARGIN - 3
+    //   lineTot = timing - 24
+    //   unit    = lineTot - 26
+    var colTimingX = PAGE_W - MARGIN - 3;
+    var colLineTotX = colTimingX - 24;
+    var colUnitX = colLineTotX - 26;
+    var descMaxX = colUnitX - 4; // leave 4mm before unit col
+
+    function renderLineItemsHeader() {
+      fillRect(doc, tableLeft, y, tableWidth, lineHeaderH, C.tintLight);
+      text(doc, 'SKU', MARGIN + 2, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
+      text(doc, 'Description', MARGIN + 28, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
+      text(doc, 'Unit price', colUnitX, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
+      text(doc, 'Line total', colLineTotX, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
+      text(doc, 'Timing', colTimingX, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
+      hRule(doc, tableLeft, tableRight, y + lineHeaderH, C.border);
+      y += lineHeaderH;
+    }
+
     var lineHeaderH = 8;
-    fillRect(doc, tableLeft, y, tableWidth, lineHeaderH, C.tintLight);
-    text(doc, 'SKU', MARGIN + 2, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
-    text(doc, 'Description', MARGIN + 28, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
-    text(doc, 'Timing', PAGE_W - MARGIN - 3, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
-    hRule(doc, tableLeft, tableRight, y + lineHeaderH, C.border);
-    y += lineHeaderH;
+    renderLineItemsHeader();
 
     var lineRowH = 7;
     var pageBreakAt = PAGE_H - 30;
+    // Truncate description so it doesn't run into the numeric columns.
+    // ~52 chars fits within the new narrower description column at 8pt.
+    var descCharCap = 52;
     calcLines.forEach(function (l, i) {
       if (y > pageBreakAt) {
         pageFooter(doc, proposalId, portalDomain);
         doc.addPage();
         pageHeader(doc, 'Scope & MSRP Pricing (continued)', proposalId);
         y = 24;
-        fillRect(doc, tableLeft, y, tableWidth, lineHeaderH, C.tintLight);
-        text(doc, 'SKU', MARGIN + 2, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
-        text(doc, 'Description', MARGIN + 28, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray });
-        text(doc, 'Timing', PAGE_W - MARGIN - 3, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
-        hRule(doc, tableLeft, tableRight, y + lineHeaderH, C.border);
-        y += lineHeaderH;
+        renderLineItemsHeader();
       }
       if (i % 2 === 1) fillRect(doc, tableLeft, y, tableWidth, lineRowH, [250, 250, 251]);
-      var name = l.name;
-      if (name.length > 65) name = name.slice(0, 64) + '\u2026';
+      var name = l.name || '';
+      if (name.length > descCharCap) name = name.slice(0, descCharCap - 1) + '\u2026';
+      var unitCell = (l.msrpPerUser && l.msrpPerUser > 0) ? fmt(Math.round(l.msrpPerUser)) + '/user' : '\u2014';
       text(doc, l.code, MARGIN + 2, y + 5, { size: 8, color: C.darkGray });
       text(doc, name, MARGIN + 28, y + 5, { size: 8, color: C.darkGray });
-      text(doc, l.timing === 'oneTime' ? 'One-time' : 'Annual', PAGE_W - MARGIN - 3, y + 5, { size: 7.5, color: C.medGray, align: 'right' });
+      text(doc, unitCell, colUnitX, y + 5, { size: 7.5, color: C.darkGray, align: 'right' });
+      text(doc, fmt(l.msrpLine), colLineTotX, y + 5, { size: 8, color: C.darkGray, align: 'right' });
+      text(doc, l.timing === 'oneTime' ? 'One-time' : 'Annual', colTimingX, y + 5, { size: 7.5, color: C.medGray, align: 'right' });
       hRule(doc, tableLeft, tableRight, y + lineRowH, C.border);
       y += lineRowH;
     });
 
-    // Validity
+    // Validity \u2014 match page 1's long date format ("Generated May 25, 2026")
     y += 4;
     var issuedAt = new Date();
     var expiresAt = new Date(issuedAt.getTime());
     expiresAt.setUTCDate(expiresAt.getUTCDate() + 90);
-    text(doc, 'MSRP pricing valid for 90 days. Issued ' + issuedAt.toISOString().slice(0, 10) + '  \u00b7  Expires ' + expiresAt.toISOString().slice(0, 10) + '.', MARGIN, y + 3, { size: 7.5, style: 'italic', color: C.medGray });
+    var dateFmt = { year: 'numeric', month: 'long', day: 'numeric' };
+    text(doc, 'MSRP pricing valid for 90 days. Issued ' + issuedAt.toLocaleDateString('en-US', dateFmt) + '  \u00b7  Expires ' + expiresAt.toLocaleDateString('en-US', dateFmt) + '.', MARGIN, y + 3, { size: 7.5, style: 'italic', color: C.medGray });
 
     pageFooter(doc, proposalId, portalDomain);
 
@@ -477,12 +516,11 @@
       var marginLabelW = 56;
       var marginTierColW = (CONTENT_W - marginLabelW) / colCount;
 
-      // Header row
+      // Header row — use catalog commitment label
       fillRect(doc, tableLeft, y - 2, tableWidth, 9, C.tintLight);
       allTiers.forEach(function (t, idx) {
         var colCenter = MARGIN + marginLabelW + idx * marginTierColW + marginTierColW / 2;
-        var pctOff = Math.round((1 - t.commitment.factor) * 100);
-        var hdr = t.totals.contractYears + '-year' + (pctOff > 0 ? ' (' + pctOff + '% off)' : '');
+        var hdr = (t.commitment && t.commitment.label) || (t.totals.contractYears + '-year');
         text(doc, hdr, colCenter, y + 3.5, { size: 8, style: 'bold', color: C.darkGray, align: 'center' });
       });
       hRule(doc, tableLeft, tableRight, y + 7, C.border);

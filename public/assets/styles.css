@@ -2136,3 +2136,40 @@ p { margin: 0 0 1em; color: var(--dark-gray); }
   .tp-channel-discounts { flex-direction: column; gap: 2px; }
 }
 
+/* -------------------- Step 3 line items (mirrors PDF page 2) -------------------- */
+.tp-line-items {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px;
+}
+.tp-line-items th,
+.tp-line-items td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border-soft);
+  text-align: left;
+}
+.tp-line-items th.num,
+.tp-line-items td.num {
+  text-align: right;
+  white-space: nowrap;
+}
+.tp-line-items th {
+  font-family: var(--ff-mono), monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dark-gray);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--tint-light);
+}
+.tp-line-items tbody tr:nth-child(even) td {
+  background: rgba(0, 0, 0, 0.015);
+}
+.tp-line-items code {
+  font-family: var(--ff-mono), monospace;
+  font-size: 11px;
+  color: var(--dark-gray);
+}
+
