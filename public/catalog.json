@@ -196,6 +196,13 @@
       "_resellerRetains": "~35%"
     }
   },
+  "defaultChannel": {
+    "label": "INDIRECT",
+    "regularDistDiscount": 0.4,
+    "regularResellerDiscount": 0.3,
+    "enhDistDiscount": 0.5,
+    "enhResellerDiscount": 0.35
+  },
   "subdomains": {
     "jjnet": {
       "label": "JJNet",

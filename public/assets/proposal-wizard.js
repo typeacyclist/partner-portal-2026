@@ -45,8 +45,8 @@
 
   // Derive subdomain from current hostname (e.g. jlead.trendzact-partners-001.web.app → jlead).
   // Only returns a value if the candidate is a known key in catalog.subdomains —
-  // so previews like www.* or staging.* fall through to direct sales channel
-  // instead of being looked up (and silently missing) as a partner subdomain.
+  // so previews like www.* or staging.* fall through to the catalog's
+  // defaultChannel (INDIRECT) instead of being silently treated as a partner.
   function detectSubdomain() {
     try {
       var host = window.location.hostname || '';
@@ -1272,8 +1272,9 @@
   function renderChannelWorksheet(allTiers, fmt) {
     var subdomain = detectSubdomain();
     var channelConfig = TrendzactMath.resolveChannelConfig(state.catalog, subdomain);
-    var isDirectSale = !subdomain;
-    var channelLabel = subdomain ? subdomain.toUpperCase() : 'DIRECT';
+    var channelLabel = subdomain
+      ? subdomain.toUpperCase()
+      : (channelConfig.label || 'INDIRECT').toUpperCase();
     var calc1 = allTiers[0] || {};
     var t1 = calc1.totals || {};
 
@@ -1283,10 +1284,7 @@
     html += '<span class="tp-channel-label">' + esc(channelLabel) + '</span>';
     html += '</div>';
 
-    if (isDirectSale) {
-      html += '<p class="tp-hint" style="margin:8px 0;">Direct sale \u2014 no distributor or reseller discounts applied. Trendzact retains 100% of MSRP.</p>';
-    } else {
-      html += '<div class="tp-channel-discounts">';
+    html += '<div class="tp-channel-discounts">';
       html += '<span>Distributor discount (regular): <strong>' + Math.round(channelConfig.regularDistDiscount * 100) + '%</strong></span>';
       html += '<span>Reseller discount (regular): <strong>' + Math.round(channelConfig.regularResellerDiscount * 100) + '%</strong></span>';
       html += '<span>Distributor discount (enhancement): <strong>' + Math.round(channelConfig.enhDistDiscount * 100) + '%</strong></span>';
@@ -1398,8 +1396,7 @@
       });
       html += '</tr>';
 
-      html += '</tbody></table>';
-    }
+    html += '</tbody></table>';
 
     html += '<p class="tp-hint" style="margin-top:8px;font-style:italic;">Partner internal use \u2014 not included in prospect-facing pages.</p>';
     html += '</div>';

@@ -95,12 +95,12 @@
     var generatedAt = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     var portalDomain = (window.location && window.location.hostname) || 'partner portal';
     var subdomain = inp.subdomain || '';
-    var isDirectSale = !subdomain;
 
-    // Resolve channel config for page 4
+    // Resolve channel config for page 4. resolveChannelConfig falls back to
+    // catalog.defaultChannel (INDIRECT two-tier) when subdomain doesn't match.
     var channelConfig = window.TrendzactMath
         ? window.TrendzactMath.resolveChannelConfig(catalog, subdomain)
-        : { regularDistDiscount: 0, regularResellerDiscount: 0, enhDistDiscount: 0, enhResellerDiscount: 0, _direct: true };
+        : (catalog.defaultChannel || { label: 'INDIRECT', regularDistDiscount: 0.4, regularResellerDiscount: 0.3, enhDistDiscount: 0.5, enhResellerDiscount: 0.35 });
 
     var tableLeft = MARGIN;
     var tableRight = PAGE_W - MARGIN;
@@ -489,30 +489,24 @@
 
     y = 24;
 
-    // Channel info
-    var channelLabel = subdomain ? subdomain.toUpperCase() : 'DIRECT';
+    // Channel info \u2014 label comes from the subdomain (if matched) or the
+    // catalog's defaultChannel.label (INDIRECT for the two-tier fallback).
+    var channelLabel = subdomain
+      ? subdomain.toUpperCase()
+      : (channelConfig.label || 'INDIRECT').toUpperCase();
     text(doc, 'CHANNEL: ' + channelLabel, MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
     y += 6;
 
-    if (isDirectSale) {
-      text(doc, 'Direct sale \u2014 no distributor or reseller discounts applied. Trendzact retains 100% of MSRP.', MARGIN, y, { size: 9, color: C.medGray });
-      y += 8;
-    } else {
-      text(doc, 'Distributor discount (regular): ' + pct(channelConfig.regularDistDiscount) + '    Reseller discount (regular): ' + pct(channelConfig.regularResellerDiscount), MARGIN, y, { size: 8, color: C.medGray });
-      y += 5;
-      text(doc, 'Distributor discount (enhancement): ' + pct(channelConfig.enhDistDiscount) + '    Reseller discount (enhancement): ' + pct(channelConfig.enhResellerDiscount), MARGIN, y, { size: 8, color: C.medGray });
-      y += 8;
-    }
+    text(doc, 'Distributor discount (regular): ' + pct(channelConfig.regularDistDiscount) + '    Reseller discount (regular): ' + pct(channelConfig.regularResellerDiscount), MARGIN, y, { size: 8, color: C.medGray });
+    y += 5;
+    text(doc, 'Distributor discount (enhancement): ' + pct(channelConfig.enhDistDiscount) + '    Reseller discount (enhancement): ' + pct(channelConfig.enhResellerDiscount), MARGIN, y, { size: 8, color: C.medGray });
+    y += 8;
 
     hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
     y += 6;
 
     // Margin summary for all commitment tiers
-    if (isDirectSale) {
-      text(doc, 'Direct sale — Trendzact retains 100% of MSRP. No channel margin breakdown applicable.', MARGIN, y, { size: 9, color: C.medGray });
-      y += 10;
-    } else {
-      text(doc, 'MARGIN SUMMARY WITH ANNUAL COMMITMENT OPTIONS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
+    text(doc, 'MARGIN SUMMARY WITH ANNUAL COMMITMENT OPTIONS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
       y += 8;
 
       // Column layout: label column + one column per tier
@@ -605,8 +599,7 @@
         return (t.totals.annualResellerRetains || 0) * (t.totals.contractYears || 1) + otResellerRetains;
       });
 
-      y += 4;
-    }
+    y += 4;
 
     y += 4;
     text(doc, 'This page is for partner internal use and should not be shared with the end customer.', MARGIN, y, { size: 7.5, style: 'italic', color: C.medGray });
