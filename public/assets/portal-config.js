@@ -13,23 +13,32 @@
 //   justifies real auth, replace with Firebase Auth ID token
 //   verification (the old function code has a TODO for this).
 //
+// !! DO NOT COMMIT THE REAL SECRET TO THIS FILE !!
+//   The placeholder below is the tracked default. Replace it locally
+//   before `firebase deploy`, but reset to the placeholder before any
+//   git commit. If a real value is ever committed, ROTATE the secret
+//   (see ROTATION below) — the leaked one must be considered burned.
+//
 // DEPLOY CHECKLIST:
-//   1. Generate a random secret (see Part X of CHANGELOG)
-//   2. Paste it as PORTAL_SHARED_SECRET below
+//   1. Generate a random secret:  openssl rand -base64 32
+//   2. Paste it as the portalSecret value below (LOCAL ONLY)
 //   3. Set the same value as a Firebase functions secret:
 //      firebase functions:secrets:set PORTAL_SHARED_SECRET
 //   4. The two must MATCH or every proposal submit will 401.
+//   5. Deploy hosting + functions in the same deploy.
+//   6. Reset this file to the placeholder before committing.
 //
 // ROTATION:
-//   To rotate, generate a new secret, update this file, set the new
-//   Firebase secret, deploy both hosting AND functions in the same deploy.
-//   If they drift, deploys fail; briefly, live sends will 401.
+//   To rotate, generate a new secret, update this file locally, set the
+//   new Firebase secret, deploy both hosting AND functions in the same
+//   deploy. If they drift, briefly live sends will 401.
 
 (function () {
   'use strict';
   window.TrendzactConfig = Object.assign({}, window.TrendzactConfig || {}, {
     // !! REPLACE THIS WITH THE GENERATED SECRET BEFORE DEPLOY !!
-    portalSecret: '47m7fgSbHsBidkZ9Y3Q/BNWPavIPMh86VcWlXHtzw5s=',
+    // !! DO NOT COMMIT THE REAL VALUE — RESET TO PLACEHOLDER FIRST !!
+    portalSecret: 'REPLACE_ME_WITH_GENERATED_SECRET',
 
     // Endpoint for email pipeline — routed via firebase.json rewrite
     sendProposalUrl: '/api/send-proposal'

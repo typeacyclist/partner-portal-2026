@@ -287,9 +287,12 @@
     var enhMsrp = 0;
     var moduleNames = [];
     var enhNames = [];
+    // Per-user enhancements (UVA-WEBCAM, PRIVSCR) carry discountGroup='enhancement'.
+    // Flat connectors share the same category but aren't per-user, so they stay
+    // out of the Named User License subtotal.
     calcLines.forEach(function (l) {
       if (l.isModule) { moduleMsrp += l.msrpLine; moduleNames.push(l.code); }
-      else if (l.category === '20-Enhancement' || l.category === '25-Standalone Enhancement') { enhMsrp += l.msrpLine; enhNames.push(l.code); }
+      else if (l.discountGroup === 'enhancement') { enhMsrp += l.msrpLine; enhNames.push(l.code); }
     });
     var namedUserTotal = moduleMsrp + enhMsrp;
     var namedUserPerUser = licenseCount > 0 ? namedUserTotal / licenseCount : 0;
@@ -491,12 +494,15 @@
       hRule(doc, tableLeft, tableRight, y + 6, C.border);
       y += 8;
 
-      // Channel % calculations (regular SKUs)
-      var distPctR = Math.round(channelConfig.regularDistDiscount * 100);
-      var resellerPctR = Math.round(channelConfig.regularResellerDiscount * 100);
-      var tzNetPctR = 100 - distPctR;
-      var distRetainsPctR = distPctR - resellerPctR;
-      var resellerRetainsPctR = resellerPctR;
+      // Effective channel % is computed from the math engine's per-line totals
+      // so enhancement SKUs (deeper discount) blend in correctly. Commit factor
+      // scales numerator and denominator equally, so % is tier-independent —
+      // pick tier 0 to derive labels.
+      var t0Totals = (allTiers[0] && allTiers[0].totals) || {};
+      var t0AnnualMsrp = t0Totals.annualRecurringMsrp || 0;
+      var blendedTzNetPct = t0AnnualMsrp > 0 ? Math.round((t0Totals.annualTrendzactNet || 0) / t0AnnualMsrp * 100) : 0;
+      var blendedDistPct = t0AnnualMsrp > 0 ? Math.round((t0Totals.annualDistRetains || 0) / t0AnnualMsrp * 100) : 0;
+      var blendedResellerPct = t0AnnualMsrp > 0 ? Math.round((t0Totals.annualResellerRetains || 0) / t0AnnualMsrp * 100) : 0;
 
       // MSRP per Year
       function marginRow(label, isBold, valueFn) {
@@ -512,14 +518,14 @@
 
       marginRow('MSRP per Year', false, function (t) { return t.totals.annualRecurringMsrp || 0; });
       marginRow('MSRP Commitment', true, function (t) { return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1); });
-      marginRow('Trendzact net (' + tzNetPctR + '%)', false, function (t) {
-        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (tzNetPctR / 100);
+      marginRow('Trendzact net (' + blendedTzNetPct + '%)', false, function (t) {
+        return (t.totals.annualTrendzactNet || 0) * (t.totals.contractYears || 1);
       });
-      marginRow('Distributor retains (' + distRetainsPctR + '%)', false, function (t) {
-        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (distRetainsPctR / 100);
+      marginRow('Distributor retains (' + blendedDistPct + '%)', false, function (t) {
+        return (t.totals.annualDistRetains || 0) * (t.totals.contractYears || 1);
       });
-      marginRow('Reseller retains (' + resellerRetainsPctR + '%)', false, function (t) {
-        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (resellerRetainsPctR / 100);
+      marginRow('Reseller retains (' + blendedResellerPct + '%)', false, function (t) {
+        return (t.totals.annualResellerRetains || 0) * (t.totals.contractYears || 1);
       });
 
       // ONE-TIME
@@ -549,13 +555,13 @@
       y += 8;
 
       marginRow('Trendzact net total', true, function (t) {
-        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (tzNetPctR / 100) + otTzNet;
+        return (t.totals.annualTrendzactNet || 0) * (t.totals.contractYears || 1) + otTzNet;
       });
       marginRow('Distributor retains total', true, function (t) {
-        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (distRetainsPctR / 100) + otDistRetains;
+        return (t.totals.annualDistRetains || 0) * (t.totals.contractYears || 1) + otDistRetains;
       });
       marginRow('Reseller retains total', true, function (t) {
-        return (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (resellerRetainsPctR / 100) + otResellerRetains;
+        return (t.totals.annualResellerRetains || 0) * (t.totals.contractYears || 1) + otResellerRetains;
       });
 
       y += 4;

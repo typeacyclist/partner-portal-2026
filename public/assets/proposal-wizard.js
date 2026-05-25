@@ -657,7 +657,6 @@
                       (oSel ? 'checked' : '') + (oDisabled ? ' disabled' : '') + '/>' +
                       '<label>' +
                       '<span class="tp-sku-code">' + esc(o.code) + '</span> ' + esc(o.name) +
-                      ' <span class="tp-opt-price">' + esc(priceLabel(o)) + '</span>' +
                       '</label>' +
                       '</div>';
                 }).join('');
@@ -1234,31 +1233,30 @@
       });
       html += '</tr>';
 
-      // Channel splits on MSRP Commitment
-      var distPctR = Math.round(channelConfig.regularDistDiscount * 100);
-      var resellerPctR = Math.round(channelConfig.regularResellerDiscount * 100);
-      var tzNetPctR = 100 - distPctR;
-      var distRetainsPctR = distPctR - resellerPctR;
-      var resellerRetainsPctR = resellerPctR;
+      // Channel splits on MSRP Commitment — use precomputed per-line totals
+      // from the math engine so enhancement SKUs (deeper discount) blend in
+      // correctly. Commit factor scales both sides equally, so % is tier-independent.
+      var t0 = (allTiers[0] && allTiers[0].totals) || {};
+      var t0AnnualMsrp = t0.annualRecurringMsrp || 0;
+      var blendedTzNetPct = t0AnnualMsrp > 0 ? Math.round((t0.annualTrendzactNet || 0) / t0AnnualMsrp * 100) : 0;
+      var blendedDistPct = t0AnnualMsrp > 0 ? Math.round((t0.annualDistRetains || 0) / t0AnnualMsrp * 100) : 0;
+      var blendedResellerPct = t0AnnualMsrp > 0 ? Math.round((t0.annualResellerRetains || 0) / t0AnnualMsrp * 100) : 0;
 
-      html += '<tr><td>Trendzact net (' + tzNetPctR + '%)</td>';
+      html += '<tr><td>Trendzact net (' + blendedTzNetPct + '%)</td>';
       allTiers.forEach(function (t) {
-        var msrpCommit = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1);
-        html += '<td>' + fmt(msrpCommit * (tzNetPctR / 100)) + '</td>';
+        html += '<td>' + fmt((t.totals.annualTrendzactNet || 0) * (t.totals.contractYears || 1)) + '</td>';
       });
       html += '</tr>';
 
-      html += '<tr><td>Distributor retains (' + distRetainsPctR + '%)</td>';
+      html += '<tr><td>Distributor retains (' + blendedDistPct + '%)</td>';
       allTiers.forEach(function (t) {
-        var msrpCommit = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1);
-        html += '<td>' + fmt(msrpCommit * (distRetainsPctR / 100)) + '</td>';
+        html += '<td>' + fmt((t.totals.annualDistRetains || 0) * (t.totals.contractYears || 1)) + '</td>';
       });
       html += '</tr>';
 
-      html += '<tr><td>Reseller retains (' + resellerRetainsPctR + '%)</td>';
+      html += '<tr><td>Reseller retains (' + blendedResellerPct + '%)</td>';
       allTiers.forEach(function (t) {
-        var msrpCommit = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1);
-        html += '<td>' + fmt(msrpCommit * (resellerRetainsPctR / 100)) + '</td>';
+        html += '<td>' + fmt((t.totals.annualResellerRetains || 0) * (t.totals.contractYears || 1)) + '</td>';
       });
       html += '</tr>';
 
@@ -1294,21 +1292,21 @@
 
       html += '<tr class="tp-channel-highlight"><td>Trendzact net total</td>';
       allTiers.forEach(function (t) {
-        var recCommitTzNet = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (tzNetPctR / 100);
+        var recCommitTzNet = (t.totals.annualTrendzactNet || 0) * (t.totals.contractYears || 1);
         html += '<td>' + fmt(recCommitTzNet + otTzNet) + '</td>';
       });
       html += '</tr>';
 
       html += '<tr class="tp-channel-highlight"><td>Distributor retains total</td>';
       allTiers.forEach(function (t) {
-        var recCommitDistRetains = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (distRetainsPctR / 100);
+        var recCommitDistRetains = (t.totals.annualDistRetains || 0) * (t.totals.contractYears || 1);
         html += '<td>' + fmt(recCommitDistRetains + otDistRetains) + '</td>';
       });
       html += '</tr>';
 
       html += '<tr class="tp-channel-highlight"><td>Reseller retains total</td>';
       allTiers.forEach(function (t) {
-        var recCommitResellerRetains = (t.totals.annualRecurringMsrp || 0) * (t.totals.contractYears || 1) * (resellerRetainsPctR / 100);
+        var recCommitResellerRetains = (t.totals.annualResellerRetains || 0) * (t.totals.contractYears || 1);
         html += '<td>' + fmt(recCommitResellerRetains + otResellerRetains) + '</td>';
       });
       html += '</tr>';
