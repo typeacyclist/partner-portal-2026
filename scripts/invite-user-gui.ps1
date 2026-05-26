@@ -13,9 +13,14 @@ Build to .exe (optional):
   Invoke-PS2EXE .\scripts\invite-user-gui.ps1 .\InviteUser.exe -NoConsole -Title "Trendzact Partner Admin"
 #>
 
-[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null
-[System.Reflection.Assembly]::LoadWithPartialName('System.Drawing') | Out-Null
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
 [System.Windows.Forms.Application]::EnableVisualStyles()
+
+# Belt-and-suspenders: route any stray output (return values from
+# Controls.Add, Add_<Event>, etc.) into a sink. Without this, ps2exe
+# -NoConsole shows the value as a MessageBox before the form opens.
+$ErrorActionPreference = 'Stop'
 
 # -------- Config --------
 $BaseUrl = 'https://trendzact-partners-001.web.app'
@@ -265,6 +270,12 @@ $btnSend.Add_Click({
 
 # -------- Show form --------
 Update-Mode
-$txtEmail.Focus()
+# Declare initial focus via the form property instead of calling
+# Control.Focus() here — Focus() returns a bool indicating whether focus
+# was set (it returns False when the control isn't visible yet), and
+# ps2exe -NoConsole shows that bool as a MessageBox. Setting
+# Form.ActiveControl is the idiomatic WinForms way to choose the
+# control that should receive focus when the form opens.
+$form.ActiveControl = $txtEmail
 [void]$form.ShowDialog()
 $form.Dispose()
