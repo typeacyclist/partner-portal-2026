@@ -22,6 +22,21 @@ sender (already verified in Resend).
 Call `sendUserInvite` with the partner's email. The function handles user
 creation and emails the invite in one step.
 
+### Via PowerShell helper (recommended on Windows)
+
+```powershell
+.\scripts\send-user-invite.ps1 -Email partner@partnerco.com -DisplayName "Jane Smith"
+```
+
+The script prompts securely for `PORTAL_SHARED_SECRET` if it's not already
+set in `$env:PORTAL_SHARED_SECRET`. To resend the reset link to a user who
+missed the first email (or to handle a partner request for "I forgot my
+password"):
+
+```powershell
+.\scripts\send-password-reset.ps1 -Email partner@partnerco.com
+```
+
 ### Via curl
 
 ```bash
@@ -32,7 +47,7 @@ curl -X POST "https://trendzact-partners-001.web.app/api/send-user-invite" \
   -d '{"email":"partner@partnerco.com","displayName":"Jane Smith"}'
 ```
 
-Response:
+Response (either method):
 ```json
 { "ok": true, "userExisted": false, "uid": "abc...", "resendId": "..." }
 ```
