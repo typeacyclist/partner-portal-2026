@@ -22,15 +22,15 @@ sender (already verified in Resend).
 Call `sendUserInvite` with the partner's email. The function handles user
 creation and emails the invite in one step.
 
-### Via InviteUser.exe (Windows GUI, zero typing — recommended)
+### Via TrendzactPartnerPortalUserMgmt.exe (Windows GUI, zero typing — recommended)
 
-Double-click **`InviteUser.exe`** at the repo root. A small window appears:
+Double-click **`TrendzactPartnerPortalUserMgmt.exe`** at the repo root. A small window appears:
 
 - Enter the partner's email + display name
 - Paste your `PORTAL_SHARED_SECRET` (tick "Remember on this PC" to save it as an env var so you don't paste it again next time)
 - Click **Send Invite**
 
-Result is shown inline: UID, Resend ID, and a confirmation that the email is on its way. Built from `scripts/invite-user-gui.ps1`; rebuild after edits with `.\scripts\Build-InviteUserExe.ps1`.
+Result is shown inline: UID, Resend ID, and a confirmation that the email is on its way. Built from `scripts/invite-user-gui.ps1`; rebuild after edits with `.\scripts\Build-PartnerPortalUserMgmtExe.ps1`.
 
 ### Via PowerShell helper (terminal-friendly alternative)
 

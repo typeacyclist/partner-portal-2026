@@ -1,14 +1,16 @@
 <#
-Trendzact Partners Portal -- Build the InviteUser.exe from the GUI script.
+Trendzact Partners Portal -- Build TrendzactPartnerPortalUserMgmt.exe
+from the GUI script (invite-user-gui.ps1).
 
-Produces InviteUser.exe in the repo root: a single double-clickable .exe
-with no PowerShell console window. Uses the ps2exe module under the hood.
+Produces TrendzactPartnerPortalUserMgmt.exe in the repo root: a single
+double-clickable .exe with no PowerShell console window. Uses the
+ps2exe module under the hood.
 
 Usage:
-  .\scripts\Build-InviteUserExe.ps1
+  .\scripts\Build-PartnerPortalUserMgmtExe.ps1
 
 Output:
-  .\InviteUser.exe
+  .\TrendzactPartnerPortalUserMgmt.exe
 
 Requires:
   - PowerShell 5+ (Windows PowerShell or pwsh 7)
@@ -16,7 +18,7 @@ Requires:
 #>
 
 param(
-  [string]$OutputPath = (Join-Path $PSScriptRoot '..\InviteUser.exe')
+  [string]$OutputPath = (Join-Path $PSScriptRoot '..\TrendzactPartnerPortalUserMgmt.exe')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -44,11 +46,11 @@ Invoke-PS2EXE `
   -InputFile $src `
   -OutputFile $OutputPath `
   -NoConsole `
-  -Title 'Trendzact Partner Invite' `
-  -Description 'Trendzact Partners Portal - User Invite' `
+  -Title 'Trendzact Partner Admin' `
+  -Description 'Trendzact Partners Portal - User Management (Invite + Password Reset)' `
   -Company 'Trendzact' `
   -Product 'Partner Portal' `
-  -Version '1.0.0.0'
+  -Version '1.1.0.0'
 
 if (Test-Path $OutputPath) {
   $size = (Get-Item $OutputPath).Length
