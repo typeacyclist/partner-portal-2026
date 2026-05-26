@@ -22,7 +22,17 @@ sender (already verified in Resend).
 Call `sendUserInvite` with the partner's email. The function handles user
 creation and emails the invite in one step.
 
-### Via PowerShell helper (recommended on Windows)
+### Via InviteUser.exe (Windows GUI, zero typing — recommended)
+
+Double-click **`InviteUser.exe`** at the repo root. A small window appears:
+
+- Enter the partner's email + display name
+- Paste your `PORTAL_SHARED_SECRET` (tick "Remember on this PC" to save it as an env var so you don't paste it again next time)
+- Click **Send Invite**
+
+Result is shown inline: UID, Resend ID, and a confirmation that the email is on its way. Built from `scripts/invite-user-gui.ps1`; rebuild after edits with `.\scripts\Build-InviteUserExe.ps1`.
+
+### Via PowerShell helper (terminal-friendly alternative)
 
 ```powershell
 .\scripts\send-user-invite.ps1 -Email partner@partnerco.com -DisplayName "Jane Smith"
