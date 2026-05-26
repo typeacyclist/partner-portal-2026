@@ -87,6 +87,10 @@
 </main>
 
 <script src="/assets/firebase-config.js"></script>
+<!-- portal-config.js exposes window.TrendzactConfig.portalSecret which auth.js
+     uses as the X-Portal-Secret header when calling /api/send-password-reset.
+     Must load BEFORE auth.js. -->
+<script src="/assets/portal-config.js"></script>
 <script type="module" src="/assets/auth.js"></script>
 <script type="module">
   import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
