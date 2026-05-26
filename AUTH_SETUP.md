@@ -1,71 +1,79 @@
 # Auth Setup
 
-Partners Portal authentication runs on Firebase Auth. This doc covers both the
-one-time project setup and the day-to-day flow for adding new partner users.
+Partners Portal authentication runs on Firebase Auth. New-user invite and
+password-reset emails are sent through **Resend** via Cloud Functions —
+not through Firebase's default email infrastructure — because
+`noreply@trendzact-partners-001.firebaseapp.com` has poor deliverability
+against corporate spam filters.
+
+The two relevant Cloud Functions are:
+
+| Function | Endpoint | Purpose |
+|---|---|---|
+| `sendUserInvite` | `POST /api/send-user-invite` | Creates a Firebase Auth user (if needed), seeds `users/{uid}` with `mustResetPassword: true`, and emails a branded welcome with a password-set link. |
+| `sendPasswordReset` | `POST /api/send-password-reset` | Sends a branded password-reset email. Wired into the "Forgot password?" link on `/login`. |
+
+Both authenticate with the same `X-Portal-Secret` header as `sendProposal`
+/ `sendContact`, and both use the `Trendzact Deal Desk <deal-desk@trendzact.com>`
+sender (already verified in Resend).
 
 ## Onboarding a new partner (routine)
 
-This is the documented flow for adding a new partner account. It's a two-step
-process in the Firebase console and takes about 30 seconds per user.
+Call `sendUserInvite` with the partner's email. The function handles user
+creation and emails the invite in one step.
 
-### Why two steps
+### Via curl
 
-Firebase Auth does not send any email when an account is created. You have to
-create the account first, then trigger the password-reset email separately.
-This is by design — Firebase gives you the primitives, the product decides
-when to email.
+```bash
+SECRET="<your-PORTAL_SHARED_SECRET>"
+curl -X POST "https://trendzact-partners-001.web.app/api/send-user-invite" \
+  -H "Content-Type: application/json" \
+  -H "X-Portal-Secret: ${SECRET}" \
+  -d '{"email":"partner@partnerco.com","displayName":"Jane Smith"}'
+```
 
-We use the reset-email as the welcome email: it's a Firebase-hosted page the
-user trusts, it forces a proper password on first use, and we don't have to
-maintain our own welcome-email template.
+Response:
+```json
+{ "ok": true, "userExisted": false, "uid": "abc...", "resendId": "..." }
+```
 
-### The steps
-
-1. **Go to the Firebase user list**
-   https://console.firebase.google.com/project/trendzact-partners-001/authentication/users
-
-2. **Click `Add user`**
-   - **Email**: the partner's work email
-   - **Password**: type anything — `xxxxxxxx`, the string `throwaway`, whatever. The user will never see it. Firebase requires a password at creation time, but our flow replaces it immediately.
-   - Click **Add user**
-
-3. **Find the new user in the list and click the three-dot menu on their row → `Reset password`**
-   Firebase sends them a branded password-reset email.
-
-4. **Partner clicks the link in the email, sets their own password, lands on the Partners Portal login, signs in.** Done.
+`userExisted: false` means we just created the account. `true` means it
+already existed and we just re-sent the invite link.
 
 ### What the partner sees
 
-The email comes from `noreply@trendzact-partners-001.firebaseapp.com` with
-the subject "Reset your password for trendzact-partners-001". The email body
-is minimal Firebase-brand chrome with a single button. After clicking, they
-set a password on a Firebase-hosted page, then get bounced to our login page
-with a success banner ("Password changed. Sign in with your new password.").
+A branded email from **Trendzact Deal Desk &lt;deal-desk@trendzact.com&gt;**
+with subject "Welcome to Trendzact Partners — set your password". The
+"Set your password" button links to a Firebase action URL where they
+choose their password, then they're bounced to `/login.html?invite=success`
+to sign in.
 
-### Tell the partner to expect the email
+### Re-inviting
 
-Send them a heads-up — a Slack message, a quick calendar invite note, or a
-plain email — so the Firebase-branded password-reset email doesn't look like
-phishing. Something like:
+If the partner missed the first email, re-run the same curl command. It's
+idempotent — the function won't create a duplicate user; it just generates
+a fresh password-reset link (the previous one is still valid until expiry
+but the new one supersedes it semantically).
 
-> "I just set up your account on the Trendzact Partners Portal. You'll
-> get an email from trendzact-partners-001 in the next minute or two with
-> a link to set your password. Click it, set a password, and you're in.
-> Portal URL: https://trendzact-partners-001.web.app/"
+### Manual fallback via Firebase Console
+
+You can still use the manual two-step console flow (Add user → Reset
+password) as a backup, but those emails go through Firebase's default
+sender and are likely to be filtered. Prefer the curl invite above.
 
 ### Troubleshooting the invite
 
-**Partner says they didn't get the email** — check spam. Firebase's sender
-domain is not on most corporate allowlists by default. If still missing,
-re-click "Reset password" in the console; the old link stays valid but a
-new email is sent.
+**Partner says they didn't get the email** — check spam (less likely with
+Resend than Firebase's default sender, but still possible). Check the
+`auth_emails_sent` Firestore collection for the corresponding entry — the
+`resendId` lets you look it up in the Resend dashboard.
 
-**Partner clicked the link, got "invalid or expired"** — reset links expire
-after ~1 hour. Click "Reset password" again in the console.
+**Partner clicked the link, got "invalid or expired"** — Firebase password
+reset action codes expire after ~1 hour. Re-send the invite.
 
-**Partner signs in but can't see pages properly** — not an auth issue. All
-signed-in users see all pages in the current setup. Role-based gating is
-planned for a later increment.
+**Partner signs in but can't see pages properly** — not an auth issue.
+All signed-in users see all pages in the current setup. Role-based gating
+is planned for a later increment.
 
 ---
 
@@ -146,13 +154,9 @@ These aren't limitations to work around — they're scope decisions.
   the current partner cohort; revisit when access boundaries matter.
 - **Self-service signup** — by design, access is by Trendzact invitation only.
   No public signup page exists.
-- **Branded welcome email from our domain** — we use the Firebase-hosted
-  reset email because it works out of the box. If the Firebase sender
-  becomes a deliverability problem, the upgrade path is: Cloud Function
-  generates a password-reset action code, Resend sends a branded email
-  using the same pipeline as the proposal builder.
-- **Admin API for creating users** — manual console step. Build this only
-  if the onboarding volume justifies it (more than a few per week).
+- **Admin UI for invites** — `sendUserInvite` is a backend-only Cloud
+  Function for now. Admins call it via curl. Build a `/internal/invite-user.html`
+  form only if invite volume justifies it.
 
 ---
 
@@ -175,9 +179,13 @@ These aren't limitations to work around — they're scope decisions.
 caches the last state briefly.
 
 **User says password reset email never arrived**
-→ Check spam. If still missing, click "Reset password" again in the console.
-The Firebase sender (`noreply@trendzact-partners-001.firebaseapp.com`) is
-not on most corporate allowlists by default.
+→ Reset emails now go through Resend (sender: `deal-desk@trendzact.com`).
+Check spam first. Then check the `auth_emails_sent` Firestore collection
+for an entry matching the email — the `resendId` lets you look it up in
+the Resend dashboard for bounce/delivery status. If no Firestore entry,
+the function failed; check Cloud Function logs (`firebase functions:log
+--only sendPasswordReset`).
 
 **Reset link says "invalid or expired"**
-→ Links expire after ~1 hour. Send a new one from the console.
+→ Firebase password-reset action codes expire after ~1 hour. Re-trigger
+"Forgot password" on /login or re-run the invite curl.

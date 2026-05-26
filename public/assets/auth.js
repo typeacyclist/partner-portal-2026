@@ -20,7 +20,6 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
-  sendPasswordResetEmail,
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink
@@ -82,15 +81,47 @@ window.TrendzactAuth = {
     window.location.href = '/login.html';
   },
 
-  /** Send a password-reset email to the given address. */
+  /**
+   * Send a password-reset email to the given address.
+   *
+   * Routed through our sendPasswordReset Cloud Function (which uses Resend
+   * + the deal-desk@trendzact.com sender) instead of Firebase's built-in
+   * email service. Firebase's default sender
+   * (noreply@trendzact-partners-001.firebaseapp.com) has poor
+   * deliverability against corporate spam filters, so partner reset
+   * emails were being silently dropped.
+   *
+   * The Cloud Function:
+   *   - Returns ok:true even when the user doesn't exist (anti-enumeration)
+   *   - Generates the Firebase action link server-side via Admin SDK
+   *   - Sends a branded email via Resend
+   *
+   * Errors thrown here are network/auth-config issues, NOT user-existence
+   * errors. login.html shows a generic "if an account exists, an email
+   * is on the way" message on success regardless.
+   */
   async sendResetEmail(email) {
-    const actionCodeSettings = {
-      // After Firebase completes the password reset, send the user back
-      // to our branded login page with a success flag.
-      url: window.location.origin + '/login.html?reset=success',
-      handleCodeInApp: false
-    };
-    await sendPasswordResetEmail(auth, email, actionCodeSettings);
+    const cfg = window.TrendzactConfig || {};
+    const continueUrl = window.location.origin + '/login.html?reset=success';
+    const resp = await fetch('/api/send-password-reset', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Portal-Secret': cfg.portalSecret
+      },
+      body: JSON.stringify({ email, continueUrl })
+    });
+    if (!resp.ok) {
+      let detail = '';
+      try {
+        const data = await resp.json();
+        detail = data.message || data.error || '';
+      } catch (e) { /* non-JSON response */ }
+      const err = new Error(detail || ('HTTP ' + resp.status));
+      err.status = resp.status;
+      throw err;
+    }
+    return await resp.json();
   },
 
   /**
