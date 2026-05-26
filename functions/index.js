@@ -93,6 +93,182 @@ exports.sendProposal = onRequest(
     }
 );
 
+// =========================================================================
+// sendPasswordReset
+// =========================================================================
+// Replaces the client-side Firebase SDK call to sendPasswordResetEmail().
+// We do this server-side so the reset email goes through Resend (branded,
+// from deal-desk@trendzact.com) instead of through Firebase's default
+// sender (noreply@trendzact-partners-001.firebaseapp.com), which has poor
+// deliverability against corporate spam filters.
+//
+// Flow:
+//   1. Verify X-Portal-Secret header (same auth as sendProposal/sendContact)
+//   2. Validate the input email
+//   3. Check the user exists in Firebase Auth. If not, silent-success
+//      (anti-enumeration — don't reveal which addresses are partners)
+//   4. Generate a Firebase password-reset action link via Admin SDK
+//   5. Send a branded HTML email via Resend that wraps the link
+//   6. Record the send in Firestore for audit
+exports.sendPasswordReset = onRequest(
+    {
+      cors: true,
+      secrets: [resendApiKey, portalSecret],
+      region: 'us-central1',
+      memory: '256MiB',
+      timeoutSeconds: 30
+    },
+    async (req, res) => {
+      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+      if (!isAuthorized(req)) return res.status(401).json({ error: 'Unauthorized' });
+
+      try {
+        const { email, continueUrl } = req.body || {};
+        const cleanEmail = extractEmailAddress(email || '');
+        if (!isLikelyEmail(cleanEmail)) {
+          return res.status(400).json({ error: 'Valid email required' });
+        }
+
+        // Anti-enumeration: silent-success when the user doesn't exist.
+        // Caller can't distinguish "sent" from "no such user".
+        try {
+          await admin.auth().getUserByEmail(cleanEmail);
+        } catch (err) {
+          if (err && err.code === 'auth/user-not-found') {
+            return res.status(200).json({ ok: true });
+          }
+          throw err;
+        }
+
+        const actionCodeSettings = {
+          url: continueUrl || 'https://trendzact-partners-001.web.app/login.html?reset=success',
+          handleCodeInApp: false
+        };
+        const resetLink = await admin.auth().generatePasswordResetLink(cleanEmail, actionCodeSettings);
+
+        const resend = new Resend(resendApiKey.value());
+        const emailResult = await resend.emails.send({
+          from: FROM,
+          to: [cleanEmail],
+          subject: 'Reset your Trendzact Partners password',
+          text: buildPasswordResetTextBody({ resetLink }),
+          html: buildPasswordResetHtmlBody({ resetLink, email: cleanEmail })
+        });
+
+        await admin.firestore().collection('auth_emails_sent').add({
+          type: 'password_reset',
+          email: cleanEmail,
+          resendId: emailResult.data?.id || null,
+          sentAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        return res.status(200).json({ ok: true, resendId: emailResult.data?.id });
+      } catch (err) {
+        console.error('sendPasswordReset error:', err);
+        return res.status(500).json({ error: 'Failed to send reset email', message: err.message });
+      }
+    }
+);
+
+// =========================================================================
+// sendUserInvite
+// =========================================================================
+// Onboards a new partner user. Creates the Firebase Auth account if it
+// doesn't exist, seeds users/{uid} with mustResetPassword: true, then
+// emails a Firebase password-reset link via Resend so the recipient sets
+// their own password on first use. If the account already exists, this
+// just re-sends the invite (useful for re-inviting after a missed email).
+//
+// Flow:
+//   1. Verify X-Portal-Secret
+//   2. Validate email + optional displayName
+//   3. getUserByEmail — if not found, createUser with a random throwaway
+//      password and seed users/{uid} with mustResetPassword: true
+//   4. Generate password-reset link (acts as the invite link)
+//   5. Send branded welcome email via Resend
+//   6. Record the send in Firestore
+//
+// Admins call this directly (curl/Postman) for now; a UI can be added
+// later if onboarding volume justifies it.
+exports.sendUserInvite = onRequest(
+    {
+      cors: true,
+      secrets: [resendApiKey, portalSecret],
+      region: 'us-central1',
+      memory: '256MiB',
+      timeoutSeconds: 30
+    },
+    async (req, res) => {
+      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+      if (!isAuthorized(req)) return res.status(401).json({ error: 'Unauthorized' });
+
+      try {
+        const { email, displayName, continueUrl } = req.body || {};
+        const cleanEmail = extractEmailAddress(email || '');
+        if (!isLikelyEmail(cleanEmail)) {
+          return res.status(400).json({ error: 'Valid email required' });
+        }
+        const cleanDisplayName = displayName ? String(displayName).trim().slice(0, 80) : null;
+
+        let userExisted = true;
+        let user;
+        try {
+          user = await admin.auth().getUserByEmail(cleanEmail);
+        } catch (err) {
+          if (err && err.code !== 'auth/user-not-found') throw err;
+          userExisted = false;
+          // Throwaway password — user replaces it via the reset link.
+          const tempPassword = crypto.randomBytes(24).toString('base64');
+          user = await admin.auth().createUser({
+            email: cleanEmail,
+            password: tempPassword,
+            displayName: cleanDisplayName || undefined,
+            emailVerified: false,
+            disabled: false
+          });
+          // mustResetPassword: true forces /set-password.html if they
+          // ever sign in without using the invite link.
+          await admin.firestore().collection('users').doc(user.uid).set({
+            email: cleanEmail,
+            displayName: cleanDisplayName,
+            mustResetPassword: true,
+            invitedAt: admin.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        }
+
+        const actionCodeSettings = {
+          url: continueUrl || 'https://trendzact-partners-001.web.app/login.html?invite=success',
+          handleCodeInApp: false
+        };
+        const resetLink = await admin.auth().generatePasswordResetLink(cleanEmail, actionCodeSettings);
+
+        const resend = new Resend(resendApiKey.value());
+        const emailResult = await resend.emails.send({
+          from: FROM,
+          to: [cleanEmail],
+          subject: 'Welcome to Trendzact Partners — set your password',
+          text: buildInviteTextBody({ resetLink, displayName: cleanDisplayName }),
+          html: buildInviteHtmlBody({ resetLink, email: cleanEmail, displayName: cleanDisplayName })
+        });
+
+        await admin.firestore().collection('auth_emails_sent').add({
+          type: 'invite',
+          email: cleanEmail,
+          displayName: cleanDisplayName,
+          userExisted,
+          uid: user.uid,
+          resendId: emailResult.data?.id || null,
+          sentAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        return res.status(200).json({ ok: true, userExisted, uid: user.uid, resendId: emailResult.data?.id });
+      } catch (err) {
+        console.error('sendUserInvite error:', err);
+        return res.status(500).json({ error: 'Failed to send invite', message: err.message });
+      }
+    }
+);
+
 exports.sendContact = onRequest(
     {
       cors: true,
@@ -250,4 +426,98 @@ function extractEmailAddress(input) {
 
 function isLikelyEmail(s) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s));
+}
+
+// =========================================================================
+// Auth-email templates (password reset + new user invite)
+// =========================================================================
+// Both share the same visual style as the proposal/contact emails: inline
+// CSS, brand colors (#353D4A / #00827C / #00A398 / #F0FAF9). The CTA
+// button uses dark green with white text; the raw URL is also shown
+// underneath as a fallback for mail clients that block buttons.
+
+function authEmailShell(opts) {
+  // Common wrapper: header bar, content block, footer note.
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #353D4A; max-width: 560px; margin: 0; padding: 0;">
+      <div style="background: #00827C; padding: 16px 20px; color: #fff;">
+        <div style="font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.85;">Trendzact Partners</div>
+        <div style="font-size: 20px; font-weight: 600; margin-top: 2px;">${escapeHtml(opts.title)}</div>
+      </div>
+      <div style="padding: 20px; line-height: 1.55;">
+        ${opts.body}
+        <div style="margin: 24px 0;">
+          <a href="${escapeHtml(opts.cta.href)}" style="display: inline-block; background: #00827C; color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 6px; font-weight: 600;">${escapeHtml(opts.cta.label)}</a>
+        </div>
+        <p style="font-size: 12px; color: #7A7F88; margin: 0 0 4px;">Or paste this URL into your browser:</p>
+        <p style="font-size: 11px; color: #353D4A; word-break: break-all; margin: 0 0 16px;"><a href="${escapeHtml(opts.cta.href)}" style="color: #00827C;">${escapeHtml(opts.cta.href)}</a></p>
+        <hr style="border: 0; border-top: 1px solid #EEF1F3; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #7A7F88; margin: 0;">${escapeHtml(opts.footer)}</p>
+      </div>
+    </div>
+  `;
+}
+
+function buildPasswordResetTextBody(ctx) {
+  return [
+    'Reset your Trendzact Partners password',
+    '',
+    'You (or someone using your address) requested to reset the password',
+    'for your Trendzact Partners account.',
+    '',
+    'Open this link to set a new password:',
+    ctx.resetLink,
+    '',
+    "If you didn't request a reset, you can ignore this email — your",
+    'password will stay unchanged.',
+    '',
+    '— Trendzact Deal Desk',
+    'deal-desk@trendzact.com'
+  ].join('\n');
+}
+
+function buildPasswordResetHtmlBody(ctx) {
+  return authEmailShell({
+    title: 'Reset your password',
+    body: `
+      <p style="margin: 0 0 12px;">You (or someone using <strong>${escapeHtml(ctx.email)}</strong>) requested to reset the password for your Trendzact Partners account.</p>
+      <p style="margin: 0 0 12px;">Click the button below to set a new password. The link expires in 1 hour.</p>
+    `,
+    cta: { href: ctx.resetLink, label: 'Set a new password' },
+    footer: "If you didn't request this, ignore the email — your password stays unchanged. Questions? Email deal-desk@trendzact.com."
+  });
+}
+
+function buildInviteTextBody(ctx) {
+  const greeting = ctx.displayName ? `Hi ${ctx.displayName},` : 'Hi,';
+  return [
+    'Welcome to the Trendzact Partners Portal',
+    '',
+    greeting,
+    '',
+    "We've created your account on the Trendzact Partners Portal.",
+    'To activate it, set your password using the link below:',
+    '',
+    ctx.resetLink,
+    '',
+    'Portal URL: https://trendzact-partners-001.web.app/',
+    '',
+    'Questions? Reply to this email or contact deal-desk@trendzact.com.',
+    '',
+    '— Trendzact Deal Desk'
+  ].join('\n');
+}
+
+function buildInviteHtmlBody(ctx) {
+  const greeting = ctx.displayName ? `Hi ${escapeHtml(ctx.displayName)},` : 'Hi,';
+  return authEmailShell({
+    title: 'Welcome to Trendzact Partners',
+    body: `
+      <p style="margin: 0 0 12px;">${greeting}</p>
+      <p style="margin: 0 0 12px;">We've created your account on the Trendzact Partners Portal (<strong>${escapeHtml(ctx.email)}</strong>). To activate it, set your password using the button below.</p>
+      <p style="margin: 0 0 12px;">After setting a password, sign in at <a href="https://trendzact-partners-001.web.app/" style="color: #00827C;">trendzact-partners-001.web.app</a>.</p>
+    `,
+    cta: { href: ctx.resetLink, label: 'Set your password' },
+    footer: 'Questions? Reply to this email or contact deal-desk@trendzact.com.'
+  });
 }

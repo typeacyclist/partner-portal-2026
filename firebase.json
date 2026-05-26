@@ -54,6 +54,20 @@
         }
       },
       {
+        "source": "/api/send-password-reset",
+        "function": {
+          "functionId": "sendPasswordReset",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/api/send-user-invite",
+        "function": {
+          "functionId": "sendUserInvite",
+          "region": "us-central1"
+        }
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

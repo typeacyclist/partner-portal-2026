@@ -117,5 +117,5 @@ jobs:
             fs.writeFileSync(p, content);
             console.log("Secret injected into " + p);
           '
-      - name: Deploy to Firebase
-        run: firebase deploy --only hosting --project "${FIREBASE_PROJECT_ID}" --non-interactive
+      - name: Deploy to Firebase (hosting + functions)
+        run: firebase deploy --only hosting,functions --project "${FIREBASE_PROJECT_ID}" --non-interactive
