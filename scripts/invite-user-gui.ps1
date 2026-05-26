@@ -1,13 +1,16 @@
 <#
-Trendzact Partners Portal -- Invite User GUI
+Trendzact Partners Portal -- Partner Admin GUI
 
-A minimal Windows form that wraps the /api/send-user-invite Cloud Function.
-Double-click the .bat launcher (or run this .ps1 directly) to open the
-window, enter an email, click Send.
+Minimal Windows form that wraps two Cloud Functions:
+  - /api/send-user-invite    (mode: New Partner)
+  - /api/send-password-reset (mode: Reset Password)
+
+A radio group at the top selects which action to perform. The Display
+Name field is only visible/used for New Partner.
 
 Build to .exe (optional):
   Install-Module ps2exe -Scope CurrentUser
-  Invoke-PS2EXE .\scripts\invite-user-gui.ps1 .\InviteUser.exe -NoConsole -Title "Trendzact Partner Invite"
+  Invoke-PS2EXE .\scripts\invite-user-gui.ps1 .\InviteUser.exe -NoConsole -Title "Trendzact Partner Admin"
 #>
 
 [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null
@@ -16,13 +19,15 @@ Build to .exe (optional):
 
 # -------- Config --------
 $BaseUrl = 'https://trendzact-partners-001.web.app'
-$Endpoint = "$BaseUrl/api/send-user-invite"
-$ContinueUrl = "$BaseUrl/login.html?invite=success"
+$InviteEndpoint = "$BaseUrl/api/send-user-invite"
+$ResetEndpoint  = "$BaseUrl/api/send-password-reset"
+$InviteContinue = "$BaseUrl/login.html?invite=success"
+$ResetContinue  = "$BaseUrl/login.html?reset=success"
 
 # -------- Form shell --------
 $form = New-Object Windows.Forms.Form
-$form.Text = 'Trendzact Partner Invite'
-$form.Size = New-Object Drawing.Size(500, 480)
+$form.Text = 'Trendzact Partner Admin'
+$form.Size = New-Object Drawing.Size(500, 530)
 $form.StartPosition = 'CenterScreen'
 $form.FormBorderStyle = 'FixedDialog'
 $form.MaximizeBox = $false
@@ -44,51 +49,73 @@ $headerLabel.Location = New-Object Drawing.Point(20, 12)
 $headerLabel.Size = New-Object Drawing.Size(460, 28)
 $header.Controls.Add($headerLabel)
 
+# -------- Mode radio group --------
+$grpMode = New-Object Windows.Forms.GroupBox
+$grpMode.Text = 'Action'
+$grpMode.Location = New-Object Drawing.Point(20, 64)
+$grpMode.Size = New-Object Drawing.Size(440, 56)
+$grpMode.ForeColor = [Drawing.ColorTranslator]::FromHtml('#7A7F88')
+$form.Controls.Add($grpMode)
+
+$rbInvite = New-Object Windows.Forms.RadioButton
+$rbInvite.Text = 'New Partner'
+$rbInvite.Location = New-Object Drawing.Point(16, 22)
+$rbInvite.Size = New-Object Drawing.Size(160, 24)
+$rbInvite.Checked = $true
+$rbInvite.ForeColor = [Drawing.ColorTranslator]::FromHtml('#353D4A')
+$grpMode.Controls.Add($rbInvite)
+
+$rbReset = New-Object Windows.Forms.RadioButton
+$rbReset.Text = 'Reset Password'
+$rbReset.Location = New-Object Drawing.Point(200, 22)
+$rbReset.Size = New-Object Drawing.Size(180, 24)
+$rbReset.ForeColor = [Drawing.ColorTranslator]::FromHtml('#353D4A')
+$grpMode.Controls.Add($rbReset)
+
 # -------- Email field --------
 $lblEmail = New-Object Windows.Forms.Label
 $lblEmail.Text = 'Email *'
-$lblEmail.Location = New-Object Drawing.Point(20, 70)
+$lblEmail.Location = New-Object Drawing.Point(20, 136)
 $lblEmail.Size = New-Object Drawing.Size(200, 20)
 $lblEmail.ForeColor = [Drawing.ColorTranslator]::FromHtml('#353D4A')
 $form.Controls.Add($lblEmail)
 
 $txtEmail = New-Object Windows.Forms.TextBox
-$txtEmail.Location = New-Object Drawing.Point(20, 92)
+$txtEmail.Location = New-Object Drawing.Point(20, 158)
 $txtEmail.Size = New-Object Drawing.Size(440, 24)
 $form.Controls.Add($txtEmail)
 
-# -------- Display name field --------
+# -------- Display name field (invite only) --------
 $lblName = New-Object Windows.Forms.Label
 $lblName.Text = 'Display Name (optional)'
-$lblName.Location = New-Object Drawing.Point(20, 126)
+$lblName.Location = New-Object Drawing.Point(20, 192)
 $lblName.Size = New-Object Drawing.Size(300, 20)
 $lblName.ForeColor = [Drawing.ColorTranslator]::FromHtml('#353D4A')
 $form.Controls.Add($lblName)
 
 $txtName = New-Object Windows.Forms.TextBox
-$txtName.Location = New-Object Drawing.Point(20, 148)
+$txtName.Location = New-Object Drawing.Point(20, 214)
 $txtName.Size = New-Object Drawing.Size(440, 24)
 $form.Controls.Add($txtName)
 
 # -------- Portal Secret field --------
 $lblSecret = New-Object Windows.Forms.Label
 $lblSecret.Text = 'Portal Secret *'
-$lblSecret.Location = New-Object Drawing.Point(20, 182)
+$lblSecret.Location = New-Object Drawing.Point(20, 248)
 $lblSecret.Size = New-Object Drawing.Size(200, 20)
 $lblSecret.ForeColor = [Drawing.ColorTranslator]::FromHtml('#353D4A')
 $form.Controls.Add($lblSecret)
 
 $txtSecret = New-Object Windows.Forms.TextBox
-$txtSecret.Location = New-Object Drawing.Point(20, 204)
+$txtSecret.Location = New-Object Drawing.Point(20, 270)
 $txtSecret.Size = New-Object Drawing.Size(440, 24)
 $txtSecret.UseSystemPasswordChar = $true
-# Prefill from user env var if available
 if ($env:PORTAL_SHARED_SECRET) { $txtSecret.Text = $env:PORTAL_SHARED_SECRET }
 $form.Controls.Add($txtSecret)
 
 $chkRemember = New-Object Windows.Forms.CheckBox
 $chkRemember.Text = 'Remember on this PC (saves to PORTAL_SHARED_SECRET env var)'
-$chkRemember.Location = New-Object Drawing.Point(20, 232)
+$chkRemember.Location = New-Object Drawing.Point(20, 298)
 $chkRemember.Size = New-Object Drawing.Size(440, 22)
 $chkRemember.ForeColor = [Drawing.ColorTranslator]::FromHtml('#7A7F88')
 $form.Controls.Add($chkRemember)
@@ -96,8 +123,8 @@ $form.Controls.Add($chkRemember)
 # -------- Send button --------
 $btnSend = New-Object Windows.Forms.Button
 $btnSend.Text = 'Send Invite'
-$btnSend.Location = New-Object Drawing.Point(20, 268)
-$btnSend.Size = New-Object Drawing.Size(140, 36)
+$btnSend.Location = New-Object Drawing.Point(20, 332)
+$btnSend.Size = New-Object Drawing.Size(160, 36)
 $btnSend.BackColor = [Drawing.ColorTranslator]::FromHtml('#00827C')
 $btnSend.ForeColor = [Drawing.Color]::White
 $btnSend.FlatStyle = 'Flat'
@@ -107,8 +134,8 @@ $form.Controls.Add($btnSend)
 
 # -------- Status output --------
 $status = New-Object Windows.Forms.TextBox
-$status.Location = New-Object Drawing.Point(20, 320)
-$status.Size = New-Object Drawing.Size(440, 110)
+$status.Location = New-Object Drawing.Point(20, 380)
+$status.Size = New-Object Drawing.Size(440, 100)
 $status.Multiline = $true
 $status.ReadOnly = $true
 $status.BackColor = [Drawing.ColorTranslator]::FromHtml('#F0FAF9')
@@ -123,11 +150,31 @@ function Write-Status {
   $status.Text = $Message
 }
 
+# -------- Mode switching --------
+function Update-Mode {
+  if ($rbReset.Checked) {
+    $headerLabel.Text = 'Send Password Reset'
+    $btnSend.Text = 'Send Reset'
+    $lblName.Visible = $false
+    $txtName.Visible = $false
+    Write-Status 'Reset mode: enter the partner email. NOTE: the function silent-succeeds for unknown emails (anti-enumeration).'
+  } else {
+    $headerLabel.Text = 'Invite a New Partner'
+    $btnSend.Text = 'Send Invite'
+    $lblName.Visible = $true
+    $txtName.Visible = $true
+    Write-Status 'Invite mode: enter the partner email + optional display name. Creates the user if needed.'
+  }
+}
+$rbInvite.Add_CheckedChanged({ Update-Mode })
+$rbReset.Add_CheckedChanged({ Update-Mode })
+
 # -------- Send handler --------
 $btnSend.Add_Click({
   $email  = $txtEmail.Text.Trim()
   $name   = $txtName.Text.Trim()
   $secret = $txtSecret.Text
+  $isReset = $rbReset.Checked
 
   if (-not $email) {
     Write-Status 'ERROR: Email is required.' '#B91C1C'
@@ -146,42 +193,52 @@ $btnSend.Add_Click({
   }
 
   $btnSend.Enabled = $false
+  $action = if ($isReset) { 'Sending reset to' } else { 'Sending invite to' }
   $btnSend.Text = 'Sending...'
-  Write-Status "Sending invite to $email..." '#7A7F88'
+  Write-Status "$action $email..." '#7A7F88'
   $form.Refresh()
 
-  $payload = @{
-    email       = $email
-    continueUrl = $ContinueUrl
+  if ($isReset) {
+    $endpoint = $ResetEndpoint
+    $continue = $ResetContinue
+    $payload = @{ email = $email; continueUrl = $continue }
+  } else {
+    $endpoint = $InviteEndpoint
+    $continue = $InviteContinue
+    $payload = @{ email = $email; continueUrl = $continue }
+    if ($name) { $payload.displayName = $name }
   }
-  if ($name) { $payload.displayName = $name }
   $body = $payload | ConvertTo-Json -Compress
 
   try {
     $response = Invoke-RestMethod `
       -Method POST `
-      -Uri $Endpoint `
+      -Uri $endpoint `
       -Headers @{ 'X-Portal-Secret' = $secret } `
       -ContentType 'application/json' `
       -Body $body
 
-    $statusText = if ($response.userExisted) {
-      "OK: Re-invited existing user.`r`nUID:       $($response.uid)`r`nResend ID: $($response.resendId)"
+    if ($isReset) {
+      if ($response.resendId) {
+        $statusText = "OK: Password reset email queued.`r`nResend ID: $($response.resendId)`r`n`r`nThey should receive the email within 30 seconds. Link expires in ~1 hour."
+      } else {
+        $statusText = "OK: Request accepted.`r`n`r`nNOTE: No resendId in response means the email address didn't exist in Firebase Auth (silent-success for anti-enumeration). If you expected this user to exist, verify the address."
+      }
     } else {
-      "OK: Created new user and sent invite.`r`nUID:       $($response.uid)`r`nResend ID: $($response.resendId)`r`n`r`nThey should receive the email within 30 seconds."
+      if ($response.userExisted) {
+        $statusText = "OK: Re-invited existing user.`r`nUID:       $($response.uid)`r`nResend ID: $($response.resendId)"
+      } else {
+        $statusText = "OK: Created new user and sent invite.`r`nUID:       $($response.uid)`r`nResend ID: $($response.resendId)`r`n`r`nThey should receive the email within 30 seconds."
+      }
     }
     Write-Status $statusText '#00827C'
 
-    # Persist secret to env var if requested
     if ($chkRemember.Checked) {
       try {
         [Environment]::SetEnvironmentVariable('PORTAL_SHARED_SECRET', $secret, [EnvironmentVariableTarget]::User)
-      } catch {
-        # Non-fatal
-      }
+      } catch { }
     }
 
-    # Clear form for the next invite
     $txtEmail.Clear()
     $txtName.Clear()
     $txtEmail.Focus()
@@ -202,12 +259,12 @@ $btnSend.Add_Click({
     Write-Status $msg '#B91C1C'
   } finally {
     $btnSend.Enabled = $true
-    $btnSend.Text = 'Send Invite'
+    $btnSend.Text = if ($isReset) { 'Send Reset' } else { 'Send Invite' }
   }
 })
 
 # -------- Show form --------
-Write-Status 'Enter the partner email and click Send Invite. Display Name is optional.'
+Update-Mode
 $txtEmail.Focus()
 [void]$form.ShowDialog()
 $form.Dispose()
