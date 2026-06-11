@@ -87,9 +87,10 @@
 </main>
 
 <script src="/assets/firebase-config.js"></script>
-<!-- portal-config.js exposes window.TrendzactConfig.portalSecret which auth.js
-     uses as the X-Portal-Secret header when calling /api/send-password-reset.
-     Must load BEFORE auth.js. -->
+<!-- portal-config.js sets window.TrendzactConfig.portalSecret — the X-Portal-Secret
+     header used by portal API calls (e.g. /api/send-proposal). The current Forgot
+     Password flow uses the Firebase Auth SDK (sendPasswordResetEmail) directly and
+     does not send this header, but portal-config.js still loads here. -->
 <script src="/assets/portal-config.js"></script>
 <script type="module" src="/assets/auth.js"></script>
 <script type="module">
