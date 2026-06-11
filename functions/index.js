@@ -9,8 +9,10 @@ admin.initializeApp();
 const resendApiKey = defineSecret('RESEND_API_KEY');
 const portalSecret = defineSecret('PORTAL_SHARED_SECRET');
 
-const DEFAULT_BCC = ['partner-proposals@trendzact.com'];
-const FROM = 'Trendzact Deal Desk <deal-desk@trendzact.com>';
+const DEFAULT_BCC = ['deal-desk@trendzact.com'];
+const FROM_PROPOSAL = 'Trendzact Deal Desk <deal-desk@trendzact.com>';
+const FROM_AUTH = 'Trendzact Partners <noreply@trendzact-partners.com>';
+const AUTH_REPLY_TO = 'deal-desk@trendzact.com';
 const CONTACT_TO = ['deal-desk@trendzact.com'];
 
 exports.sendProposal = onRequest(
@@ -53,7 +55,7 @@ exports.sendProposal = onRequest(
         const resend = new Resend(resendApiKey.value());
 
         const emailResult = await resend.emails.send({
-          from: FROM,
+          from: FROM_PROPOSAL,
           to: [to],
           cc: ccList.length ? ccList : undefined,
           bcc: bccList,
@@ -98,7 +100,7 @@ exports.sendProposal = onRequest(
 // =========================================================================
 // Replaces the client-side Firebase SDK call to sendPasswordResetEmail().
 // We do this server-side so the reset email goes through Resend (branded,
-// from deal-desk@trendzact.com) instead of through Firebase's default
+// from noreply@trendzact-partners.com) instead of through Firebase's default
 // sender (noreply@trendzact-partners-001.firebaseapp.com), which has poor
 // deliverability against corporate spam filters.
 //
@@ -148,7 +150,8 @@ exports.sendPasswordReset = onRequest(
 
         const resend = new Resend(resendApiKey.value());
         const emailResult = await resend.emails.send({
-          from: FROM,
+          from: FROM_AUTH,
+          replyTo: AUTH_REPLY_TO,
           to: [cleanEmail],
           subject: 'Reset your Trendzact Partners password',
           text: buildPasswordResetTextBody({ resetLink }),
@@ -218,7 +221,9 @@ exports.sendUserInvite = onRequest(
           if (err && err.code !== 'auth/user-not-found') throw err;
           userExisted = false;
           // Throwaway password — user replaces it via the reset link.
-          const tempPassword = crypto.randomBytes(24).toString('base64');
+          // Suffix guarantees it satisfies the project password policy
+          // (upper/lower/digit/non-alphanumeric); base64 alone can miss the symbol.
+          const tempPassword = crypto.randomBytes(24).toString('base64') + 'Aa1!';
           user = await admin.auth().createUser({
             email: cleanEmail,
             password: tempPassword,
@@ -244,7 +249,8 @@ exports.sendUserInvite = onRequest(
 
         const resend = new Resend(resendApiKey.value());
         const emailResult = await resend.emails.send({
-          from: FROM,
+          from: FROM_AUTH,
+          replyTo: AUTH_REPLY_TO,
           to: [cleanEmail],
           subject: 'Welcome to Trendzact Partners — set your password',
           text: buildInviteTextBody({ resetLink, displayName: cleanDisplayName }),
@@ -307,7 +313,7 @@ exports.sendContact = onRequest(
         const html = buildContactHtmlBody({ name, company, email: cleanEmail, routeTo, subject, message, pageUrl, userAgent });
 
         const emailResult = await resend.emails.send({
-          from: FROM,
+          from: FROM_PROPOSAL,
           to: CONTACT_TO,
           replyTo: cleanEmail,
           subject: emailSubject,
@@ -471,8 +477,8 @@ function buildPasswordResetTextBody(ctx) {
     "If you didn't request a reset, you can ignore this email — your",
     'password will stay unchanged.',
     '',
-    '— Trendzact Deal Desk',
-    'deal-desk@trendzact.com'
+    '— Trendzact Partners',
+    'Questions? deal-desk@trendzact.com'
   ].join('\n');
 }
 
@@ -502,9 +508,9 @@ function buildInviteTextBody(ctx) {
     '',
     'Portal URL: https://trendzact-partners-001.web.app/',
     '',
-    'Questions? Reply to this email or contact deal-desk@trendzact.com.',
+    'Questions? Contact deal-desk@trendzact.com.',
     '',
-    '— Trendzact Deal Desk'
+    '— Trendzact Partners'
   ].join('\n');
 }
 
@@ -518,6 +524,6 @@ function buildInviteHtmlBody(ctx) {
       <p style="margin: 0 0 12px;">After setting a password, sign in at <a href="https://trendzact-partners-001.web.app/" style="color: #00827C;">trendzact-partners-001.web.app</a>.</p>
     `,
     cta: { href: ctx.resetLink, label: 'Set your password' },
-    footer: 'Questions? Reply to this email or contact deal-desk@trendzact.com.'
+    footer: 'Questions? Contact deal-desk@trendzact.com.'
   });
 }

@@ -15,11 +15,14 @@
 //   - OrgID scoping (comes in Increment 2)
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check.js';
+
 import {
   getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
+  sendPasswordResetEmail,
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink
@@ -39,12 +42,24 @@ const PUBLIC_PAGES = new Set([
   '/login.html', '/login',
   '/set-password.html', '/set-password',
   '/logout.html', '/logout',
-  '/verify-link.html', '/verify-link'
+  '/verify-link.html', '/verify-link',
+  '/auth-action.html', '/auth-action'
 ]);
 
+function normalizePath(pathname) {
+  return (pathname || '/').toLowerCase().replace(/\/+$/, '') || '/';
+}
+
 function isPublicPage(pathname) {
-  const p = (pathname || '/').toLowerCase().replace(/\/+$/, '') || '/';
-  return PUBLIC_PAGES.has(p);
+  return PUBLIC_PAGES.has(normalizePath(pathname));
+}
+
+// cleanUrls serves this page at /set-password (no .html). Match both
+// forms so the mustResetPassword guard doesn't loop-redirect the page
+// onto itself and swallow the trendzact-auth-ready dispatch.
+function isSetPasswordPage(pathname) {
+  const p = normalizePath(pathname);
+  return p === '/set-password' || p === '/set-password.html';
 }
 
 // --------------------------------------------------
@@ -56,6 +71,11 @@ if (!window.FIREBASE_CONFIG) {
 }
 
 const app = initializeApp(window.FIREBASE_CONFIG);
+// App Check — bot/abuse protection for Auth + Firestore.
+initializeAppCheck(app, {
+  provider: new ReCaptchaEnterpriseProvider('6LcRsQgtAAAAAPBhJPwJQI_0BqHCxB2QuTdFF960'),
+  isTokenAutoRefreshEnabled: true
+});
 const auth = getAuth(app);
 const db = getFirestore(app);
 
@@ -81,47 +101,15 @@ window.TrendzactAuth = {
     window.location.href = '/login.html';
   },
 
-  /**
-   * Send a password-reset email to the given address.
-   *
-   * Routed through our sendPasswordReset Cloud Function (which uses Resend
-   * + the deal-desk@trendzact.com sender) instead of Firebase's built-in
-   * email service. Firebase's default sender
-   * (noreply@trendzact-partners-001.firebaseapp.com) has poor
-   * deliverability against corporate spam filters, so partner reset
-   * emails were being silently dropped.
-   *
-   * The Cloud Function:
-   *   - Returns ok:true even when the user doesn't exist (anti-enumeration)
-   *   - Generates the Firebase action link server-side via Admin SDK
-   *   - Sends a branded email via Resend
-   *
-   * Errors thrown here are network/auth-config issues, NOT user-existence
-   * errors. login.html shows a generic "if an account exists, an email
-   * is on the way" message on success regardless.
-   */
+  /** Send a password-reset email to the given address. */
   async sendResetEmail(email) {
-    const cfg = window.TrendzactConfig || {};
-    const continueUrl = window.location.origin + '/login.html?reset=success';
-    const resp = await fetch('/api/send-password-reset', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Portal-Secret': cfg.portalSecret
-      },
-      body: JSON.stringify({ email, continueUrl })
-    });
-    if (!resp.ok) {
-      let detail = '';
-      try {
-        const data = await resp.json();
-        detail = data.message || data.error || '';
-      } catch (e) { /* non-JSON response */ }
-      const err = new Error(detail || ('HTTP ' + resp.status));
-      err.status = resp.status;
-      throw err;
-    }
-    return await resp.json();
+    const actionCodeSettings = {
+      // After Firebase completes the password reset, send the user back
+      // to our branded login page with a success flag.
+      url: window.location.origin + '/login.html?reset=success',
+      handleCodeInApp: false
+    };
+    await sendPasswordResetEmail(auth, email, actionCodeSettings);
   },
 
   /**
@@ -199,11 +187,11 @@ function updateUtilityBar(user) {
 
 function escapeHtml(s) {
   return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 }
 
 // --------------------------------------------------
@@ -222,8 +210,8 @@ onAuthStateChanged(auth, async (user) => {
       // them to plain login without a new redirect param (breaks any loop).
       const current = path + window.location.search;
       const looksLikeRedirectChain =
-        /[?&]redirect=/.test(current) ||
-        /\/login/i.test(path);
+          /[?&]redirect=/.test(current) ||
+          /\/login/i.test(path);
       if (looksLikeRedirectChain) {
         window.location.href = '/login.html';
       } else {
@@ -248,8 +236,10 @@ onAuthStateChanged(auth, async (user) => {
 
   window.TrendzactAuth.userDoc = userDoc;
 
-  // If they must reset their temp password, force them to the reset page
-  if (userDoc && userDoc.mustResetPassword === true && path !== '/set-password.html') {
+  // If they must reset their temp password, force them to the reset page.
+  // Use isSetPasswordPage so cleanUrls (/set-password vs /set-password.html)
+  // doesn't make the page redirect onto itself.
+  if (userDoc && userDoc.mustResetPassword === true && !isSetPasswordPage(path)) {
     window.location.href = '/set-password.html';
     return;
   }
