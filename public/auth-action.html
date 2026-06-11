@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Set Your Password · Trendzact Partners</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <style>
+        body { background: var(--bg-soft); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-shell { background: #fff; border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 40px; max-width: 460px; width: 100%; box-shadow: var(--shadow-md); }
+        .auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+        .auth-brand svg { width: 40px; height: 40px; }
+        .auth-brand-name { font-family: var(--ff-display); font-weight: 500; font-size: 22px; color: var(--dark-gray); line-height: 1; }
+        .auth-brand-sub { font-family: var(--ff-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--dark-green); text-transform: uppercase; margin-top: 2px; display: block; }
+        .auth-h1 { font-family: var(--ff-display); font-size: 26px; font-weight: 500; margin: 0 0 6px; letter-spacing: -0.01em; }
+        .auth-sub { color: var(--med-gray); font-size: 14px; margin-bottom: 22px; line-height: 1.55; }
+        .auth-msg { padding: 12px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 18px; display: none; }
+        .auth-msg.error { background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; display: block; }
+        .auth-msg.info { background: var(--tint-light); border: 1px solid var(--med-green); color: var(--dark-green); display: block; }
+        .email-chip { display: inline-block; padding: 6px 12px; background: var(--tint-light); border: 1px solid var(--med-green); border-radius: 999px; font-family: var(--ff-mono); font-size: 13px; color: var(--dark-gray); margin-bottom: 22px; }
+        .field-hint { font-size: 12px; color: var(--med-gray); margin: 6px 0 0; }
+        .form-field { margin-bottom: 16px; }
+        .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--dark-green); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 18px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<main class="auth-shell">
+    <div class="auth-brand">
+        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="36" height="36" rx="8" fill="#00827C"/>
+            <path d="M11 14h18M20 14v15" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="28" cy="24" r="3" fill="#00A398" stroke="#fff" stroke-width="1.5"/>
+        </svg>
+        <div>
+            <div class="auth-brand-name">Trendzact</div>
+            <span class="auth-brand-sub">Partners</span>
+        </div>
+    </div>
+
+    <!-- LOADING -->
+    <div id="loadingState">
+        <div class="spinner"></div>
+        <h1 class="auth-h1" style="text-align:center;">Checking your link&hellip;</h1>
+        <p class="auth-sub" style="text-align:center;">One moment.</p>
+    </div>
+
+    <!-- SET PASSWORD FORM -->
+    <div id="formState" style="display:none;">
+        <h1 class="auth-h1">Set your password</h1>
+        <p class="auth-sub">Choose a password for your Trendzact Partners account. You'll be signed in automatically once it's set.</p>
+
+        <p style="margin:0 0 6px; color:var(--med-gray); font-size:13px;">Account</p>
+        <div class="email-chip" id="emailChip">&hellip;</div>
+
+        <div id="authMsg" class="auth-msg"></div>
+
+        <form id="pwForm">
+            <div class="form-field">
+                <label for="pw">New password</label>
+                <input id="pw" type="password" autocomplete="new-password" required minlength="8" />
+                <p class="field-hint">At least 8 characters, including a number and a symbol.</p>
+            </div>
+            <div class="form-field">
+                <label for="pw2">Confirm password</label>
+                <input id="pw2" type="password" autocomplete="new-password" required minlength="8" />
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%;" id="submitBtn">Set password &amp; sign in</button>
+        </form>
+    </div>
+
+    <!-- SUCCESS -->
+    <div id="successState" style="display:none; text-align:center;">
+        <div style="width:56px;height:56px;margin:0 auto 18px;border-radius:50%;background:var(--tint-light);display:flex;align-items:center;justify-content:center;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00827C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h1 class="auth-h1">You're all set</h1>
+        <p class="auth-sub">Password saved. Taking you to the portal&hellip;</p>
+    </div>
+
+    <!-- ERROR -->
+    <div id="errorState" style="display:none;">
+        <h1 class="auth-h1">Link can't be used</h1>
+        <p class="auth-sub" id="errorText">This link is invalid or has expired. Links can be used once and expire after one hour.</p>
+        <a href="/login.html" class="btn btn-primary btn-lg" style="width:100%;">Back to sign-in</a>
+    </div>
+</main>
+
+<!-- Self-contained: does NOT load /assets/auth.js, so the global
+     mustResetPassword guard cannot interfere mid-flow. We sign the user
+     in and clear the flag here, then hand off to the authenticated portal.
+     App Check is initialized here too, since this page inits its own app. -->
+<script src="/assets/firebase-config.js"></script>
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+    import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check.js';
+    import {
+        getAuth,
+        verifyPasswordResetCode,
+        confirmPasswordReset,
+        signInWithEmailAndPassword,
+        applyActionCode
+    } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+    import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+    const loadingState = document.getElementById('loadingState');
+    const formState    = document.getElementById('formState');
+    const successState = document.getElementById('successState');
+    const errorState   = document.getElementById('errorState');
+    const errorText    = document.getElementById('errorText');
+    const emailChip    = document.getElementById('emailChip');
+    const msg          = document.getElementById('authMsg');
+    const pwForm       = document.getElementById('pwForm');
+    const submitBtn    = document.getElementById('submitBtn');
+
+    const show = (el) => { [loadingState, formState, successState, errorState].forEach(s => s.style.display = 'none'); el.style.display = 'block'; };
+    const showMsg = (type, text) => { msg.className = 'auth-msg ' + type; msg.textContent = text; };
+    const clearMsg = () => { msg.className = 'auth-msg'; msg.textContent = ''; };
+    const showError = (text) => { if (text) errorText.textContent = text; show(errorState); };
+
+    if (!window.FIREBASE_CONFIG) { showError('Configuration error. Contact Trendzact.'); throw new Error('FIREBASE_CONFIG missing'); }
+
+    const app = initializeApp(window.FIREBASE_CONFIG);
+
+    // App Check — must init before any Auth/Firestore calls under enforcement.
+    initializeAppCheck(app, {
+        provider: new ReCaptchaEnterpriseProvider('6LcRsQgtAAAAAPBhJPwJQI_0BqHCxB2QuTdFF960'),
+        isTokenAutoRefreshEnabled: true
+    });
+
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    const params  = new URLSearchParams(window.location.search);
+    const mode    = params.get('mode');
+    const oobCode = params.get('oobCode');
+
+    let accountEmail = null;
+
+    function friendly(err) {
+        const code = (err && err.code) || '';
+        const map = {
+            'auth/expired-action-code': 'This link has expired. Links are valid for one hour — request a new one.',
+            'auth/invalid-action-code': 'This link has already been used or is invalid. Request a new one.',
+            'auth/user-disabled': 'This account has been disabled. Contact Trendzact.',
+            'auth/user-not-found': 'No account was found for this link. Contact Trendzact.',
+            'auth/weak-password': 'That password does not meet the requirements. Use at least 8 characters with a number and a symbol.'
+        };
+        if (map[code]) return map[code];
+        if (/PASSWORD_DOES_NOT_MEET_REQUIREMENTS|password/i.test((err && err.message) || '')) {
+            return 'That password does not meet the requirements. Use at least 8 characters with a number and a symbol.';
+        }
+        return 'Something went wrong. ' + ((err && err.message) || code || 'Please try again.');
+    }
+
+    async function init() {
+        if (!oobCode) { showError('This link is missing its security code. Request a new one.'); return; }
+
+        if (mode === 'verifyEmail') {
+            try { await applyActionCode(auth, oobCode); } catch (e) { /* non-fatal */ }
+            window.location.href = '/login.html';
+            return;
+        }
+
+        if (mode !== 'resetPassword') { showError('This link type is not supported.'); return; }
+
+        try {
+            accountEmail = await verifyPasswordResetCode(auth, oobCode);
+            emailChip.textContent = accountEmail;
+            show(formState);
+        } catch (e) {
+            showError(friendly(e));
+        }
+    }
+
+    pwForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearMsg();
+
+        const pw  = document.getElementById('pw').value;
+        const pw2 = document.getElementById('pw2').value;
+        if (pw.length < 8) { showMsg('error', 'Password must be at least 8 characters.'); return; }
+        if (pw !== pw2)    { showMsg('error', 'The two passwords do not match.'); return; }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving…';
+
+        // 1) Set the password against the reset code.
+        try {
+            await confirmPasswordReset(auth, oobCode, pw);
+        } catch (err) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Set password & sign in';
+            const code = (err && err.code) || '';
+            if (code === 'auth/expired-action-code' || code === 'auth/invalid-action-code') {
+                showError(friendly(err));        // terminal — needs a fresh link
+            } else {
+                showMsg('error', friendly(err)); // e.g. policy/weak password — allow retry
+            }
+            return;
+        }
+
+        // 2) Sign in with the password just set, and clear the reset flag so the
+        //    portal does not bounce them back to set-password (the loop fix).
+        try {
+            const cred = await signInWithEmailAndPassword(auth, accountEmail, pw);
+            try {
+                await setDoc(doc(db, 'users', cred.user.uid), { mustResetPassword: false }, { merge: true });
+            } catch (flagErr) {
+                console.warn('[auth-action] could not clear mustResetPassword:', flagErr);
+            }
+            show(successState);
+            setTimeout(() => { window.location.href = '/'; }, 900);
+        } catch (signinErr) {
+            console.warn('[auth-action] auto sign-in failed:', signinErr);
+            window.location.href = '/login.html?reset=success';
+        }
+    });
+
+    init();
+</script>
+</body>
+</html>
