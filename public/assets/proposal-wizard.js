@@ -1289,20 +1289,15 @@
     //   distMargin%   = distDiscount - resellerDiscount   (what distributor retains)
     //   resellerMargin% = resellerDiscount    (what reseller retains)
     // These three sum to 100% and match the per-line math in computeChannelPrices.
-    var regTzPct = Math.round((1 - channelConfig.regularDistDiscount) * 100);
-    var regDistPct = Math.round((channelConfig.regularDistDiscount - channelConfig.regularResellerDiscount) * 100);
-    var regResellerPct = Math.round(channelConfig.regularResellerDiscount * 100);
-    var enhTzPct = Math.round((1 - channelConfig.enhDistDiscount) * 100);
-    var enhDistPct = Math.round((channelConfig.enhDistDiscount - channelConfig.enhResellerDiscount) * 100);
-    var enhResellerPct = Math.round(channelConfig.enhResellerDiscount * 100);
+    // Regular and enhancement SKUs use the same 60/10/30 split, so one line covers both.
+    var tzPct = Math.round((1 - channelConfig.regularDistDiscount) * 100);
+    var distPct = Math.round((channelConfig.regularDistDiscount - channelConfig.regularResellerDiscount) * 100);
+    var resellerPct = Math.round(channelConfig.regularResellerDiscount * 100);
 
     html += '<div class="tp-channel-discounts">';
-    html += '<span>Trendzact wholesale (regular): <strong>' + regTzPct + '%</strong></span>';
-    html += '<span>Distributor margin (regular): <strong>' + regDistPct + '%</strong></span>';
-    html += '<span>Reseller margin (regular): <strong>' + regResellerPct + '%</strong></span>';
-    html += '<span>Trendzact wholesale (enhancement): <strong>' + enhTzPct + '%</strong></span>';
-    html += '<span>Distributor margin (enhancement): <strong>' + enhDistPct + '%</strong></span>';
-    html += '<span>Reseller margin (enhancement): <strong>' + enhResellerPct + '%</strong></span>';
+    html += '<span>Trendzact wholesale: <strong>' + tzPct + '%</strong></span>';
+    html += '<span>Distributor margin: <strong>' + distPct + '%</strong></span>';
+    html += '<span>Reseller margin: <strong>' + resellerPct + '%</strong></span>';
     html += '</div>';
 
       // Margin summary table — all 3 tiers
