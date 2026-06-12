@@ -235,7 +235,6 @@
     var segLabel = inp.companySegmentLabel || '\u2014';
     var licenseCount = inp.userCount || 0;
     var moduleCount = inp.moduleCount || 0;
-    var modMult = inp.moduleMultiplier || 0;
     var bracketLabel = inp.bracket || '\u2014';
 
     text(doc, 'Company size:', MARGIN, y, { size: 8, color: C.medGray });
@@ -246,7 +245,7 @@
     text(doc, 'Monitored users:', MARGIN, y, { size: 8, color: C.medGray });
     text(doc, licenseCount.toLocaleString('en-US'), MARGIN + 30, y, { size: 9, style: 'bold', color: C.darkGray });
     text(doc, 'Module count:', MARGIN + CONTENT_W / 2, y, { size: 8, color: C.medGray });
-    text(doc, moduleCount + ' modules  \u00d7  ' + modMult.toFixed(2) + ' multiplier', MARGIN + CONTENT_W / 2 + 32, y, { size: 9, style: 'bold', color: C.darkGray });
+    text(doc, moduleCount + ' modules', MARGIN + CONTENT_W / 2 + 32, y, { size: 9, style: 'bold', color: C.darkGray });
     y += 10;
 
     hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
