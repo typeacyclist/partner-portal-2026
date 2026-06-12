@@ -127,8 +127,16 @@
     text(doc, 'PROPOSAL', PAGE_W - MARGIN, 21, { size: 10, style: 'bold', color: C.white, align: 'right' });
     text(doc, proposalId, PAGE_W - MARGIN, 25.5, { size: 8, color: [180, 220, 218], align: 'right' });
 
+    // --- Cover title: the formatted proposal title as a prominent heading ---
+    var coverTitle = (draft.proposalTitle && draft.proposalTitle.trim())
+        ? 'Proposal for ' + (draft.companyName || 'Prospect') + ': ' + draft.proposalTitle.trim()
+        : 'Proposal for ' + (draft.companyName || 'Prospect');
+    var titleTopY = 63;
+    var titleLineCount = lines(doc, coverTitle, MARGIN, titleTopY, CONTENT_W, { size: 15, style: 'bold', color: C.darkGray });
+    var detailTopY = titleTopY + titleLineCount * 7 + 6;
+
     // --- Two-column detail section ---
-    var detY = 68;
+    var detY = detailTopY;
     var leftX = MARGIN;
     var rightX = MARGIN + CONTENT_W / 2 + 4;
 
@@ -147,11 +155,10 @@
     });
 
     // Right: Proposal Details
-    var rightY = 68;
+    var rightY = detailTopY;
     text(doc, 'PROPOSAL DETAILS', rightX, rightY, { size: 8, style: 'bold', color: C.darkGreen });
     rightY += 8;
     var rightItems = [
-      ['Title', (draft.proposalTitle && draft.proposalTitle.trim()) || '\u2014'],
       ['Use Case', draft.primaryUseCase || '\u2014'],
       ['Licenses', (draft.userCount || 0).toLocaleString('en-US')],
       ['Est. Decision', draft.estimatedCloseDate || '\u2014']
