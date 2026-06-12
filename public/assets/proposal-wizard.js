@@ -1093,8 +1093,7 @@
       ['Contact', d.primaryContactName || '—'],
       ['Email', d.contactEmail || '—'],
       ['Use Case', d.solutionChallenge ? (d.solutionChallenge.length > 80 ? d.solutionChallenge.slice(0, 79) + '…' : d.solutionChallenge) : '—'],
-      ['Est. Decision', d.estDecisionDate || '—'],
-      ['Proposal Title', d.proposalTitle || '— (set in Step 4)']
+      ['Est. Decision', d.estDecisionDate || '—']
     ];
     var prospectHtml = prospectRows.map(function (r) {
       return '<div class="tp-summary-row"><span class="tp-pricing-label">' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>';
@@ -1103,6 +1102,10 @@
     return (
         '<h3>Step 3 — Review &amp; Calculate</h3>' +
         '<p class="tp-lede">List Price pricing summary for prospect review. Actual Retail Price at the discretion of the Distributor and their Resellers. Click "Edit →" to adjust selections.</p>' +
+
+        (d.proposalTitle && d.proposalTitle.trim()
+            ? '<div style="font-size:17px; font-weight:600; color:#353D4A; margin:2px 0 16px; padding-bottom:12px; border-bottom:1px solid #E5E7EB;">' + esc('Proposal for ' + (d.prospectCompany || '—') + ': ' + d.proposalTitle.trim()) + '</div>'
+            : '') +
 
         errorsHtml +
 
@@ -1423,7 +1426,7 @@
     var fmt = TrendzactMath.formatMoney;
     var userEmail = (state.user && state.user.email) || 'partner.user@example.com';
 
-    var defaultTitle = d.proposalTitle || (d.prospectCompany ? 'Proposal for ' + d.prospectCompany : '');
+    var defaultTitle = d.proposalTitle || '';
 
     var banner = '';
     if (state.submitResult) {
@@ -1459,8 +1462,8 @@
 
         '<div class="tp-submit-field">' +
         '<label>Proposal Title<span class="req">*</span></label>' +
-        '<input type="text" id="sf-title" value="' + esc(defaultTitle) + '" placeholder="e.g., Proposal for Acme Manufacturing"/>' +
-        '<p class="tp-hint" style="margin-top:4px;">Appears on the PDF cover.</p>' +
+        '<input type="text" id="sf-title" value="' + esc(defaultTitle) + '" placeholder="Enter a Proposal Title"/>' +
+        '<p class="tp-hint" style="margin-top:4px;">Shown on the PDF cover as <strong>Proposal for ' + esc(d.prospectCompany || 'your company') + ': …</strong></p>' +
         '</div>' +
 
         '<div class="tp-submit-field">' +
