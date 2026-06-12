@@ -1125,7 +1125,7 @@
         '<div class="tp-summary-row"><span class="tp-pricing-label">Company size</span><span>' + esc(segLabel) + '</span></div>' +
         '<div class="tp-summary-row"><span class="tp-pricing-label">Volume bracket</span><span>' + esc(inp.bracket || '—') + '</span></div>' +
         '<div class="tp-summary-row"><span class="tp-pricing-label">Licenses</span><span>' + licenseCount.toLocaleString('en-US') + '</span></div>' +
-        '<div class="tp-summary-row"><span class="tp-pricing-label">Module count</span><span>' + (inp.moduleCount || 0) + ' modules × ' + (inp.moduleMultiplier || 0).toFixed(2) + ' multiplier</span></div>' +
+        '<div class="tp-summary-row"><span class="tp-pricing-label">Module count</span><span>' + (inp.moduleCount || 0) + ' modules</span></div>' +
         '</div>' +
         '</div>' +
 
