@@ -5,6 +5,8 @@
 **Scope:** Exposure Risk Score (ERS), Localized Jump Detection (LJD), cross-module normalization, Secure Workspace Assurance (SWA), Identity Recognition Assurance (IRA), Secure Virtual Meetings (SVM), Exposure DLP (eDLP), ITDR/ITM, EUBA confidence/severity modifier, analyzer output contract
 **Primary use:** Edge/SOC analyzer design, implementation planning, validation, and knowledge transfer
 
+**Out of Scope:** EUBA and Historical Context, Playbook
+
 ---
 
 # 1. Executive Summary
@@ -41,9 +43,16 @@ The final analyzer model is:
 ```text
 ERS_base = NREL(active exposure-risk module scores)
 
-ERS_context_adjusted = min(100, ERS_base + EUBA_risk_modifier)
+EUBA_risk_modifier =
+    bounded_modifier(
+        behavioral_context_score,
+        alert_history_context_score,
+        modifier_cap
+    )
 
-ERS_LJD = max(ERS_context_adjusted, confirmed_jump_floor)
+ERS_EUBA = min(100, ERS_base + EUBA_risk_modifier)
+
+ERS_LJD = max(ERS_EUBA, confirmed_jump_floor)
 
 final_analyzer_score = Decay(ERS_LJD)
 ```
@@ -98,105 +107,6 @@ Logical flow:
 | 10       | `6WH_context`          | Provides who, what, when, where, why, how, and how much context for investigation. |
 | 11       | `SOC_readable_summary` | Provides a concise analyst-facing explanation of the analyzer result. |
 
-## 2.2 EUBA (Out of Scope, added for reference)
-
-EUBA modifies confidence and severity for an existing exposure-risk condition. It does not create exposure risk by itself.
-
-EUBA should evaluate both current behavioral context and recent alert-history context.
-
-```text
-EUBA_context_inputs =
-    environmental_context
-    application_context
-    time_context
-    role_context
-    endpoint_context
-    session_context
-    alert_history_context
-```
-
-Alert-history context helps distinguish between expected patterns and unusual changes in exposure behavior.
-
-Examples:
-
-| Alert-history pattern | EUBA interpretation                                          | Possible modifier behavior                                   |
-| --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Repeat/Recur          | The current alert resembles a previously observed recurring pattern, such as a user performing the same risky workflow every Sunday at 2:00 PM. | May reduce confidence lift or leave severity unchanged if the pattern is explainable and previously reviewed. |
-| Emerging              | The user had no alerts for 30 days, then generated 5 alerts today. | May increase confidence/severity because the current exposure activity is unusual for the user’s recent history.Burst |
-| Burst                 | Alert count or severity is increasing over recent windows.   | May increase severity modestly, subject to cap.              |
-| Repeat                | The same rule repeatedly fires across sessions, apps, files, or meetings. | May increase confidence that the behavior is persistent rather than incidental. |
-
-Recommended alert-history metrics:
-
-```text
-alerts_last_24h_rolling
-alerts_last_3d
-alerts_last_7d
-alerts_last_15d
-days_since_last_alert
-same_rule_repeat_count
-same_context_repeat_count
-alert_velocity_delta
-alert_severity_trend
-historical_escalation_match
-recurring_pattern_match
-```
-
-Example EUBA modifier logic:
-
-```text
-EUBA_alert_history_score =
-    NREL(active alert-history anomaly metrics, alpha=0.10, top_k=3)
-
-EUBA_risk_modifier =
-    bounded_modifier(
-        behavioral_context_score,
-        alert_history_score,
-        modifier_cap
-    )
-```
-
-EUBA remains bounded:
-
-```text
-ERS_context_adjusted = min(100, ERS_base + EUBA_risk_modifier)
-```
-
-EUBA can increase confidence or severity when alert history suggests the current exposure event is unusual, persistent, escalating, or newly suspicious. EUBA should not independently create an exposure alert when `ERS_base = 0`.
-
-## 2.3 Playbook Responsibility (Out of Scope, added for reference)
-
-The playbook is a downstream consumer of the Analyzer metadata.
-
-The playbook may consume:
-
-```text
-final_analyzer_score
-reason_codes
-module context
-triggered rules
-evidence references
-```
-
-The playbook converts the analyzer score into a rating / severity band and independently determines response actions. 
-
-```text
-final_analyzer_rating = PlaybookRatingLookup(final_analyzer_score)
-# example: 95 -> "critical"
-```
-
-The playbook may then select or execute response actions, but those actions are outside the analyzer scope.
-
-```text
-Analyzer responsibility:
-score, normalize, contextualize, stabilize, explain.
-
-Playbook responsibility:
-consume analyzer result, apply Exposure Score Rating and select/execute response actions.
-```
-
-------
-
 # 3. Final Decisions
 
 ## 3.1 Adopt ERS-LJD
@@ -204,7 +114,7 @@ consume analyzer result, apply Exposure Score Rating and select/execute response
 Adopt ERS-LJD as the final exposure-risk analyzer model.
 
 ```text
-ERS_context_adjusted = min(100, ERS_base + EUBA_risk_modifier)
+ERS_EUBA = min(100, ERS_base + EUBA_risk_modifier)
 
 LJD_jump_score = NREL(active localized jump metrics, alpha=0.15, top_k=3)
 
@@ -216,7 +126,7 @@ confirmed_jump_floor =
        and benign_context_gate_passed
     else 0
 
-ERS_LJD = max(ERS_context_adjusted, confirmed_jump_floor)
+ERS_LJD = max(ERS_EUBA, confirmed_jump_floor)
 ```
 
 Basic LJD algorithm:
@@ -230,7 +140,7 @@ Basic LJD algorithm:
 | 5    | Estimate jump confidence                                 | Produce `P_jump`, the confidence that the observed spike is a real localized jump rather than normal variation. |
 | 6    | Apply uncertainty, persistence, and benign-context gates | Suppress noisy, transient, or explainable spikes unless a hard-policy condition applies. |
 | 7    | Produce `confirmed_jump_floor`                           | Return a score floor only when the jump is confirmed. Otherwise return `0`. |
-| 8    | Apply LJD as upward-only overlay                         | Raise the score only when `confirmed_jump_floor` exceeds `ERS_context_adjusted`. |
+| 8    | Apply LJD as upward-only overlay                         | Raise the score only when `confirmed_jump_floor` exceeds `ERS_EUBA`. |
 
 ERS remains the stable exposure posture baseline. LJD is not a replacement for ERS; it is a confidence-gated upward overlay.
 
@@ -278,11 +188,43 @@ The analyzer scope includes all risk-affecting modules, but not all modules cont
 
 ITDR remains a SOC-reviewable insider-threat indicator, not a direct ERS contributor by default.
 
-## 3.6 Use EUBA as modifier, not standalone ERS source
+## 3.6 Separate EUBA from ERS
 
-EUBA may affect alert confidence and severity when exposure already exists.
+EUBA is separated from `ERS_base` and applied as a bounded post-ERS contextual modifier.
 
-EUBA must not create an exposure alert by itself.
+`ERS_base` represents direct exposure posture across active, eligible exposure-risk modules. EUBA does not create exposure risk by itself and is not aggregated into `ERS_base`.
+
+Instead, EUBA evaluates whether the current exposure condition is more or less concerning based on behavioral context, alert-history context, baseline match, and anomaly evidence.
+
+```text
+ERS_base = NREL(active exposure-risk module scores)
+
+EUBA_risk_modifier =
+    bounded_modifier(
+        behavioral_context_score,
+        alert_history_context_score,
+        modifier_cap
+    )
+
+ERS_EUBA = min(100, ERS_base + EUBA_risk_modifier)
+
+ERS_LJD = max(ERS_EUBA, confirmed_jump_floor)
+
+final_analyzer_score = Decay(ERS_LJD)
+```
+
+EUBA behaves like a post-ERS adjustment layer, but it is not identical to LJD.
+
+LJD is an upward-only overlay. EUBA is a bounded contextual modifier. EUBA may increase severity when the exposure event is anomalous, escalating, persistent, or inconsistent with the user’s normal alert history. EUBA may also leave the score unchanged when behavior appears normal or previously reviewed as benign.
+
+EUBA must not create an exposure-risk score when no exposure-risk module is active.
+
+```
+if ERS_base = 0:
+    EUBA_risk_modifier = 0
+```
+
+
 
 ## 3.7 Keep playbook outside analyzer
 
@@ -615,7 +557,7 @@ ERS_base = 0
 band = informational
 ```
 
-## 6.8 Step 7 — EUBA confidence/severity modifier
+## 6.8 Step 7 — EUBA post-ERS contextual modifier
 
 EUBA modifies an existing exposure alert. It does not create one by itself.
 
@@ -648,8 +590,8 @@ Mature EUBA severity lift cap = +10 points
 Apply:
 
 ```text
-ERS_context_adjusted =
-    min(100, ERS_base + EUBA_risk_modifer)
+ERS_EUBA =
+    min(100, ERS_base + EUBA_risk_modifier)
 ```
 
 If behavior matches the user’s baseline, EUBA should reduce confidence or leave severity unchanged. It should not reduce the raw exposure score.
@@ -671,7 +613,7 @@ Then:
 
 ```text
 ERS_LJD =
-    max(ERS_context_adjusted, confirmed_jump_floor)
+    max(ERS_EUBA, confirmed_jump_floor)
 ```
 
 ## 6.10 Step 9 — Decay / hysteresis
@@ -711,7 +653,7 @@ The analyzer result should retain traceability to:
 
 ```text
 ERS_base
-ERS_context_adjusted
+ERS_EUBA
 ERS_LJD
 final_analyzer_score
 active module contributors
@@ -798,7 +740,7 @@ ERS_base = 74
 EUBA adjustment:
 
 ```text
-ERS_context_adjusted = min(100, 74 + 5) = 79
+ERS_EUBA = min(100, 74 + 5) = 79
 ```
 
 LJD overlay:
@@ -1235,7 +1177,7 @@ confirmed_jump_floor =
        and persistence_or_hard_policy_gate_passed
     else 0
 
-ERS_LJD = max(ERS_context_adjusted, confirmed_jump_floor)
+ERS_LJD = max(ERS_EUBA, confirmed_jump_floor)
 ```
 
 ## 11.4 LJD action gates
@@ -1273,7 +1215,7 @@ Required controls:
 {
   "schema_version": "ERS-LJD-1.0",
   "ers_base": 74,
-  "ers_context_adjusted": 79,
+  "ERS_EUBA": 79,
   "ers_ljd": 88,
   "final_analyzer_score": 88,
   "band": "critical",
@@ -1547,9 +1489,9 @@ def apply_euba_modifier(ers_base: int, euba_result: dict, exposure_active: bool)
     return min(100, ers_base + bounded_lift)
 
 
-def apply_ljd(ers_context_adjusted: int, ljd_result: dict) -> int:
+def apply_ljd(ERS_EUBA: int, ljd_result: dict) -> int:
     confirmed_jump_floor = ljd_result.get("confirmed_jump_floor") or 0
-    return max(ers_context_adjusted, confirmed_jump_floor)
+    return max(ERS_EUBA, confirmed_jump_floor)
 
 
 def apply_decay(ers_ljd: int, previous_display_score: int | None, decay_alpha: float) -> int:
@@ -1571,14 +1513,14 @@ def final_analyzer_score(module_results: dict, euba_result: dict, ljd_result: di
         for result in module_results.values()
     )
 
-    ers_context_adjusted = apply_euba_modifier(
+    ERS_EUBA = apply_euba_modifier(
         ers_base=ers_base,
         euba_result=euba_result,
         exposure_active=exposure_active
     )
 
     ers_ljd = apply_ljd(
-        ers_context_adjusted=ers_context_adjusted,
+        ERS_EUBA=ERS_EUBA,
         ljd_result=ljd_result
     )
 
@@ -1590,7 +1532,7 @@ def final_analyzer_score(module_results: dict, euba_result: dict, ljd_result: di
 
     return {
         "ers_base": ers_base,
-        "ers_context_adjusted": ers_context_adjusted,
+        "ERS_EUBA": ERS_EUBA,
         "ers_ljd": ers_ljd,
         "final_analyzer_score": score
     }
@@ -1668,14 +1610,21 @@ module_score =
 ERS_base =
     NREL(active exposure-risk module scores, alpha=0.25, top_k=4)
 
-ERS_context_adjusted =
-    min(100, ERS_base + EUBA_risk_modifer)
+EUBA_risk_modifier =
+    bounded_modifier(
+        behavioral_context_score,
+        alert_history_context_score,
+        modifier_cap
+    )
+
+ERS_EUBA =
+    min(100, ERS_base + EUBA_risk_modifier)
 
 localized_jump_score =
     NREL(jump scores, alpha=0.15, top_k=3)
 
 ERS_LJD =
-    max(ERS_context_adjusted, confirmed_jump_floor)
+    max(ERS_EUBA, confirmed_jump_floor)
 
 final_analyzer_score =
     Decay(ERS_LJD)
@@ -1848,7 +1797,7 @@ Example:
 ```text
 ERS_base = 74
 EUBA risk_modifer = +5
-ERS_context_adjusted = 79
+ERS_EUBA = 79
 ```
 
 ### Step 8 - Confirmed LJD upward overlay
@@ -1869,7 +1818,7 @@ confirmed_jump_floor =
 Then:
 
 ```text
-ERS_LJD = max(ERS_context_adjusted, confirmed_jump_floor)
+ERS_LJD = max(ERS_EUBA, confirmed_jump_floor)
 ```
 
 LJD can raise ERS. It cannot lower ERS.
@@ -1998,8 +1947,8 @@ ERS_base = 74
 ERS_base = 74
 EUBA risk_modifer = +5
 
-ERS_context_adjusted = min(100, 74 + 5)
-ERS_context_adjusted = 79
+ERS_EUBA = min(100, 74 + 5)
+ERS_EUBA = 79
 ```
 
 ### Step F - LJD overlay
@@ -2028,7 +1977,7 @@ final_analyzer_score = 88
 ```json
 {
   "ers_base": 74,
-  "ers_context_adjusted": 79,
+  "ERS_EUBA": 79,
   "ers_ljd": 88,
   "final_analyzer_score": 88,
   "band": "critical",
