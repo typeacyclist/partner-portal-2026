@@ -5,7 +5,9 @@
 **Scope:** Exposure Risk Score (ERS), Localized Jump Detection (LJD), cross-module normalization, Secure Workspace Assurance (SWA), Identity Recognition Assurance (IRA), Secure Virtual Meetings (SVM), Exposure DLP (eDLP), ITDR/ITM, EUBA confidence/severity modifier, analyzer output contract
 **Primary use:** Edge/SOC analyzer design, implementation planning, validation, and knowledge transfer
 
-**Out of Scope:** EUBA and Historical Context, Playbook
+**Out of Scope:** EUBA, Historical Context, and Playbook internal logic.
+
+**Out of Scope Note:** EUBA, Historical Context, and Playbook remain external processes that may be called by or consume ERS-LJD outputs. This document may reference their API-provided values where they affect ERS-LJD scoring, but it does not define their internal algorithms, evidence packaging, analyst workflows, or response-action logic.
 
 ---
 
@@ -43,12 +45,7 @@ The final analyzer model is:
 ```text
 ERS_base = NREL(active exposure-risk module scores)
 
-EUBA_risk_modifier =
-    bounded_modifier(
-        behavioral_context_score,
-        alert_history_context_score,
-        modifier_cap
-    )
+EUBA_risk_modifier = external EUBA API-provided modifier
 
 ERS_EUBA = min(100, ERS_base + EUBA_risk_modifier)
 
