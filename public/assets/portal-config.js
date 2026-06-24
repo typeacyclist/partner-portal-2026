@@ -37,8 +37,9 @@
   'use strict';
   window.TrendzactConfig = Object.assign({}, window.TrendzactConfig || {}, {
     // !! REPLACE THIS WITH THE GENERATED SECRET BEFORE DEPLOY !!
-    // !! DO NOT COMMIT THE REAL VALUE — RESET TO PLACEHOLDER FIRST !!
-    portalSecret: 'REPLACE_ME_WITH_GENERATED_SECRET',
+    // !! DO NOT COMMIT THE REAL VALUE — RESET TO PLACEHOLDER FIRST pyOZJMhJqyMCkOFx+7x9m7Jlnjx/5xVxvQg8WtkvV60=!!
+    // REPLACE_ME_WITH_GENERATED_SECRET
+    portalSecret: 'pyOZJMhJqyMCkOFx+7x9m7Jlnjx/5xVxvQg8WtkvV60=',
 
     // Endpoint for email pipeline — routed via firebase.json rewrite
     sendProposalUrl: '/api/send-proposal'
