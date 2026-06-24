@@ -332,7 +332,9 @@
         ],
         "optionalAddOns": [
           "PRIVSCR",
-          "MSR"
+          "UVA-WEBCAM",
+          "MSR",
+          "CONN-PURVIEW"
         ]
       }
     },
@@ -376,7 +378,8 @@
           "Work activity occurs outside expected time-place pattern"
         ],
         "optionalAddOns": [
-          "MSR"
+          "MSR",
+          "CONN-PURVIEW"
         ]
       }
     },
@@ -409,7 +412,8 @@
           "Insider activity requires case creation or SOC review"
         ],
         "optionalAddOns": [
-          "MSR"
+          "MSR",
+          "CONN-PURVIEW"
         ]
       }
     },
@@ -442,7 +446,8 @@
           "Meeting recording or evidence governance risk"
         ],
         "optionalAddOns": [
-          "MSR"
+          "MSR",
+          "CONN-PURVIEW"
         ]
       }
     },
@@ -536,7 +541,7 @@
           "Environmental context signals elevated endpoint risk",
           "Endpoint health condition requires policy enforcement"
         ],
-        "optionalAddOns": []
+        "optionalAddOns": ["CONN-PURVIEW"]
       }
     },
     {
