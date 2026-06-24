@@ -297,7 +297,8 @@
         "optionalAddOns": [
           "PRIVSCR",
           "UVA-WEBCAM",
-          "MSR"
+          "MSR",
+          "CONN-PURVIEW"
         ]
       }
     },
@@ -631,7 +632,8 @@
         "parentCodes": [
           "eDLP-EUBA",
           "MSR",
-          "ITM"
+          "ITM",
+          "SWA"
         ],
         "displayBadges": []
       },
