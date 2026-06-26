@@ -45,6 +45,29 @@ jobs:
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > "$RUNNER_TEMP/sa.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+      - name: Inject PORTAL_SHARED_SECRET into portal-config.js
+        env:
+          PORTAL_SHARED_SECRET: ${{ secrets.PORTAL_SHARED_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PORTAL_SHARED_SECRET:-}" ]; then
+            echo "::error::PORTAL_SHARED_SECRET repo secret is not set. Add it at: https://github.com/${GITHUB_REPOSITORY}/settings/secrets/actions"
+            exit 1
+          fi
+          node -e '
+            const fs = require("fs");
+            const p = "public/assets/portal-config.js";
+            const placeholder = "REPLACE_ME_WITH_GENERATED_SECRET";
+            const secret = process.env.PORTAL_SHARED_SECRET;
+            let content = fs.readFileSync(p, "utf8");
+            if (!content.includes(placeholder)) {
+              console.error("ERROR: " + p + " does not contain the placeholder. Refusing to deploy (secret may have been committed).");
+              process.exit(1);
+            }
+            content = content.replace(placeholder, secret);
+            fs.writeFileSync(p, content);
+            console.log("Secret injected into " + p);
+          '
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
       - name: Deploy to Firebase (hosting + functions)
