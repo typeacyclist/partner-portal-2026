@@ -669,12 +669,33 @@
       "timing": "oneTime"
     },
     {
+      "code": "INIT-NRE25",
+      "name": "Initial customization based on Client requirements. ",
+      "category": "30-Setup/Integration Option",
+      "description": "Initial customization based on Client requirements. Contact Trendzact Deal Desk for Non-Recurring Engineering (NRE) Statement of Work.",
+      "isActive": true,
+      "displayOrder": 51,
+      "discountGroup": "regular",
+      "pricing": {
+        "model": "flat",
+        "billableUnit": "one-time per integration (MSRP)",
+        "amountUsd": 4500,
+        "_doc": "Flat one-time MSRP. Channel discount (regular) applied on top."
+      },
+      "selection": {
+        "mode": "auto",
+        "parentCodes": null,
+        "displayBadges": []
+      },
+      "timing": "oneTime"
+    },
+    {
       "code": "INT-GRAPH",
       "name": "MS Graph API Integration",
       "category": "30-Setup/Integration Option",
       "description": "One-time integration with Microsoft Graph for Entra ID and M365 enrichment.",
       "isActive": true,
-      "displayOrder": 51,
+      "displayOrder": 52,
       "discountGroup": "regular",
       "pricing": {
         "model": "flat",
