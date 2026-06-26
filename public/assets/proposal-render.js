@@ -651,11 +651,15 @@
     var dataUri = reseller.doc.output('datauristring');
     var commaIdx = dataUri.indexOf(',');
     var pdfBase64 = commaIdx >= 0 ? dataUri.substring(commaIdx + 1) : dataUri;
-    reseller.doc.save(resellerFilename);
 
     // Client-facing document: cover + scope & pricing only (pages 1-2).
     var client = buildPdf(input, { clientOnly: true });
+
+    // Download both. Browsers suppress a second download fired immediately
+    // after the first, so stagger them — save the client doc first (the one
+    // forwarded to the prospect), then the reseller doc after a short delay.
     client.doc.save(clientFilename);
+    setTimeout(function () { reseller.doc.save(resellerFilename); }, 1200);
 
     var emailPromise = sendEmail(input, reseller.proposalId, pdfBase64, resellerFilename);
     return {
