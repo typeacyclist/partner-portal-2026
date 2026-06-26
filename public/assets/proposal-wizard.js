@@ -1503,9 +1503,12 @@
       } else {
         emailLine = '<br/><span style="color:#B45309;">Email could not be sent (' + esc(er.code || 'unknown') + '): ' + esc(er.error || 'unknown error') + '. Your PDF downloaded successfully; the proposal ID is saved.</span>';
       }
+      var sr = state.submitResult;
+      var filesLine = (sr.clientFilename && sr.resellerFilename)
+          ? 'downloaded as two files — client: <strong>' + esc(sr.clientFilename) + '</strong> and reseller: <strong>' + esc(sr.resellerFilename) + '</strong>.'
+          : 'downloaded as <strong>' + esc(sr.filename) + '</strong>.';
       banner = '<div class="tp-banner tp-banner-success">' +
-          'Submitted. Proposal <code>' + esc(state.submitResult.proposalId) + '</code> downloaded as ' +
-          '<strong>' + esc(state.submitResult.filename) + '</strong>.' +
+          'Submitted. Proposal <code>' + esc(sr.proposalId) + '</code> ' + filesLine +
           emailLine +
           '<br/>Draft has been cleared.' +
           '</div>';
@@ -1513,7 +1516,7 @@
 
     return (
         '<h3>Step 4 — Save &amp; Submit</h3>' +
-        '<p class="tp-lede">The PDF includes all three commitment options (1-year, 2-year, 3-year) so the prospect can present them to Procurement. Deal Desk is BCC\'d for pipeline tracking.</p>' +
+        '<p class="tp-lede">Submitting downloads two PDFs: a 2-page client-facing proposal to forward to the prospect, and a full reseller/distributor copy (adds Next Steps and the channel worksheet). The reseller copy is emailed to you; Deal Desk is BCC\'d for pipeline tracking.</p>' +
 
         '<div class="tp-submit-panel">' +
         '<div class="tp-submit-header">' +
@@ -1620,6 +1623,8 @@
       state.submitResult = {
         proposalId: result.proposalId,
         filename: result.filename,
+        clientFilename: result.clientFilename,
+        resellerFilename: result.resellerFilename,
         emailResult: emailResult
       };
       await clearDraftDoc();

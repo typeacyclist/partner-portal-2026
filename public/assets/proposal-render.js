@@ -1,14 +1,19 @@
 // Trendzact Partners - Proposal PDF Renderer (v7)
 //
-// Produces a 4-page PDF (prospect gets pages 1-3, partner keeps page 4):
-//   Page 1 — Cover: prospect details + List Price commitment options
-//   Page 2 — Scope & List Price Pricing: pricing inputs, base pricing, commitment tiers
-//   Page 3 — Next Steps + disclaimer + contact
-//   Page 4 — Distributor-Reseller Worksheet (channel pricing with subdomain discounts)
+// Produces TWO PDFs from one build pass:
+//   • Client-facing doc (pages 1-2): Cover + Scope & List Price Pricing.
+//   • Reseller/distributor doc (pages 1-4): the client pages PLUS Next Steps
+//     and the Distributor-Reseller channel worksheet. This is the emailed copy.
+//
+//   Page 1 — Cover: prospect details + List Price commitment options       [both]
+//   Page 2 — Scope & List Price Pricing: inputs, line items, commitment    [both]
+//   Page 3 — Next Steps + disclaimer + contact                        [reseller]
+//   Page 4 — Distributor-Reseller Worksheet (channel pricing)          [reseller]
 //
 // Public API:
 //   window.TrendzactProposalRender.render({ draft, allTiers, catalog, partnerEmail, ccTo })
-//     -> { proposalId, filename, emailPromise } and triggers browser download.
+//     -> { proposalId, filename, clientFilename, resellerFilename, emailPromise }
+//     Triggers TWO browser downloads (client + reseller); emails the reseller doc.
 
 (function () {
   'use strict';
@@ -80,7 +85,8 @@
   // ================================================================
   //  Build the PDF
   // ================================================================
-  function buildPdf(input) {
+  function buildPdf(input, opts) {
+    opts = opts || {};
     var draft = input.draft || {};
     var allTiers = input.allTiers || [];
     var catalog = input.catalog || {};
@@ -381,6 +387,13 @@
 
     pageFooter(doc, proposalId, portalDomain);
 
+    // Client-facing document stops here: pages 1-2 only (cover + scope &
+    // pricing). The reseller/distributor document continues with Next Steps
+    // and the channel worksheet below.
+    if (opts.clientOnly) {
+      return { doc: doc, proposalId: proposalId };
+    }
+
 
     // ================================================================
     //  PAGE 3 \u2014 NEXT STEPS
@@ -617,7 +630,10 @@
   }
 
   function render(input) {
-    var built = buildPdf(input);
+    // Reseller/distributor document: the full 4-page PDF. This is also the
+    // copy attached to the email.
+    var reseller = buildPdf(input);
+
     // Decompose unicode then strip diacritical marks so "Société Générale" →
     // "societe-generale" instead of an empty string after the ASCII filter.
     var safeCo = String(input.draft.companyName || 'prospect')
@@ -625,13 +641,30 @@
         .replace(/[^a-z0-9]+/gi, '-').toLowerCase()
         .replace(/^-+|-+$/g, '')
         .slice(0, 30) || 'prospect';
-    var filename = 'trendzact-proposal-' + safeCo + '-' + built.proposalId + '.pdf';
-    var dataUri = built.doc.output('datauristring');
+    var base = 'trendzact-proposal-' + safeCo + '-' + reseller.proposalId;
+    // Client doc keeps the clean name (it's the one forwarded to the prospect);
+    // the reseller doc is suffixed to mark it as partner-internal.
+    var clientFilename = base + '.pdf';
+    var resellerFilename = base + '-reseller.pdf';
+
+    // Base64 of the reseller doc for the email attachment.
+    var dataUri = reseller.doc.output('datauristring');
     var commaIdx = dataUri.indexOf(',');
     var pdfBase64 = commaIdx >= 0 ? dataUri.substring(commaIdx + 1) : dataUri;
-    built.doc.save(filename);
-    var emailPromise = sendEmail(input, built.proposalId, pdfBase64, filename);
-    return { proposalId: built.proposalId, filename: filename, emailPromise: emailPromise };
+    reseller.doc.save(resellerFilename);
+
+    // Client-facing document: cover + scope & pricing only (pages 1-2).
+    var client = buildPdf(input, { clientOnly: true });
+    client.doc.save(clientFilename);
+
+    var emailPromise = sendEmail(input, reseller.proposalId, pdfBase64, resellerFilename);
+    return {
+      proposalId: reseller.proposalId,
+      filename: resellerFilename,        // back-compat: primary (emailed) doc
+      clientFilename: clientFilename,
+      resellerFilename: resellerFilename,
+      emailPromise: emailPromise
+    };
   }
 
   window.TrendzactProposalRender = { render: render };
