@@ -1266,13 +1266,18 @@
           var unitCell = isPerUser(l)
               ? TrendzactMath.formatPerUser(l.msrpPerUser) + '/user'
               : fmt(unitOf(l));
+          // CARE and INIT-ONBRD are quantity-locked (per-contract pricing) —
+          // render a disabled input so the Qty is visible but not editable.
+          var qtyCell = l.qtyLocked
+              ? '<input type="number" class="tp-qty-input tp-qty-input--locked" value="' + qtyOf(l) + '" disabled aria-label="Quantity for ' + esc(l.code) + ' (fixed)" title="Quantity is fixed for ' + esc(l.code) + '" />'
+              : '<input type="number" min="0" step="1" class="tp-qty-input" data-code="' + esc(l.code) + '" value="' + qtyOf(l) + '" aria-label="Quantity for ' + esc(l.code) + '" />';
           return '<tr>' +
               '<td><code>' + esc(l.code) + '</code></td>' +
               '<td>' + esc(nm) + '</td>' +
               '<td class="num">' + esc(unitCell) + '</td>' +
               '<td class="num">' + fmt(lineTotalOf(l)) + '</td>' +
               '<td class="num" style="color:var(--med-gray);">' + esc(timingLabel) + '</td>' +
-              '<td class="num"><input type="number" min="0" step="1" class="tp-qty-input" data-code="' + esc(l.code) + '" value="' + qtyOf(l) + '" aria-label="Quantity for ' + esc(l.code) + '" /></td>' +
+              '<td class="num">' + qtyCell + '</td>' +
               '</tr>';
         }).join('') +
         '</tbody>' +

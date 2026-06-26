@@ -320,7 +320,10 @@
     // Per-line quantity overrides (keyed by SKU code). Optional: when absent,
     // every line uses its natural quantity and totals are unchanged. Per-user
     // lines default to userCount; flat lines default to 1.
+    // CARE (core services SLA) and INIT-ONBRD (onboarding) are quantity-locked:
+    // their pricing is per-contract, not per-unit, so any override is ignored.
     var qtyOverrides = draft.qtyOverrides || {};
+    var QTY_LOCKED = { CARE: true, 'INIT-ONBRD': true };
 
     // Build set of selected codes (manual selections + REQUIRED auto-includes)
     var selected = {};
@@ -380,7 +383,7 @@
       var perUser = price.msrpPerUser > 0;
       var unitMsrp = perUser ? price.msrpPerUser : price.msrpLine;
       var naturalQty = perUser ? userCount : 1;
-      var ov = qtyOverrides[sku.code];
+      var ov = QTY_LOCKED[sku.code] ? undefined : qtyOverrides[sku.code];
       var qty = (ov === undefined || ov === null || ov === '' || isNaN(ov))
           ? naturalQty
           : Math.max(0, parseInt(ov, 10));
@@ -398,6 +401,7 @@
         unitMsrp: unitMsrp,
         qty: qty,
         naturalQty: naturalQty,
+        qtyLocked: !!QTY_LOCKED[sku.code],
         qtyOverridden: qty !== naturalQty,
         msrpLine: msrpLine,
         unitDescription: price.unitDescription,

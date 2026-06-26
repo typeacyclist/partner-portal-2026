@@ -2219,6 +2219,13 @@ p { margin: 0 0 1em; color: var(--dark-gray); }
   border-color: var(--dark-green);
   box-shadow: 0 0 0 2px rgba(0, 130, 124, 0.18);
 }
+.tp-qty-input--locked,
+.tp-qty-input:disabled {
+  background: var(--border-soft);
+  color: var(--med-gray);
+  border-style: dashed;
+  cursor: not-allowed;
+}
 
 /* ============================================
    Signals Finder (inline card on /resources)
