@@ -263,142 +263,26 @@
     hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
     y += 8;
 
-    // --- List Price Base Pricing ---
-    text(doc, 'List Price BASE PRICING (1-YEAR)', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
-    y += 8;
-
-    // Summary row helper. `sublabel` may be a string OR an array of strings
-    // (multi-line, e.g. one per per-user enhancement). Row height grows to
-    // fit; the value cell stays right-aligned to the label row.
-    function summaryRow(label, sublabel, value, opts) {
-      opts = opts || {};
-      var subLines = sublabel == null ? [] : (Array.isArray(sublabel) ? sublabel : [sublabel]);
-      var subLineH = 4;
-      var rowH = subLines.length ? (8 + subLines.length * subLineH) : 8;
-      if (opts.bg) fillRect(doc, tableLeft, y - 1, tableWidth, rowH, opts.bg);
-      text(doc, label, MARGIN + 2, y + 3.5, { size: opts.labelSize || 9, style: opts.labelStyle || 'normal', color: opts.labelColor || C.darkGray });
-      subLines.forEach(function (line, i) {
-        text(doc, line, MARGIN + 2, y + 8.5 + i * subLineH, { size: 7.5, color: C.medGray });
-      });
-      text(doc, value, PAGE_W - MARGIN - 3, y + 3.5, { size: opts.valueSize || 9, style: 'bold', color: opts.valueColor || C.darkGray, align: 'right' });
-      hRule(doc, tableLeft, tableRight, y + rowH, C.border);
-      y += rowH + 1;
-    }
-
-    // Find lines from 1yr calc
+    // Lines from the 1-year calc - shared by the LINE ITEMS table below.
     var calcLines = calc.lines || [];
-    var findLine = function (code) {
-      for (var i = 0; i < calcLines.length; i++) {
-        if (calcLines[i].code === code) return calcLines[i];
-      }
-      return null;
-    };
-
-    // CARE
-    var careLine = findLine('CARE');
-    var carePrice = careLine ? careLine.msrpLine : 0;
-    summaryRow('Core Services', 'SLA for ' + segLabel, fmt(carePrice));
-
-    // Named User License (modules + per-user enhancements) + separate Connectors row
-    // - Per-user enhancements (UVA-WEBCAM, PRIVSCR) carry discountGroup='enhancement'
-    //   and scale with user count \u2192 fold into Named User License.
-    // - Flat connectors (CONN-TEAMS, CONN-PURVIEW) are recurring annual but not
-    //   per-user, so they get their own subtotal row when present.
-    var moduleMsrp = 0;
-    var enhMsrp = 0;
-    var connectorMsrp = 0;
-    var moduleNames = [];
-    var enhNames = [];
-    var connectorNames = [];
-    calcLines.forEach(function (l) {
-      if (l.isModule) { moduleMsrp += l.msrpLine; moduleNames.push(l.code); }
-      else if (l.discountGroup === 'enhancement') { enhMsrp += l.msrpLine; enhNames.push(l.code); }
-      else if (l.timing === 'recurring' && l.code !== 'CARE') { connectorMsrp += l.msrpLine; connectorNames.push(l.code); }
-    });
-    var namedUserTotal = moduleMsrp + enhMsrp;
-    var modulePerUser = licenseCount > 0 ? moduleMsrp / licenseCount : 0;
-    // Per-user values rendered with cent precision (formatPerUser) so the
-    // visual math "$X/user \u00d7 N" reconciles with the displayed line total.
+    // Per-user values rendered with cent precision so per-user x qty reconciles.
     var pu = (window.TrendzactMath && window.TrendzactMath.formatPerUser) || function (n) { return fmt(n); };
-    var namedUserSubLines = [];
-    namedUserSubLines.push(pu(modulePerUser) + '/user  \u00d7  ' + licenseCount.toLocaleString('en-US') + ' licenses  (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + ')');
-    calcLines.forEach(function (l) {
-      if (l.discountGroup === 'enhancement') {
-        var enhQty = (l.qty != null ? l.qty : licenseCount);
-        namedUserSubLines.push('+ ' + l.code + '  ' + pu(l.msrpPerUser) + '/user  \u00d7  ' + enhQty.toLocaleString('en-US'));
-      }
-    });
-    summaryRow('Named User License', namedUserSubLines, fmt(namedUserTotal));
-
-    // Connectors (flat annual) \u2014 only render when present
-    if (connectorMsrp > 0) {
-      summaryRow('Connectors', connectorNames.join(', ') + ' (flat annual)', fmt(connectorMsrp));
-    }
-
-    // One-time
-    var onbrdLine = findLine('INIT-ONBRD');
-    var onbrdPrice = onbrdLine ? onbrdLine.msrpLine : 0;
-    var otherOneTime = 0;
-    calcLines.forEach(function (l) {
-      if (l.timing === 'oneTime' && l.code !== 'INIT-ONBRD') otherOneTime += l.msrpLine;
-    });
-    summaryRow('One-Time Setup', segLabel + ' Onboarding' + (otherOneTime > 0 ? ' + integrations' : ''), fmt(onbrdPrice + otherOneTime));
-
-    y += 4;
-    hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
-    y += 8;
-
-    // --- Commitment Options Table ---
-    text(doc, 'List Price WITH ANNUAL COMMITMENT OPTIONS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
-    y += 7;
-
-    // Header row — use the commitment label from catalog so a single source of
-    // truth drives the column header on both page 1 and page 2.
-    var tierColW = (CONTENT_W - 44) / colCount;
-    fillRect(doc, tableLeft, y - 2, tableWidth, 9, C.tintLight);
-    allTiers.forEach(function (t, idx) {
-      var colCenter = MARGIN + 44 + idx * tierColW + tierColW / 2;
-      var hdr = (t.commitment && t.commitment.label) || (t.totals.contractYears + '-year');
-      text(doc, hdr, colCenter, y + 3.5, { size: 8, style: 'bold', color: C.darkGray, align: 'center' });
-    });
-    hRule(doc, tableLeft, tableRight, y + 7, C.border);
-    y += 9;
-
-    // Data rows — "TCV" is the agreed shorthand; column header already gives the tier.
-    var commitRows = [
-      { label: 'Annual recurring', key: 'annualRecurringMsrp' },
-      { label: 'One-time setup', key: 'oneTimeMsrp' },
-      { label: 'TCV', key: 'tcvMsrp', bold: true }
-    ];
-    commitRows.forEach(function (row) {
-      var isBold = row.bold;
-      if (isBold) fillRect(doc, tableLeft, y - 2, tableWidth, 10, C.tintLight);
-      text(doc, row.label, MARGIN + 2, y + 3.5, { size: 8.5, style: isBold ? 'bold' : 'normal', color: C.darkGray });
-      allTiers.forEach(function (t, idx) {
-        var colCenter = MARGIN + 44 + idx * tierColW + tierColW / 2;
-        var val = t.totals[row.key] || 0;
-        text(doc, fmt(val), colCenter, y + 3.5, { size: isBold ? 10 : 9, style: 'bold', color: isBold ? C.darkGreen : C.darkGray, align: 'center' });
-      });
-      hRule(doc, tableLeft, tableRight, y + (isBold ? 8 : 6), C.border);
-      y += isBold ? 10 : 8;
-    });
-
-    y += 6;
 
     // --- Line Items ---
     text(doc, 'LINE ITEMS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
     y += 7;
 
     // Column positions (mm). SKU left, Description, then 4 right-aligned
-    // numeric columns ending at the page margin. Numbers right-anchored to:
-    //   qty     = PAGE_W - MARGIN - 3   (far right)
-    //   timing  = qty - 16
+    // numeric columns ending at the page margin, in order Unit / Qty / Line
+    // total / Timing. Numbers right-anchored to:
+    //   timing  = PAGE_W - MARGIN - 3   (far right)
     //   lineTot = timing - 22
-    //   unit    = lineTot - 24
-    var colQtyX = PAGE_W - MARGIN - 3;
-    var colTimingX = colQtyX - 16;
+    //   qty     = lineTot - 20
+    //   unit    = qty - 20
+    var colTimingX = PAGE_W - MARGIN - 3;
     var colLineTotX = colTimingX - 22;
-    var colUnitX = colLineTotX - 24;
+    var colQtyX = colLineTotX - 20;
+    var colUnitX = colQtyX - 20;
     var descMaxX = colUnitX - 4; // leave 4mm before unit col
 
     function renderLineItemsHeader() {
@@ -445,6 +329,47 @@
       hRule(doc, tableLeft, tableRight, y + lineRowH, C.border);
       y += lineRowH;
     });
+
+    y += 4;
+    hRule(doc, MARGIN, PAGE_W - MARGIN, y, C.border);
+    y += 8;
+
+    // --- Commitment Options Table ---
+    text(doc, 'List Price WITH ANNUAL COMMITMENT OPTIONS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
+    y += 7;
+
+    // Header row - commitment label from catalog drives the column header on
+    // both page 1 and page 2 (single source of truth).
+    var tierColW = (CONTENT_W - 44) / colCount;
+    fillRect(doc, tableLeft, y - 2, tableWidth, 9, C.tintLight);
+    allTiers.forEach(function (t, idx) {
+      var colCenter = MARGIN + 44 + idx * tierColW + tierColW / 2;
+      var hdr = (t.commitment && t.commitment.label) || (t.totals.contractYears + '-year');
+      text(doc, hdr, colCenter, y + 3.5, { size: 8, style: 'bold', color: C.darkGray, align: 'center' });
+    });
+    hRule(doc, tableLeft, tableRight, y + 7, C.border);
+    y += 9;
+
+    // Data rows - "TCV" is the agreed shorthand; column header gives the tier.
+    var commitRows = [
+      { label: 'Annual recurring', key: 'annualRecurringMsrp' },
+      { label: 'One-time setup', key: 'oneTimeMsrp' },
+      { label: 'TCV', key: 'tcvMsrp', bold: true }
+    ];
+    commitRows.forEach(function (row) {
+      var isBold = row.bold;
+      if (isBold) fillRect(doc, tableLeft, y - 2, tableWidth, 10, C.tintLight);
+      text(doc, row.label, MARGIN + 2, y + 3.5, { size: 8.5, style: isBold ? 'bold' : 'normal', color: C.darkGray });
+      allTiers.forEach(function (t, idx) {
+        var colCenter = MARGIN + 44 + idx * tierColW + tierColW / 2;
+        var val = t.totals[row.key] || 0;
+        text(doc, fmt(val), colCenter, y + 3.5, { size: isBold ? 10 : 9, style: 'bold', color: isBold ? C.darkGreen : C.darkGray, align: 'center' });
+      });
+      hRule(doc, tableLeft, tableRight, y + (isBold ? 8 : 6), C.border);
+      y += isBold ? 10 : 8;
+    });
+
+    y += 6;
 
     // Validity \u2014 match page 1's long date format ("Generated May 25, 2026")
     y += 4;
