@@ -235,12 +235,12 @@
         "msrpBySegment": {
           "early_growth": 5000,
           "scaled_smb": 5000,
-          "emerging_midmkt": 10500,
-          "core_midmkt": 15000,
-          "upper_midmkt": 18000,
-          "commercial_ent": 23000,
-          "strategic_ent": 26000,
-          "global_conglom": 27500
+          "emerging_midmkt": 7500,
+          "core_midmkt": 10500,
+          "upper_midmkt": 10500,
+          "commercial_ent": 15000,
+          "strategic_ent": 18000,
+          "global_conglom": 21500
         },
         "_doc": "Locked MSRP values per segment. msrpBySegment is authoritative \u2014 use these directly. Channel discount applied on top. CORE is absorbed \u2014 no separate CORE SKU."
       },
@@ -655,7 +655,7 @@
       "pricing": {
         "model": "tieredByCompanySize",
         "billableUnit": "one-time, tier by company size (MSRP)",
-        "baseAmountUsd": 10000,
+        "baseAmountUsd": 7500,
         "multiplierRef": "presaleMultiplier",
         "_doc": "MSRP = baseAmountUsd \u00d7 presaleMultiplier. Channel discount (regular) applied on top."
       },
