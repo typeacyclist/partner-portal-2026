@@ -421,14 +421,29 @@
     });
 
     y += 4;
-    fillRect(doc, MARGIN, y, CONTENT_W, 34, C.tintLight);
-    text(doc, 'Disclaimer', MARGIN + 5, y + 8, { size: 9, style: 'bold', color: C.darkGray });
+    var discWrapW = CONTENT_W - 10;
+    var discIntro = 'This proposal outlines a Trendzact GRC One deployment sized for the organization described above. ' +
+        'List Price is (USD $) and included for planning purposes and does not reflect VAT, use taxes, or tariffs. ' +
+        'Final pricing is based on actual scope. ' +
+        'The Trendzact Sales Order is the final, authorized project amount and subject to Trendzact Deal Desk approval.';
     var disc = 'List Price pricing shown is based on information provided at the time of generation. ' +
         'Actual Retail Price at the discretion of the Distributor and their Resellers. ' +
         'Final pricing is subject to Trendzact Deal Desk review, volume tier approval, deployment scope, and executed terms. ' +
         'This document is confidential and intended only for the named partner and prospect.';
-    lines(doc, disc, MARGIN + 5, y + 14, CONTENT_W - 10, { size: 8, color: C.medGray });
-    y += 40;
+    // Size the box to fit both paragraphs (measure wrapped line counts at 8pt).
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    var discLineH = 3.3;
+    var introCount = doc.splitTextToSize(discIntro, discWrapW).length;
+    var discCount = doc.splitTextToSize(disc, discWrapW).length;
+    var discBoxH = 14 + introCount * discLineH + 3 + discCount * discLineH + 4;
+    fillRect(doc, MARGIN, y, CONTENT_W, discBoxH, C.tintLight);
+    text(doc, 'Disclaimer', MARGIN + 5, y + 8, { size: 9, style: 'bold', color: C.darkGray });
+    var discTextY = y + 14;
+    lines(doc, discIntro, MARGIN + 5, discTextY, discWrapW, { size: 8, color: C.medGray });
+    discTextY += introCount * discLineH + 3;
+    lines(doc, disc, MARGIN + 5, discTextY, discWrapW, { size: 8, color: C.medGray });
+    y += discBoxH + 6;
 
     fillRect(doc, MARGIN, y, CONTENT_W, 38, C.darkGray);
     text(doc, 'Questions?', MARGIN + 8, y + 12, { size: 13, style: 'bold', color: C.white });
