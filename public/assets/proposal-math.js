@@ -317,6 +317,11 @@
     var subdomain = draft.subdomain || '';
     var channelConfig = resolveChannelConfig(catalog, subdomain);
 
+    // Per-line quantity overrides (keyed by SKU code). Optional: when absent,
+    // every line uses its natural quantity and totals are unchanged. Per-user
+    // lines default to userCount; flat lines default to 1.
+    var qtyOverrides = draft.qtyOverrides || {};
+
     // Build set of selected codes (manual selections + REQUIRED auto-includes)
     var selected = {};
     (draft.selectedSkuCodes || []).forEach(function (c) { selected[c] = true; });
@@ -368,7 +373,20 @@
     // Price each line
     var priced = lines.map(function (sku) {
       var price = priceLine(sku, segment, bracket, userCount, moduleCount, commitFactor, catalog);
-      var channel = computeChannelPrices(price.msrpLine, sku.discountGroup || 'regular', channelConfig);
+
+      // Quantity model: per-user lines bill unitMsrp (= $/user) × userCount;
+      // flat lines bill unitMsrp (= the whole line) × 1. An override replaces
+      // the quantity; the line total and channel split scale from it.
+      var perUser = price.msrpPerUser > 0;
+      var unitMsrp = perUser ? price.msrpPerUser : price.msrpLine;
+      var naturalQty = perUser ? userCount : 1;
+      var ov = qtyOverrides[sku.code];
+      var qty = (ov === undefined || ov === null || ov === '' || isNaN(ov))
+          ? naturalQty
+          : Math.max(0, parseInt(ov, 10));
+      var msrpLine = unitMsrp * qty;
+
+      var channel = computeChannelPrices(msrpLine, sku.discountGroup || 'regular', channelConfig);
       return {
         code: sku.code,
         name: sku.name,
@@ -377,7 +395,11 @@
         discountGroup: sku.discountGroup || 'regular',
         isModule: isModule(sku),
         msrpPerUser: price.msrpPerUser,
-        msrpLine: price.msrpLine,
+        unitMsrp: unitMsrp,
+        qty: qty,
+        naturalQty: naturalQty,
+        qtyOverridden: qty !== naturalQty,
+        msrpLine: msrpLine,
         unitDescription: price.unitDescription,
         billingNote: price.billingNote,
         channel: channel

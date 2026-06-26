@@ -324,7 +324,8 @@
     namedUserSubLines.push(pu(modulePerUser) + '/user  \u00d7  ' + licenseCount.toLocaleString('en-US') + ' licenses  (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + ')');
     calcLines.forEach(function (l) {
       if (l.discountGroup === 'enhancement') {
-        namedUserSubLines.push('+ ' + l.code + '  ' + pu(l.msrpPerUser) + '/user  \u00d7  ' + licenseCount.toLocaleString('en-US'));
+        var enhQty = (l.qty != null ? l.qty : licenseCount);
+        namedUserSubLines.push('+ ' + l.code + '  ' + pu(l.msrpPerUser) + '/user  \u00d7  ' + enhQty.toLocaleString('en-US'));
       }
     });
     summaryRow('Named User License', namedUserSubLines, fmt(namedUserTotal));
@@ -388,14 +389,16 @@
     text(doc, 'LINE ITEMS', MARGIN, y, { size: 8, style: 'bold', color: C.darkGreen });
     y += 7;
 
-    // Column positions (mm). SKU left, Description, then 3 right-aligned
+    // Column positions (mm). SKU left, Description, then 4 right-aligned
     // numeric columns ending at the page margin. Numbers right-anchored to:
-    //   timing  = PAGE_W - MARGIN - 3
-    //   lineTot = timing - 24
-    //   unit    = lineTot - 26
-    var colTimingX = PAGE_W - MARGIN - 3;
-    var colLineTotX = colTimingX - 24;
-    var colUnitX = colLineTotX - 26;
+    //   qty     = PAGE_W - MARGIN - 3   (far right)
+    //   timing  = qty - 16
+    //   lineTot = timing - 22
+    //   unit    = lineTot - 24
+    var colQtyX = PAGE_W - MARGIN - 3;
+    var colTimingX = colQtyX - 16;
+    var colLineTotX = colTimingX - 22;
+    var colUnitX = colLineTotX - 24;
     var descMaxX = colUnitX - 4; // leave 4mm before unit col
 
     function renderLineItemsHeader() {
@@ -405,6 +408,7 @@
       text(doc, 'Unit price', colUnitX, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
       text(doc, 'Line total', colLineTotX, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
       text(doc, 'Timing', colTimingX, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
+      text(doc, 'Qty', colQtyX, y + 5.5, { size: 7.5, style: 'bold', color: C.darkGray, align: 'right' });
       hRule(doc, tableLeft, tableRight, y + lineHeaderH, C.border);
       y += lineHeaderH;
     }
@@ -415,8 +419,8 @@
     var lineRowH = 7;
     var pageBreakAt = PAGE_H - 30;
     // Truncate description so it doesn't run into the numeric columns.
-    // ~52 chars fits within the new narrower description column at 8pt.
-    var descCharCap = 52;
+    // ~46 chars fits the description column at 8pt now that Qty narrows it.
+    var descCharCap = 46;
     calcLines.forEach(function (l, i) {
       if (y > pageBreakAt) {
         pageFooter(doc, proposalId, portalDomain);
@@ -428,12 +432,16 @@
       if (i % 2 === 1) fillRect(doc, tableLeft, y, tableWidth, lineRowH, [250, 250, 251]);
       var name = l.name || '';
       if (name.length > descCharCap) name = name.slice(0, descCharCap - 1) + '\u2026';
-      var unitCell = (l.msrpPerUser && l.msrpPerUser > 0) ? pu(l.msrpPerUser) + '/user' : '\u2014';
+      var unitCell = (l.msrpPerUser && l.msrpPerUser > 0)
+          ? pu(l.msrpPerUser) + '/user'
+          : fmt(l.unitMsrp != null ? l.unitMsrp : l.msrpLine);
+      var qtyVal = (l.qty != null ? l.qty : 1);
       text(doc, l.code, MARGIN + 2, y + 5, { size: 8, color: C.darkGray });
       text(doc, name, MARGIN + 28, y + 5, { size: 8, color: C.darkGray });
       text(doc, unitCell, colUnitX, y + 5, { size: 7.5, color: C.darkGray, align: 'right' });
       text(doc, fmt(l.msrpLine), colLineTotX, y + 5, { size: 8, color: C.darkGray, align: 'right' });
       text(doc, l.timing === 'oneTime' ? 'One-time' : 'Annual', colTimingX, y + 5, { size: 7.5, color: C.medGray, align: 'right' });
+      text(doc, qtyVal.toLocaleString('en-US'), colQtyX, y + 5, { size: 8, style: l.qtyOverridden ? 'bold' : 'normal', color: l.qtyOverridden ? C.darkGreen : C.darkGray, align: 'right' });
       hRule(doc, tableLeft, tableRight, y + lineRowH, C.border);
       y += lineRowH;
     });

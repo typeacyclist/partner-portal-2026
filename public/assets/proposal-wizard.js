@@ -90,6 +90,11 @@
       selectedModuleOptions: [], // enhancement codes (UVA-WEBCAM, PRIVSCR, etc.)
       selectedOneTime: [],       // one-time codes (including INIT-ONBRD which is required)
 
+      // Step 3 — per-line quantity overrides (SKU code → quantity).
+      // Declared here so the resume merge (which only restores keys present in
+      // emptyDraft) round-trips overrides from a saved draft.
+      qtyOverrides: {},
+
       // Step 4 — Submit fields
       proposalTitle: '',
       ccTo: '',
@@ -1002,6 +1007,7 @@
       contractYears: overrideYears || 1,
       subdomain: detectSubdomain(),
       selectedSkuCodes: selected,
+      qtyOverrides: d.qtyOverrides || {},
       notes: ''
     };
   }
@@ -1018,6 +1024,18 @@
     var seg = state.catalog.companySizeSegments.find(function (s) { return s.key === d.companySegment; });
     var segLabel = seg ? seg.label : '—';
     var licenseCount = parseInt(d.expectedLicenseCount, 10) || 0;
+
+    // --- Editable per-line quantity (Step 3) ---
+    // Quantity is now a first-class field on each priced line from the math
+    // engine (see proposal-math.js): l.qty, l.unitMsrp, and l.msrpLine already
+    // reflect any override stored in d.qtyOverrides. These helpers just read
+    // those fields so every rollup below stays consistent with the engine,
+    // and overrides flow through to Step 4 and the PDF identically.
+    d.qtyOverrides || (d.qtyOverrides = {});
+    var isPerUser = function (l) { return !!(l.msrpPerUser && l.msrpPerUser > 0); };
+    var unitOf = function (l) { return l.unitMsrp != null ? l.unitMsrp : (isPerUser(l) ? l.msrpPerUser : l.msrpLine); };
+    var qtyOf = function (l) { return l.qty != null ? l.qty : (isPerUser(l) ? licenseCount : 1); };
+    var lineTotalOf = function (l) { return l.msrpLine; };
 
     var mods = d.selectedModules;
     var modOpts = d.selectedModuleOptions;
@@ -1050,7 +1068,7 @@
 
     // CARE line
     var careLine = findLine('CARE');
-    var carePrice = careLine ? careLine.msrpLine : 0;
+    var carePrice = careLine ? lineTotalOf(careLine) : 0;
 
     // Categorize priced lines using the same predicates as the PDF renderer
     // so the two surfaces never disagree about which row money lands in.
@@ -1064,21 +1082,22 @@
     var perUserEnhNames = [];
     var connectorNames = [];
     (calc1.lines || []).forEach(function (l) {
-      if (l.isModule) { moduleTotalAnnual += l.msrpLine; moduleNames.push(l.code); }
-      else if (l.discountGroup === 'enhancement') { perUserEnhTotal += l.msrpLine; perUserEnhNames.push(l.code); }
-      else if (l.timing === 'recurring' && l.code !== 'CARE') { connectorTotal += l.msrpLine; connectorNames.push(l.code); }
+      var lt = lineTotalOf(l);
+      if (l.isModule) { moduleTotalAnnual += lt; moduleNames.push(l.code); }
+      else if (l.discountGroup === 'enhancement') { perUserEnhTotal += lt; perUserEnhNames.push(l.code); }
+      else if (l.timing === 'recurring' && l.code !== 'CARE') { connectorTotal += lt; connectorNames.push(l.code); }
     });
     var namedUserTotal = moduleTotalAnnual + perUserEnhTotal;
     var namedUserPerUser = licenseCount > 0 ? namedUserTotal / licenseCount : 0;
 
     // INIT-ONBRD line
     var onbrdLine = findLine('INIT-ONBRD');
-    var onbrdPrice = onbrdLine ? onbrdLine.msrpLine : 0;
+    var onbrdPrice = onbrdLine ? lineTotalOf(onbrdLine) : 0;
     // Other one-time lines
     var otherOneTimeTotal = 0;
     oneOptional.forEach(function (code) {
       var line = findLine(code);
-      if (line) otherOneTimeTotal += line.msrpLine;
+      if (line) otherOneTimeTotal += lineTotalOf(line);
     });
 
     // --- Annual commitment tiers ---
@@ -1194,7 +1213,7 @@
           subLines.push(pu(modulePerUser) + '/user × ' + licenseCount.toLocaleString('en-US') + ' licenses (' + moduleNames.length + ' module' + (moduleNames.length !== 1 ? 's' : '') + ')');
           (calc1.lines || []).forEach(function (l) {
             if (l.discountGroup === 'enhancement') {
-              subLines.push('+ ' + esc(l.code) + ' ' + pu(l.msrpPerUser) + '/user × ' + licenseCount.toLocaleString('en-US'));
+              subLines.push('+ ' + esc(l.code) + ' ' + pu(l.msrpPerUser) + '/user × ' + qtyOf(l).toLocaleString('en-US'));
             }
           });
           return '<div class="tp-summary-row">' +
@@ -1221,6 +1240,8 @@
         allTiers.map(function (t) {
           var yrs = t.totals.contractYears;
           var tierLabel = (t.commitment && t.commitment.label) || (yrs + '-year');
+          // Engine totals already reflect quantity overrides (msrpLine is
+          // unit × qty), so read them directly — single source of truth.
           return '<div class="tp-tier-card' + (yrs > 1 ? ' tp-tier-discount' : '') + '">' +
               '<div class="tp-tier-label">' + esc(tierLabel) + '</div>' +
               '<div class="tp-tier-row"><span>Annual recurring</span><span>' + fmt(t.totals.annualRecurringMsrp) + '</span></div>' +
@@ -1236,21 +1257,22 @@
         // an em-dash since "per unit" doesn't apply — the Line total IS the price.
         '<div class="tp-summary-row subgroup">Line items</div>' +
         '<table class="tp-line-items">' +
-        '<thead><tr><th>SKU</th><th>Description</th><th class="num">Unit price</th><th class="num">Line total</th><th class="num">Timing</th></tr></thead>' +
+        '<thead><tr><th>SKU</th><th>Description</th><th class="num">Unit price</th><th class="num">Line total</th><th class="num">Timing</th><th class="num">Qty</th></tr></thead>' +
         '<tbody>' +
         (calc1.lines || []).map(function (l) {
           var nm = l.name || '';
           if (nm.length > 50) nm = nm.slice(0, 49) + '…';
           var timingLabel = l.timing === 'oneTime' ? 'One-time' : 'Annual';
-          var unitCell = (l.msrpPerUser && l.msrpPerUser > 0)
+          var unitCell = isPerUser(l)
               ? TrendzactMath.formatPerUser(l.msrpPerUser) + '/user'
-              : '—';
+              : fmt(unitOf(l));
           return '<tr>' +
               '<td><code>' + esc(l.code) + '</code></td>' +
               '<td>' + esc(nm) + '</td>' +
               '<td class="num">' + esc(unitCell) + '</td>' +
-              '<td class="num">' + fmt(l.msrpLine) + '</td>' +
+              '<td class="num">' + fmt(lineTotalOf(l)) + '</td>' +
               '<td class="num" style="color:var(--med-gray);">' + esc(timingLabel) + '</td>' +
+              '<td class="num"><input type="number" min="0" step="1" class="tp-qty-input" data-code="' + esc(l.code) + '" value="' + qtyOf(l) + '" aria-label="Quantity for ' + esc(l.code) + '" /></td>' +
               '</tr>';
         }).join('') +
         '</tbody>' +
@@ -1267,6 +1289,29 @@
         gotoStep(idx);
       });
     });
+
+    // Editable per-line quantity. Commit on change (blur/enter) so totals,
+    // summary rows, and the tier grid all recompute from the override.
+    document.querySelectorAll('.tp-qty-input').forEach(function (input) {
+      input.addEventListener('change', function () {
+        var code = input.dataset.code;
+        if (!code) return;
+        var v = parseInt(input.value, 10);
+        if (isNaN(v) || v < 0) v = 0;
+        var ov = state.draft.qtyOverrides || (state.draft.qtyOverrides = {});
+        ov[code] = v;
+        scheduleAutosave();
+        rerenderReview();
+      });
+    });
+  }
+
+  // Re-render Step 3 in place after a quantity edit, preserving scroll.
+  function rerenderReview() {
+    var panel = document.getElementById('tp-panel');
+    if (!panel) return;
+    panel.innerHTML = renderReview();
+    bindStep3();
   }
 
   // ==============================================================
@@ -1286,6 +1331,21 @@
     html += '<span class="tp-channel-title">Distributor\u2013Reseller Worksheet</span>';
     html += '<span class="tp-channel-label">' + esc(channelLabel) + '</span>';
     html += '</div>';
+
+    // Quantity overrides \u2014 surface any line whose Qty was changed in Step 3 so
+    // the partner can see exactly what feeds the totals below. Hidden entirely
+    // when no line was overridden (every line at its natural quantity).
+    var overriddenLines = (calc1.lines || []).filter(function (l) { return l.qtyOverridden; });
+    if (overriddenLines.length) {
+      html += '<div class="tp-qty-overrides">';
+      html += '<span class="tp-qty-overrides-label">Quantity overrides</span>';
+      html += overriddenLines.map(function (l) {
+        return '<span class="tp-qty-override-item"><code>' + esc(l.code) + '</code> Qty ' +
+            (l.qty || 0).toLocaleString('en-US') +
+            ' <span class="tp-qty-override-default">(default ' + (l.naturalQty || 0).toLocaleString('en-US') + ')</span></span>';
+      }).join('');
+      html += '</div>';
+    }
 
     // Display derived margin percentages instead of raw catalog discounts.
     //   trendzactNet% = 1 - distDiscount      (what Trendzact retains)
