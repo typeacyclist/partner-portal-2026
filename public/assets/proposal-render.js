@@ -159,7 +159,6 @@
     text(doc, 'PROPOSAL DETAILS', rightX, rightY, { size: 8, style: 'bold', color: C.darkGreen });
     rightY += 8;
     var rightItems = [
-      ['Use Case', draft.primaryUseCase || '\u2014'],
       ['Licenses', (draft.userCount || 0).toLocaleString('en-US')],
       ['Est. Decision', draft.estimatedCloseDate || '\u2014']
     ];
@@ -169,14 +168,20 @@
       rightY += 7;
     });
 
+    // Use Case \u2014 full-width block spanning the page, above the divider
+    var useCaseY = Math.max(detY, rightY) + 2;
+    text(doc, 'USE CASE', leftX, useCaseY, { size: 8, style: 'bold', color: C.darkGreen });
+    useCaseY += 6;
+    var useCaseLineCount = lines(doc, draft.primaryUseCase || '\u2014', leftX, useCaseY, CONTENT_W, { size: 9, color: C.darkGray });
+
     // Divider
-    var divY = Math.max(detY, rightY) + 4;
+    var divY = useCaseY + useCaseLineCount * 4.5 + 2;
     hRule(doc, MARGIN, PAGE_W - MARGIN, divY, C.border);
 
     // Scope paragraph
     var paraY = divY + 6;
     var scopeNote = 'This proposal outlines a Trendzact GRC One deployment sized for the organization described above. ' +
-        'List Price pricing (USD) is included for planning purposes. Actual Retail Price at the discretion of the Distributor and their Resellers. Final pricing, scope, and deployment terms are subject to Trendzact Deal Desk approval.';
+        'List Price is  (USD $) and included for planning purposes and does not reflect VAT, use taxes, or tariffs. Final pricing is based on actual scope.  The Trendzact Sales Order is the final, authorized project amount and subject to Trendzact Deal Desk approval.';
     var paraLineCount = lines(doc, scopeNote, MARGIN, paraY, CONTENT_W, { size: 9, color: C.medGray });
 
     // --- List Price Commitment Options ---
